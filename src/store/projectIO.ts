@@ -1,0 +1,314 @@
+/**
+ * @file projectIO.ts
+ * JSON import/export routines with structural validation, field-path diagnostic reporting,
+ * and conflict-free project ID generation.
+ */
+
+import {
+  CURRENT_SCHEMA_VERSION,
+  type DesignProject,
+} from '../types/designProject';
+import type { Result } from './persistence';
+
+/**
+ * Envelope structure wrapping exported project JSON.
+ */
+export interface ProjectExportEnvelope {
+  readonly schemaVersion: number;
+  readonly exportedAt: string;
+  readonly project: DesignProject;
+}
+
+/**
+ * Detailed validation failure diagnostic naming the specific field path.
+ */
+export interface ValidationError {
+  readonly field: string;
+  readonly message: string;
+}
+
+/**
+ * Error detail returned when parsing or validating project JSON fails.
+ */
+export interface JsonImportError {
+  readonly code: 'INVALID_JSON' | 'UNSUPPORTED_VERSION' | 'VALIDATION_FAILED';
+  readonly message: string;
+  readonly fieldErrors?: readonly ValidationError[];
+}
+
+/**
+ * Exports a DesignProject into a formatted JSON string inside a versioned envelope.
+ *
+ * @param project The DesignProject to serialize
+ * @returns Pretty-printed JSON string
+ */
+export function exportProjectToJson(project: DesignProject): string {
+  const envelope: ProjectExportEnvelope = {
+    schemaVersion: CURRENT_SCHEMA_VERSION,
+    exportedAt: new Date().toISOString(),
+    project,
+  };
+  return JSON.stringify(envelope, null, 2);
+}
+
+/**
+ * Validates a parsed object against the DesignProject schema using hand-written type guards.
+ * Collects all field-level discrepancies naming the exact field path.
+ */
+function validateProjectFields(raw: unknown): ValidationError[] {
+  const errors: ValidationError[] = [];
+
+  if (typeof raw !== 'object' || raw === null) {
+    errors.push({ field: 'root', message: 'Project must be a JSON object.' });
+    return errors;
+  }
+
+  const obj = raw as Record<string, unknown>;
+
+  // Required identity & metadata
+  if (typeof obj['schemaVersion'] !== 'number') {
+    errors.push({
+      field: 'schemaVersion',
+      message: 'Missing or non-numeric schemaVersion.',
+    });
+  }
+
+  if (typeof obj['id'] !== 'string' || obj['id'].trim().length === 0) {
+    errors.push({ field: 'id', message: 'Project id must be a non-empty string.' });
+  }
+
+  if (typeof obj['name'] !== 'string') {
+    errors.push({ field: 'name', message: 'Project name must be a string.' });
+  }
+
+  if (typeof obj['createdAt'] !== 'string' || isNaN(Date.parse(obj['createdAt']))) {
+    errors.push({
+      field: 'createdAt',
+      message: 'createdAt must be a valid ISO timestamp string.',
+    });
+  }
+
+  if (typeof obj['updatedAt'] !== 'string' || isNaN(Date.parse(obj['updatedAt']))) {
+    errors.push({
+      field: 'updatedAt',
+      message: 'updatedAt must be a valid ISO timestamp string.',
+    });
+  }
+
+  // Optional arrays and objects
+  if (obj['variables'] !== undefined) {
+    if (
+      !Array.isArray(obj['variables']) ||
+      !obj['variables'].every((v) => typeof v === 'string')
+    ) {
+      errors.push({
+        field: 'variables',
+        message: 'variables must be an array of strings.',
+      });
+    }
+  }
+
+  if (obj['expression'] !== undefined && obj['expression'] !== null) {
+    if (
+      typeof obj['expression'] !== 'object' ||
+      typeof (obj['expression'] as Record<string, unknown>)['type'] !== 'string'
+    ) {
+      errors.push({
+        field: 'expression',
+        message: 'expression must be an AST node object or null.',
+      });
+    }
+  }
+
+  if (obj['truthTable'] !== undefined && obj['truthTable'] !== null) {
+    const tt = obj['truthTable'] as Record<string, unknown>;
+    if (
+      typeof tt !== 'object' ||
+      !Array.isArray(tt['variables']) ||
+      !Array.isArray(tt['rows'])
+    ) {
+      errors.push({
+        field: 'truthTable',
+        message: 'truthTable must contain variables array and rows array.',
+      });
+    }
+  }
+
+  if (obj['circuit'] !== undefined && obj['circuit'] !== null) {
+    const circ = obj['circuit'] as Record<string, unknown>;
+    if (
+      typeof circ !== 'object' ||
+      !Array.isArray(circ['components']) ||
+      !Array.isArray(circ['wires'])
+    ) {
+      errors.push({
+        field: 'circuit',
+        message: 'circuit must contain components array and wires array.',
+      });
+    }
+  }
+
+  if (obj['kmap'] !== undefined && obj['kmap'] !== null) {
+    const kmap = obj['kmap'] as Record<string, unknown>;
+    if (
+      typeof kmap !== 'object' ||
+      !Array.isArray(kmap['variables']) ||
+      !Array.isArray(kmap['cells'])
+    ) {
+      errors.push({
+        field: 'kmap',
+        message: 'kmap must contain variables array and cells array.',
+      });
+    }
+  }
+
+  if (obj['pipelineProgress'] !== undefined && obj['pipelineProgress'] !== null) {
+    const pp = obj['pipelineProgress'] as Record<string, unknown>;
+    if (typeof pp !== 'object' || !Array.isArray(pp['completedModules'])) {
+      errors.push({
+        field: 'pipelineProgress.completedModules',
+        message: 'pipelineProgress.completedModules must be an array.',
+      });
+    }
+  }
+
+  if (obj['sequentialSpec'] !== undefined && obj['sequentialSpec'] !== null) {
+    if (typeof obj['sequentialSpec'] !== 'object') {
+      errors.push({
+        field: 'sequentialSpec',
+        message: 'sequentialSpec must be an object or null.',
+      });
+    }
+  }
+
+  return errors;
+}
+
+/**
+ * Parses and validates a project JSON string, supporting both raw DesignProject
+ * JSON and enveloped exports.
+ *
+ * @param text The input JSON string
+ * @returns Result with validated DesignProject or structured error diagnostics
+ */
+export function parseProjectJson(
+  text: string
+): Result<DesignProject, JsonImportError> {
+  let raw: unknown;
+  try {
+    raw = JSON.parse(text);
+  } catch (err: unknown) {
+    return {
+      ok: false,
+      error: {
+        code: 'INVALID_JSON',
+        message: 'Invalid JSON syntax.',
+      },
+    };
+  }
+
+  if (typeof raw !== 'object' || raw === null) {
+    return {
+      ok: false,
+      error: {
+        code: 'VALIDATION_FAILED',
+        message: 'Root must be a JSON object.',
+        fieldErrors: [{ field: 'root', message: 'Expected JSON object.' }],
+      },
+    };
+  }
+
+  // Detect and unwrap envelope if present
+  let candidate: Record<string, unknown>;
+  const rawObj = raw as Record<string, unknown>;
+  if (
+    rawObj['project'] &&
+    typeof rawObj['project'] === 'object' &&
+    rawObj['project'] !== null
+  ) {
+    candidate = rawObj['project'] as Record<string, unknown>;
+  } else {
+    candidate = rawObj;
+  }
+
+  // Version check
+  const schemaVer = candidate['schemaVersion'];
+  if (typeof schemaVer === 'number' && schemaVer > CURRENT_SCHEMA_VERSION) {
+    return {
+      ok: false,
+      error: {
+        code: 'UNSUPPORTED_VERSION',
+        message: `Schema version ${schemaVer} is newer than current supported version ${CURRENT_SCHEMA_VERSION}.`,
+        fieldErrors: [
+          {
+            field: 'schemaVersion',
+            message: `Version ${schemaVer} exceeds maximum supported version ${CURRENT_SCHEMA_VERSION}.`,
+          },
+        ],
+      },
+    };
+  }
+
+  // Validate fields
+  const fieldErrors = validateProjectFields(candidate);
+  if (fieldErrors.length > 0) {
+    return {
+      ok: false,
+      error: {
+        code: 'VALIDATION_FAILED',
+        message: `Validation failed with ${fieldErrors.length} error(s).`,
+        fieldErrors,
+      },
+    };
+  }
+
+  let project = candidate as unknown as DesignProject;
+  if (typeof schemaVer === 'number' && schemaVer < CURRENT_SCHEMA_VERSION) {
+    project = {
+      ...project,
+      schemaVersion: CURRENT_SCHEMA_VERSION,
+      sequentialSpec: project.sequentialSpec ?? null,
+    };
+  }
+
+  return {
+    ok: true,
+    value: project,
+  };
+}
+
+/**
+ * Imports a project JSON string, generating a fresh ID if the project's ID
+ * collides with an existing locally saved project.
+ *
+ * @param text JSON string to import
+ * @param existingProjectIds List of current local project IDs to prevent overwrite
+ * @returns Result with imported DesignProject
+ */
+export function importProject(
+  text: string,
+  existingProjectIds: readonly string[] = []
+): Result<DesignProject, JsonImportError> {
+  const parseResult = parseProjectJson(text);
+  if (!parseResult.ok) {
+    return parseResult;
+  }
+
+  const project = parseResult.value;
+  const isDuplicate = existingProjectIds.includes(project.id);
+
+  if (isDuplicate) {
+    // Generate fresh collision-free UUID
+    const randomSuffix = Math.random().toString(36).substring(2, 9);
+    const freshId = `proj-${Date.now().toString(36)}-${randomSuffix}`;
+    const renamedProject: DesignProject = {
+      ...project,
+      id: freshId,
+      name: `${project.name} (Imported)`,
+      updatedAt: new Date().toISOString(),
+    };
+    return { ok: true, value: renamedProject };
+  }
+
+  return { ok: true, value: project };
+}

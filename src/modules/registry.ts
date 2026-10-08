@@ -1,0 +1,438 @@
+/**
+ * @file registry.ts
+ * Central registry of laboratory modules, pipeline handoff rules, capabilities metadata,
+ * and lazy-loaded page component references.
+ */
+
+import {
+  type ComponentType,
+  createElement,
+  lazy,
+  type LazyExoticComponent,
+} from 'react';
+import type { DesignProject, ModuleId } from '../types/designProject';
+import {
+  COMBINATIONAL_PIPELINE_ORDER,
+  SEQUENTIAL_PIPELINE_ORDER,
+} from '../types/designProject';
+import type { ModuleDefinition } from '../types/moduleInterface';
+
+/**
+ * Enhanced module catalog entry combining architectural definition with React component slot.
+ */
+export interface ModuleEntry extends ModuleDefinition {
+  readonly phase: 1 | 2;
+  readonly isAvailable: boolean;
+  readonly component: LazyExoticComponent<ComponentType>;
+}
+
+/**
+ * Creates a lightweight placeholder component for registered modules before real pages arrive.
+ * Uses React.createElement so this remains a pure .ts file without JSX compiler extensions.
+ */
+function createModulePlaceholder(entry: {
+  id: ModuleId;
+  title: string;
+  description: string;
+  reads: readonly (keyof DesignProject)[];
+  writes: readonly (keyof DesignProject)[];
+}): ComponentType {
+  const Placeholder: ComponentType = () => {
+    return createElement(
+      'div',
+      {
+        className:
+          'rounded-xl border border-gray-200 bg-white p-8 shadow-xs dark:border-gray-800 dark:bg-gray-900',
+      },
+      createElement(
+        'div',
+        { className: 'mb-6' },
+        createElement(
+          'span',
+          {
+            className:
+              'inline-block rounded-md bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-800 dark:bg-blue-900/60 dark:text-blue-300',
+          },
+          `Module ID: ${entry.id}`
+        ),
+        createElement(
+          'h2',
+          {
+            className:
+              'mt-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100',
+          },
+          entry.title
+        ),
+        createElement(
+          'p',
+          { className: 'mt-1 text-sm text-gray-600 dark:text-gray-400' },
+          entry.description
+        )
+      ),
+      createElement(
+        'div',
+        { className: 'grid grid-cols-1 gap-6 sm:grid-cols-2' },
+        createElement(
+          'div',
+          {
+            className:
+              'rounded-lg border border-gray-100 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950/50',
+          },
+          createElement(
+            'h3',
+            {
+              className:
+                'text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400',
+            },
+            'Reads from DesignProject'
+          ),
+          entry.reads.length > 0
+            ? createElement(
+                'ul',
+                {
+                  className:
+                    'mt-2 list-disc list-inside space-y-1 text-sm text-gray-700 dark:text-gray-300',
+                },
+                entry.reads.map((k) =>
+                  createElement('li', { key: k, className: 'font-mono text-xs' }, k)
+                )
+              )
+            : createElement(
+                'p',
+                { className: 'mt-2 text-sm italic text-gray-500' },
+                'None (standalone inputs)'
+              )
+        ),
+        createElement(
+          'div',
+          {
+            className:
+              'rounded-lg border border-gray-100 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950/50',
+          },
+          createElement(
+            'h3',
+            {
+              className:
+                'text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400',
+            },
+            'Writes to DesignProject'
+          ),
+          entry.writes.length > 0
+            ? createElement(
+                'ul',
+                {
+                  className:
+                    'mt-2 list-disc list-inside space-y-1 text-sm text-gray-700 dark:text-gray-300',
+                },
+                entry.writes.map((k) =>
+                  createElement('li', { key: k, className: 'font-mono text-xs' }, k)
+                )
+              )
+            : createElement(
+                'p',
+                { className: 'mt-2 text-sm italic text-gray-500' },
+                'None (read-only exploration)'
+              )
+        )
+      )
+    );
+  };
+  Placeholder.displayName = `Placeholder_${entry.id}`;
+  return Placeholder;
+}
+
+/**
+ * Lazy helper for static placeholders.
+ */
+function lazyPlaceholder(entry: {
+  id: ModuleId;
+  title: string;
+  description: string;
+  reads: readonly (keyof DesignProject)[];
+  writes: readonly (keyof DesignProject)[];
+}): LazyExoticComponent<ComponentType> {
+  const Component = createModulePlaceholder(entry);
+  return lazy(() => Promise.resolve({ default: Component }));
+}
+
+/**
+ * Pre-warmed dynamic import promise for Sequential Designer page component.
+ */
+const sequentialPagePromise = import('./sequential').then((m) => ({
+  default: m.SequentialPage,
+}));
+
+/**
+ * Registered list of all Phase 1 and Phase 2 modules in the virtual lab.
+ */
+export const MODULE_REGISTRY: readonly ModuleEntry[] = [
+  // --- Phase 1 Modules ---
+  {
+    id: 'number-systems',
+    title: 'Number Systems & Radix Arithmetic',
+    description:
+      'Interactive conversions across binary, octal, decimal, hexadecimal, and signed two-complement representations.',
+    icon: 'binary',
+    reads: [],
+    writes: [],
+    nextModules: [],
+    phase: 1,
+    isAvailable: true,
+    component: lazy(() =>
+      import('./numberSystems').then((m) => ({ default: m.NumberSystemsPage }))
+    ),
+  },
+  {
+    id: 'boolean-tool',
+    title: 'Boolean Expression Analysis',
+    description:
+      'Symbolic AST parsing, step-by-step algebraic simplification, and truth table generation.',
+    icon: 'code',
+    reads: ['variables', 'expression', 'truthTable'],
+    writes: ['variables', 'expression', 'truthTable'],
+    nextModules: ['kmap-solver'],
+    phase: 1,
+    isAvailable: true,
+    component: lazy(() =>
+      import('./boolean').then((m) => ({ default: m.BooleanPage }))
+    ),
+  },
+  {
+    id: 'kmap-solver',
+    title: 'Karnaugh Map Minimizer',
+    description:
+      '2 to 5 variable K-Maps with prime implicant grouping and Quine-McCluskey minimization.',
+    icon: 'grid',
+    reads: ['variables', 'expression', 'truthTable', 'kmap'],
+    writes: ['kmap', 'minimizedExpression'],
+    nextModules: ['circuit-simulator'],
+    phase: 1,
+    isAvailable: true,
+    component: lazy(() =>
+      import('./kmap').then((m) => ({ default: m.KMapPage }))
+    ),
+  },
+  {
+    id: 'circuit-simulator',
+    title: 'Digital Circuit Schematic Simulator',
+    description:
+      'Gate-level interactive canvas with discrete-event propagation, timing diagrams, and probe analysis.',
+    icon: 'cpu',
+    reads: ['circuit', 'minimizedExpression'],
+    writes: ['circuit', 'simulationTrace'],
+    nextModules: [],
+    phase: 1,
+    isAvailable: true,
+    component: lazy(() =>
+      import('./circuit').then((m) => ({ default: m.CircuitPage }))
+    ),
+  },
+  {
+    id: 'flipflop-simulator',
+    title: 'Flip-Flop & Latch Workbench',
+    description:
+      'Bistable multivibrator analysis for SR, JK, D, and T flip-flops with clock timing traces.',
+    icon: 'toggle',
+    reads: ['flipFlopType'],
+    writes: ['flipFlopType', 'simulationTrace'],
+    nextModules: ['sequential-designer'],
+    phase: 1,
+    isAvailable: true,
+    component: lazy(() =>
+      import('./flipflop').then((m) => ({ default: m.FlipFlopPage }))
+    ),
+  },
+  {
+    id: 'sequential-designer',
+    title: 'Synchronous Sequential Circuit Designer',
+    description:
+      'Finite State Machine design, state transition diagrams, excitation tables, and lockout verification.',
+    icon: 'git-commit',
+    reads: ['flipFlopType', 'stateDiagram', 'stateTable', 'excitationTable'],
+    writes: [
+      'stateDiagram',
+      'stateTable',
+      'excitationTable',
+      'nextStateEquations',
+    ],
+    nextModules: ['kmap-solver', 'circuit-simulator'],
+    phase: 1,
+    isAvailable: true,
+    component: lazy(() =>
+      sequentialPagePromise
+    ),
+  },
+
+  // --- Phase 2 Modules (Reserved Slots) ---
+  {
+    id: 'alu',
+    title: 'Arithmetic Logic Unit (ALU)',
+    description:
+      'Modular 4-bit and 8-bit multi-function arithmetic and logic processor slice.',
+    icon: 'layers',
+    reads: ['circuit'],
+    writes: ['circuit', 'simulationTrace'],
+    nextModules: ['8086-cpu'],
+    phase: 2,
+    isAvailable: false,
+    component: lazyPlaceholder({
+      id: 'alu',
+      title: 'Arithmetic Logic Unit (ALU)',
+      description: 'Phase 2 Architecture Module.',
+      reads: ['circuit'],
+      writes: ['circuit', 'simulationTrace'],
+    }),
+  },
+  {
+    id: '8086-cpu',
+    title: 'Intel 8086 Microprocessor Architecture',
+    description:
+      'Internal register files, EU/BIU pipelines, and 16-bit segmented memory simulation.',
+    icon: 'box',
+    reads: [],
+    writes: [],
+    nextModules: ['interrupt-controller'],
+    phase: 2,
+    isAvailable: false,
+    component: lazyPlaceholder({
+      id: '8086-cpu',
+      title: 'Intel 8086 Microprocessor Architecture',
+      description: 'Phase 2 Architecture Module.',
+      reads: [],
+      writes: [],
+    }),
+  },
+  {
+    id: 'interrupt-controller',
+    title: 'Programmable Interrupt Controller (8259A)',
+    description:
+      'Priority resolver, interrupt request mask registers, and vector vectoring sequences.',
+    icon: 'activity',
+    reads: [],
+    writes: [],
+    nextModules: [],
+    phase: 2,
+    isAvailable: false,
+    component: lazyPlaceholder({
+      id: 'interrupt-controller',
+      title: 'Programmable Interrupt Controller (8259A)',
+      description: 'Phase 2 Architecture Module.',
+      reads: [],
+      writes: [],
+    }),
+  },
+];
+
+/**
+ * Retrieves a module definition by ID.
+ */
+export function getModule(id: ModuleId): ModuleEntry | undefined {
+  return MODULE_REGISTRY.find((m) => m.id === id);
+}
+
+/**
+ * Retrieves the list of next available modules for a given module.
+ */
+export function getNextModules(id: ModuleId): readonly ModuleEntry[] {
+  const current = getModule(id);
+  if (!current) return [];
+  return current.nextModules
+    .map((nextId) => getModule(nextId))
+    .filter((m): m is ModuleEntry => m !== undefined);
+}
+
+/**
+ * Checks whether the current DesignProject meets all prerequisites for handoff
+ * from a source module to a target module.
+ *
+ * @param project The active project state
+ * @param fromId Originating module ID
+ * @param toId Target destination module ID
+ * @returns Array of human-readable missing prerequisite messages (empty if ready)
+ */
+export function checkHandoffReadiness(
+  project: DesignProject,
+  fromId: ModuleId,
+  toId: ModuleId
+): readonly string[] {
+  const errors: string[] = [];
+
+  if (fromId === 'boolean-tool' && toId === 'kmap-solver') {
+    const hasExpression = project.expression !== null && project.expression !== undefined;
+    const hasTruthTable =
+      project.truthTable &&
+      project.truthTable.rows &&
+      project.truthTable.rows.length > 0;
+
+    if (!hasExpression && !hasTruthTable) {
+      errors.push(
+        'Please enter and parse a Boolean expression or generate a Truth Table before proceeding to the K-Map solver.'
+      );
+    } else {
+      const varCount =
+        project.variables?.length ?? (project.truthTable?.variables.length ?? 0);
+      if (varCount < 2 || varCount > 5) {
+        errors.push(
+          `K-maps support 2 to 5 variables; your expression has ${varCount}.`
+        );
+      }
+    }
+  }
+
+  if (fromId === 'kmap-solver' && toId === 'circuit-simulator') {
+    const hasMinSop = project.minimizedExpression?.sop !== null && project.minimizedExpression?.sop !== undefined;
+    const hasMinPos = project.minimizedExpression?.pos !== null && project.minimizedExpression?.pos !== undefined;
+
+    if (!hasMinSop && !hasMinPos) {
+      errors.push(
+        'Please complete Karnaugh map grouping to obtain a minimized SOP or POS expression before generating the circuit schematic.'
+      );
+    }
+  }
+
+  if (fromId === 'flipflop-simulator' && toId === 'sequential-designer') {
+    if (!project.flipFlopType) {
+      errors.push(
+        'Please select and verify a flip-flop type (SR, JK, D, or T) before designing the sequential state machine.'
+      );
+    }
+  }
+
+  if (fromId === 'sequential-designer' && toId === 'kmap-solver') {
+    const hasExcitation =
+      project.excitationTable &&
+      project.excitationTable.rows &&
+      project.excitationTable.rows.length > 0;
+
+    if (!hasExcitation) {
+      errors.push(
+        'Please derive the flip-flop Excitation Table in the sequential designer before minimizing input equations in the K-Map solver.'
+      );
+    }
+  }
+
+  if (fromId === 'sequential-designer' && toId === 'circuit-simulator') {
+    const hasEquations =
+      project.nextStateEquations &&
+      Object.keys(project.nextStateEquations).length > 0;
+
+    if (!hasEquations) {
+      errors.push(
+        'Please derive the next-state input equations before synthesizing the synchronous circuit schematic.'
+      );
+    }
+  }
+
+  return errors;
+}
+
+/**
+ * Returns the ordered pipeline list for combinational or sequential flows.
+ */
+export function getPipelineFor(
+  flow: 'combinational' | 'sequential'
+): readonly ModuleId[] {
+  return flow === 'combinational'
+    ? COMBINATIONAL_PIPELINE_ORDER
+    : SEQUENTIAL_PIPELINE_ORDER;
+}
