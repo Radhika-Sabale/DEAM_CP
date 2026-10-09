@@ -5,7 +5,6 @@
 
 import type { BoolNode } from '../../types/ast';
 import { toNandOnlyForm, toNorOnlyForm } from '../boolean/universalGates';
-import type { GeneratorStyle } from './generatorTypes';
 
 /**
  * Checks if an AST node is a literal (variable or complemented variable).

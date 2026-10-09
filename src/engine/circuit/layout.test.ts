@@ -11,8 +11,8 @@ import { layoutCircuit } from './layout';
 describe('layoutCircuit', () => {
   const halfAdderGraph: CircuitGraph = {
     nodes: [
-      { id: 'in_A', kind: 'input', label: 'A', x: 0, y: 0 },
-      { id: 'in_B', kind: 'input', label: 'B', x: 0, y: 0 },
+      { id: 'in_A', kind: 'input', label: 'A', x: 0, y: 0, value: 0 },
+      { id: 'in_B', kind: 'input', label: 'B', x: 0, y: 0, value: 0 },
       { id: 'xor1', kind: 'gate', gateType: 'XOR', inputCount: 2, x: 0, y: 0 },
       { id: 'and1', kind: 'gate', gateType: 'AND', inputCount: 2, x: 0, y: 0 },
       { id: 'out_Sum', kind: 'output', label: 'Sum', x: 0, y: 0 },
@@ -30,8 +30,8 @@ describe('layoutCircuit', () => {
 
   const srLatchGraph: CircuitGraph = {
     nodes: [
-      { id: 'in_S', kind: 'input', label: 'S', x: 0, y: 0 },
-      { id: 'in_R', kind: 'input', label: 'R', x: 0, y: 0 },
+      { id: 'in_S', kind: 'input', label: 'S', x: 0, y: 0, value: 0 },
+      { id: 'in_R', kind: 'input', label: 'R', x: 0, y: 0, value: 0 },
       { id: 'nor1', kind: 'gate', gateType: 'NOR', inputCount: 2, x: 0, y: 0 },
       { id: 'nor2', kind: 'gate', gateType: 'NOR', inputCount: 2, x: 0, y: 0 },
       { id: 'out_Q', kind: 'output', label: 'Q', x: 0, y: 0 },
@@ -122,8 +122,8 @@ describe('layoutCircuit', () => {
   it('terminates and lays out master-slave D flip-flop with multiple feedback loops', () => {
     const dffGraph: CircuitGraph = {
       nodes: [
-        { id: 'in_D', kind: 'input', label: 'D', x: 0, y: 0 },
-        { id: 'in_Clk', kind: 'clock', label: 'CLK', x: 0, y: 0, period: 20, dutyCycle: 0.5 },
+        { id: 'in_D', kind: 'input', label: 'D', x: 0, y: 0, value: 0 },
+        { id: 'in_Clk', kind: 'clock', label: 'CLK', x: 0, y: 0, halfPeriod: 10, startValue: 0 },
         { id: 'not_Clk', kind: 'gate', gateType: 'NOT', inputCount: 1, x: 0, y: 0 },
         { id: 'nand1', kind: 'gate', gateType: 'NAND', inputCount: 2, x: 0, y: 0 },
         { id: 'nand2', kind: 'gate', gateType: 'NAND', inputCount: 2, x: 0, y: 0 },

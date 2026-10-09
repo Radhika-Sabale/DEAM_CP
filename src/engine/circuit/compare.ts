@@ -161,13 +161,13 @@ function diagnoseLikelyCauses(
   // 3. Stuck-at-0 and Stuck-at-1
   const allZero = careIndices.every((idx) => actual[idx] === 0);
   const allOne = careIndices.every((idx) => actual[idx] === 1);
-  if (allZero && !intended.every((idx) => intended[idx] === 0)) {
+  if (allZero && !intended.every((val) => val === 0)) {
     causes.push({
       type: 'stuck-at-0',
       message: 'The circuit output is stuck at constant 0 across all care conditions.',
     });
   }
-  if (allOne && !intended.every((idx) => intended[idx] === 1)) {
+  if (allOne && !intended.every((val) => val === 1)) {
     causes.push({
       type: 'stuck-at-1',
       message: 'The circuit output is stuck at constant 1 across all care conditions.',

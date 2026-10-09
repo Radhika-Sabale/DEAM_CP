@@ -29,6 +29,7 @@ describe('geometry engine', () => {
     label: 'A',
     x: 100,
     y: 200,
+    value: 0,
   };
 
   const mockGate3: CircuitNode = {

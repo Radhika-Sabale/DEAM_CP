@@ -155,6 +155,10 @@ function lazyPlaceholder(entry: {
   return lazy(() => Promise.resolve({ default: Component }));
 }
 
+const flipflopPagePromise = import('./flipflop').then((m) => ({
+  default: m.FlipFlopPage,
+}));
+
 /**
  * Pre-warmed dynamic import promise for Sequential Designer page component.
  */
@@ -239,7 +243,7 @@ export const MODULE_REGISTRY: readonly ModuleEntry[] = [
     phase: 1,
     isAvailable: true,
     component: lazy(() =>
-      import('./flipflop').then((m) => ({ default: m.FlipFlopPage }))
+      flipflopPagePromise
     ),
   },
   {
@@ -260,6 +264,83 @@ export const MODULE_REGISTRY: readonly ModuleEntry[] = [
     isAvailable: true,
     component: lazy(() =>
       sequentialPagePromise
+    ),
+  },
+
+  // --- Research, Practice & Analytics Modules ---
+  {
+    id: 'practice',
+    title: 'Adaptive Practice Workbench',
+    description:
+      'Targeted multi-step practice problems with intelligent hints and misconception diagnosis.',
+    icon: 'activity',
+    reads: [],
+    writes: [],
+    nextModules: [],
+    phase: 1,
+    isAvailable: true,
+    component: lazy(() =>
+      import('./practice/PracticePage').then((m) => ({ default: m.PracticePage }))
+    ),
+  },
+  {
+    id: 'quiz',
+    title: 'Conceptual Diagnostic Quizzes',
+    description:
+      'Topic-based formative multiple-choice quizzes with distractor misconception feedback.',
+    icon: 'code',
+    reads: [],
+    writes: [],
+    nextModules: [],
+    phase: 1,
+    isAvailable: true,
+    component: lazy(() =>
+      import('./practice/QuizPage').then((m) => ({ default: m.QuizPage }))
+    ),
+  },
+  {
+    id: 'prepost-test',
+    title: 'Pre/Post Diagnostic Assessment',
+    description:
+      'Form A/B diagnostic assessment for research evaluation of student learning gains.',
+    icon: 'layers',
+    reads: [],
+    writes: [],
+    nextModules: [],
+    phase: 1,
+    isAvailable: true,
+    component: lazy(() =>
+      import('./research/PrePostTestPage').then((m) => ({ default: m.PrePostTestPage }))
+    ),
+  },
+  {
+    id: 'sus-survey',
+    title: 'System Usability Scale (SUS)',
+    description:
+      'Standardized 10-item instrument measuring system usability and subjective learnability.',
+    icon: 'activity',
+    reads: [],
+    writes: [],
+    nextModules: [],
+    phase: 1,
+    isAvailable: true,
+    component: lazy(() =>
+      import('./research/SusPage').then((m) => ({ default: m.SusPage }))
+    ),
+  },
+  {
+    id: 'teacher-dashboard',
+    title: 'Teacher & Researcher Dashboard',
+    description:
+      'Local multi-student telemetry analysis, error pattern diagnostics, and learning metrics.',
+    icon: 'grid',
+    reads: [],
+    writes: [],
+    nextModules: [],
+    phase: 1,
+    isAvailable: true,
+    component: lazy(() =>
+      import('./research/TeacherDashboard').then((m) => ({ default: m.TeacherDashboard }))
     ),
   },
 

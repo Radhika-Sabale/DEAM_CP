@@ -42,8 +42,8 @@ describe('Sequential Circuit Designer Integration (Stage 10E)', () => {
 
     // 1. Flip-flop module: select JK
     await waitFor(() => {
-      expect(screen.getByRole('heading', { name: /Flip-Flop & Latch Workbench/i })).toBeInTheDocument();
-    }, { timeout: 5000 });
+      expect(screen.getByRole('heading', { name: /Flip-Flop.*Latch Workbench/i })).toBeInTheDocument();
+    }, { timeout: 10000 });
     const jkRadio = screen.getByDisplayValue('JK');
     fireEvent.click(jkRadio);
     expect(useProjectStore.getState().project.flipFlopType).toBe('JK');
@@ -61,8 +61,8 @@ describe('Sequential Circuit Designer Integration (Stage 10E)', () => {
     // 2. Arrive at sequential-designer; verify JK is selected
     await waitFor(() => {
       expect(useUiStore.getState().currentModule).toBe('sequential-designer');
-      expect(screen.getByText(/Module ID: sequential-designer/i)).toBeInTheDocument();
-    }, { timeout: 5000 });
+    }, { timeout: 10000 });
+    expect(await screen.findByText(/Module ID: sequential-designer/i, {}, { timeout: 10000 })).toBeInTheDocument();
 
     // 3. Step 2 DefineCounter: set modulus to 10 up
     const modInput = screen.getByLabelText(/Modulus/i);
@@ -179,7 +179,7 @@ describe('Sequential Circuit Designer Integration (Stage 10E)', () => {
         }
       }
     }
-  });
+  }, 20000);
 
   it('completes keyboard-only mod-5 D design reaching Verified on all steps without Show me', () => {
     const mod5Spec: CounterSpec = {

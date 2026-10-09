@@ -36,6 +36,12 @@ export type ModuleId =
   | 'circuit-simulator'
   | 'flipflop-simulator'
   | 'sequential-designer'
+  // Stage 11C Research & Practice Modules
+  | 'practice'
+  | 'quiz'
+  | 'prepost-test'
+  | 'sus-survey'
+  | 'teacher-dashboard'
   // Phase 2 Modules (Reserved)
   | 'alu'
   | '8086-cpu'

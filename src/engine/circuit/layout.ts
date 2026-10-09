@@ -10,7 +10,7 @@
  */
 
 import type { CircuitGraph, CircuitNode } from '../../types/circuit';
-import { nodeSize, snapToGrid, GRID } from './geometry';
+import { nodeSize, snapToGrid } from './geometry';
 import { buildIndex } from './graphIndex';
 import { topologicalLevels } from './graphTarjan';
 

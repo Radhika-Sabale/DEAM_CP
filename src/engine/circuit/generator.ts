@@ -108,7 +108,7 @@ export function generateCircuit(request: GenerateCircuitRequest): GenerateCircui
   const inputMap = new Map<string, string>();
   for (const v of request.variables) {
     const id = `in_${v}`;
-    nodes.push({ id, kind: 'input', label: v, x: 0, y: 0 });
+    nodes.push({ id, kind: 'input', label: v, x: 0, y: 0, value: 0 });
     inputMap.set(v, id);
   }
 
