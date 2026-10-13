@@ -1,0 +1,308 @@
+{
+  "moduleId": "number-systems",
+  "description": "Seed problems for Number Systems and Radix Arithmetic",
+  "problems": [
+    {
+      "id": "num-dec-156-bin",
+      "moduleId": "number-systems",
+      "difficulty": "easy",
+      "title": "Convert 156 (decimal) to binary",
+      "statement": "Convert the decimal integer 156 into its unsigned binary representation using repeated division by 2.",
+      "parameters": {
+        "decimal": 156,
+        "targetRadix": 2
+      },
+      "steps": [
+        {
+          "key": "division-156-to-bin",
+          "prompt": "Divide 156 repeatedly by 2 and list the remainders from bottom to top.",
+          "expected": {
+            "kind": "number-conversion-step",
+            "sourceValue": "156",
+            "sourceRadix": 10,
+            "targetRadix": 2,
+            "intermediateWork": [
+              "156 ÷ 2 = 78 R 0",
+              "78 ÷ 2 = 39 R 0",
+              "39 ÷ 2 = 19 R 1",
+              "19 ÷ 2 = 9 R 1",
+              "9 ÷ 2 = 4 R 1",
+              "4 ÷ 2 = 2 R 0",
+              "2 ÷ 2 = 1 R 0",
+              "1 ÷ 2 = 0 R 1"
+            ],
+            "finalAnswer": "10011100"
+          },
+          "kind": "number-conversion-step"
+        }
+      ],
+      "finalAnswer": "10011100",
+      "explanation": [
+        "Divide 156 by 2 repeatedly: 156 = 78*2+0, 78 = 39*2+0, 39 = 19*2+1, 19 = 9*2+1, 9 = 4*2+1, 4 = 2*2+0, 2 = 1*2+0, 1 = 0*2+1. Reading remainders from bottom (MSB) to top (LSB) gives 10011100."
+      ],
+      "learningObjective": "Apply the repeated division-by-radix algorithm to convert decimal integers to binary with correct remainder ordering.",
+      "tags": [
+        "wrong-remainder-order"
+      ],
+      "projectSeed": {
+        "targetModule": "number-systems"
+      }
+    },
+    {
+      "id": "num-frac-06875-bin",
+      "moduleId": "number-systems",
+      "difficulty": "medium",
+      "title": "Convert 0.6875 (decimal) to binary",
+      "statement": "Convert the fractional decimal value 0.6875 to its binary representation using repeated multiplication by 2.",
+      "parameters": {
+        "decimal": 0.6875,
+        "targetRadix": 2
+      },
+      "steps": [
+        {
+          "key": "frac-06875-to-bin",
+          "prompt": "Multiply 0.6875 by 2 repeatedly, recording each integer part.",
+          "kind": "circuit-step",
+          "expected": {
+            "kind": "circuit-step",
+            "value": "0.1011"
+          },
+          "context": {
+            "expectedValue": "0.1011"
+          }
+        }
+
+      ],
+      "finalAnswer": "0.1011",
+      "explanation": [
+        "Multiply fractional part by 2: 0.6875*2 = 1.375 (take 1), 0.375*2 = 0.75 (take 0), 0.75*2 = 1.5 (take 1), 0.5*2 = 1.0 (take 1). Reading integer bits from top to bottom gives 0.1011."
+      ],
+      "learningObjective": "Convert fractional decimal numbers into fixed-point binary using repeated multiplication.",
+      "tags": [
+        "wrong-bit-order"
+      ],
+      "projectSeed": {
+        "targetModule": "number-systems"
+      }
+    },
+    {
+      "id": "num-hex-3fa-dec",
+      "moduleId": "number-systems",
+      "difficulty": "easy",
+      "title": "Convert 3FA (hexadecimal) to decimal",
+      "statement": "Convert the hexadecimal number 3FA into decimal using positional weights.",
+      "parameters": {
+        "hex": "3FA",
+        "targetRadix": 10
+      },
+      "steps": [
+        {
+          "key": "hex-3fa-to-dec",
+          "prompt": "Evaluate the polynomial expansion of 3FA base 16.",
+          "expected": {
+            "kind": "number-conversion-step",
+            "sourceValue": "3FA",
+            "sourceRadix": 16,
+            "targetRadix": 10,
+            "intermediateWork": [
+              "3 × 16² = 768",
+              "15 × 16¹ = 240",
+              "10 × 16⁰ = 10"
+            ],
+            "finalAnswer": "1018"
+          },
+          "kind": "number-conversion-step"
+        }
+      ],
+      "finalAnswer": "1018",
+      "explanation": [
+        "Expand in powers of 16: (3 * 16^2) + (15 * 16^1) + (10 * 16^0) = 768 + 240 + 10 = 1018."
+      ],
+      "learningObjective": "Evaluate hexadecimal numbers in decimal using positional base-16 weighting.",
+      "tags": [
+        "wrong-radix-weight"
+      ],
+      "projectSeed": {
+        "targetModule": "number-systems"
+      }
+    },
+    {
+      "id": "num-add-signed-4bit-overflow",
+      "moduleId": "number-systems",
+      "difficulty": "medium",
+      "title": "Signed 4-bit addition: 7 + 5 (overflow detection)",
+      "statement": "Perform binary addition of +7 (0111) and +5 (0101) in a 4-bit two's complement system and check for arithmetic overflow.",
+      "parameters": {
+        "a": "0111",
+        "b": "0101",
+        "width": 4,
+        "signed": true
+      },
+      "steps": [
+        {
+          "key": "add-7-plus-5",
+          "prompt": "Add 0111 and 0101 in 4-bit binary, identifying the sum bits and overflow flag.",
+          "expected": {
+            "kind": "number-conversion-step",
+            "sourceValue": "0111 + 0101",
+            "sourceRadix": 2,
+            "targetRadix": 2,
+            "intermediateWork": [
+              "0111 + 0101 = 1100",
+              "Carry in to sign bit = 1, Carry out = 0",
+              "V = 1 (overflow)"
+            ],
+            "finalAnswer": "1100"
+          },
+          "kind": "number-conversion-step",
+          "context": {
+            "claimedLaw": "binary-addition",
+            "bitWidth": 4,
+            "isSigned": true
+          }
+        }
+      ],
+      "finalAnswer": "1100",
+      "explanation": [
+        "Adding 0111 (+7) and 0101 (+5) yields 1100. In 4-bit signed representation, 1100 represents -4 because the sign bit inverted from two positive operands. Since Cin to MSB is 1 and Cout from MSB is 0, overflow flag V = 1 XOR 0 = 1."
+      ],
+      "learningObjective": "Detect arithmetic overflow in signed two's complement addition using sign bit divergence and carry flags.",
+      "tags": [
+        "wrong-overflow-rule"
+      ],
+      "projectSeed": {
+        "targetModule": "number-systems"
+      }
+    },
+    {
+      "id": "num-add-signed-8bit-127-plus-1",
+      "moduleId": "number-systems",
+      "difficulty": "hard",
+      "title": "Signed 8-bit addition: 127 + 1 (overflow detection)",
+      "statement": "Perform addition of +127 (01111111) and +1 (00000001) in an 8-bit two's complement system.",
+      "parameters": {
+        "a": "01111111",
+        "b": "00000001",
+        "width": 8,
+        "signed": true
+      },
+      "steps": [
+        {
+          "key": "add-127-plus-1",
+          "prompt": "Add 01111111 and 00000001 in 8 bits and check the overflow condition.",
+          "expected": {
+            "kind": "number-conversion-step",
+            "sourceValue": "01111111 + 00000001",
+            "sourceRadix": 2,
+            "targetRadix": 2,
+            "intermediateWork": [
+              "01111111 + 00000001 = 10000000",
+              "V = 1 (overflow)"
+            ],
+            "finalAnswer": "10000000"
+          },
+          "kind": "number-conversion-step",
+          "context": {
+            "claimedLaw": "binary-addition",
+            "bitWidth": 8,
+            "isSigned": true
+          }
+        }
+      ],
+      "finalAnswer": "10000000",
+      "explanation": [
+        "Adding 01111111 (+127) and 00000001 (+1) gives 10000000. Maximum positive signed 8-bit integer is +127. 10000000 represents -128, which violates the range. Hence overflow flag V = 1."
+      ],
+      "learningObjective": "Verify boundary overflow in 8-bit two's complement arithmetic.",
+      "tags": [
+        "wrong-overflow-rule"
+      ],
+      "projectSeed": {
+        "targetModule": "number-systems"
+      }
+    },
+    {
+      "id": "num-twos-comp-neg5",
+      "moduleId": "number-systems",
+      "difficulty": "easy",
+      "title": "Two's complement representation of -5 in 8 bits",
+      "statement": "Find the 8-bit two's complement binary representation of -5.",
+      "parameters": {
+        "value": -5,
+        "width": 8
+      },
+      "steps": [
+        {
+          "key": "twos-comp-neg5",
+          "prompt": "Invert the 8-bit representation of +5 (00000101) and add 1.",
+          "expected": {
+            "kind": "number-conversion-step",
+            "sourceValue": "00000101",
+            "sourceRadix": 2,
+            "targetRadix": 2,
+            "intermediateWork": [
+              "+5 in 8 bits = 00000101",
+              "Invert bits (1s comp) = 11111010",
+              "Add 1 (2s comp) = 11111011"
+            ],
+            "finalAnswer": "11111011"
+          },
+          "kind": "number-conversion-step",
+          "context": {
+            "claimedLaw": "twos-complement",
+            "bitWidth": 8
+          }
+        }
+      ],
+      "finalAnswer": "11111011",
+      "explanation": [
+        "Write +5 in 8 bits: 00000101. Invert all bits to form one's complement: 11111010. Add 1 to LSB to form two's complement: 11111011."
+      ],
+      "learningObjective": "Encode negative numbers into fixed-width two's complement representation.",
+      "tags": [
+        "wrong-complement"
+      ],
+      "projectSeed": {
+        "targetModule": "number-systems"
+      }
+    },
+    {
+      "id": "num-bcd-add-9-plus-8",
+      "moduleId": "number-systems",
+      "difficulty": "medium",
+      "title": "BCD addition: 9 + 8 with decimal correction",
+      "statement": "Add BCD digits 9 (1001) and 8 (1000) using 8421 BCD rules and apply the +6 (0110) decimal adjustment.",
+      "parameters": {
+        "a": "1001",
+        "b": "1000",
+        "code": "8421"
+      },
+      "steps": [
+        {
+          "key": "bcd-add-9-8",
+          "prompt": "Add 1001 and 1000 in binary, detect invalid BCD (> 9), and add 0110.",
+          "kind": "circuit-step",
+          "expected": {
+            "kind": "circuit-step",
+            "value": "00010111"
+          },
+          "context": {
+            "expectedValue": "00010111"
+          }
+        }
+      ],
+      "finalAnswer": "00010111",
+      "explanation": [
+        "1001 + 1000 = 10001 (17). Because the sum exceeds 9 (and has carry), add 6 (0110): 10001 + 0110 = 10111. Packaged as 2 BCD digits: 0001 0111 (representing 17)."
+      ],
+      "learningObjective": "Execute BCD addition with carry detection and decimal adjustment correction (+6).",
+      "tags": [
+        "other",
+        "wrong-carry-propagation"
+      ],
+      "projectSeed": {
+        "targetModule": "number-systems"
+      }
+    }
+  ]
+}

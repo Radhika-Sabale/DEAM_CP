@@ -1,0 +1,475 @@
+{
+  "moduleId": "flipflop-simulator",
+  "problems": [
+    {
+      "id": "ff-jk-excitation-table",
+      "moduleId": "flipflop-simulator",
+      "difficulty": "easy",
+      "title": "JK Flip-Flop Excitation Table Derivation",
+      "statement": "Derive the required inputs J and K for each possible state transition (0->0, 0->1, 1->0, 1->1) of a JK flip-flop.",
+      "parameters": {
+        "flipFlop": "JK"
+      },
+      "steps": [
+        {
+          "key": "trans-00-J",
+          "prompt": "For present state Q=0 transitioning to next state Q+=0, determine required input J (0, 1, or X).",
+          "kind": "excitation-entry",
+          "expected": {
+            "kind": "excitation-entry",
+            "flipFlop": "JK",
+            "inputValues": { "J": 0 }
+          },
+          "context": {
+            "type": "JK",
+            "q": 0,
+            "qNext": 0,
+            "inputName": "J"
+          }
+        },
+        {
+          "key": "trans-00-K",
+          "prompt": "For present state Q=0 transitioning to next state Q+=0, determine required input K (0, 1, or X).",
+          "kind": "excitation-entry",
+          "expected": {
+            "kind": "excitation-entry",
+            "flipFlop": "JK",
+            "inputValues": { "K": "X" }
+          },
+          "context": {
+            "type": "JK",
+            "q": 0,
+            "qNext": 0,
+            "inputName": "K"
+          }
+        },
+        {
+          "key": "trans-01-J",
+          "prompt": "For present state Q=0 transitioning to next state Q+=1, determine required input J (0, 1, or X).",
+          "kind": "excitation-entry",
+          "expected": {
+            "kind": "excitation-entry",
+            "flipFlop": "JK",
+            "inputValues": { "J": 1 }
+          },
+          "context": {
+            "type": "JK",
+            "q": 0,
+            "qNext": 1,
+            "inputName": "J"
+          }
+        },
+        {
+          "key": "trans-01-K",
+          "prompt": "For present state Q=0 transitioning to next state Q+=1, determine required input K (0, 1, or X).",
+          "kind": "excitation-entry",
+          "expected": {
+            "kind": "excitation-entry",
+            "flipFlop": "JK",
+            "inputValues": { "K": "X" }
+          },
+          "context": {
+            "type": "JK",
+            "q": 0,
+            "qNext": 1,
+            "inputName": "K"
+          }
+        },
+        {
+          "key": "trans-10-J",
+          "prompt": "For present state Q=1 transitioning to next state Q+=0, determine required input J (0, 1, or X).",
+          "kind": "excitation-entry",
+          "expected": {
+            "kind": "excitation-entry",
+            "flipFlop": "JK",
+            "inputValues": { "J": "X" }
+          },
+          "context": {
+            "type": "JK",
+            "q": 1,
+            "qNext": 0,
+            "inputName": "J"
+          }
+        },
+        {
+          "key": "trans-10-K",
+          "prompt": "For present state Q=1 transitioning to next state Q+=0, determine required input K (0, 1, or X).",
+          "kind": "excitation-entry",
+          "expected": {
+            "kind": "excitation-entry",
+            "flipFlop": "JK",
+            "inputValues": { "K": 1 }
+          },
+          "context": {
+            "type": "JK",
+            "q": 1,
+            "qNext": 0,
+            "inputName": "K"
+          }
+        },
+        {
+          "key": "trans-11-J",
+          "prompt": "For present state Q=1 transitioning to next state Q+=1, determine required input J (0, 1, or X).",
+          "kind": "excitation-entry",
+          "expected": {
+            "kind": "excitation-entry",
+            "flipFlop": "JK",
+            "inputValues": { "J": "X" }
+          },
+          "context": {
+            "type": "JK",
+            "q": 1,
+            "qNext": 1,
+            "inputName": "J"
+          }
+        },
+        {
+          "key": "trans-11-K",
+          "prompt": "For present state Q=1 transitioning to next state Q+=1, determine required input K (0, 1, or X).",
+          "kind": "excitation-entry",
+          "expected": {
+            "kind": "excitation-entry",
+            "flipFlop": "JK",
+            "inputValues": { "K": 0 }
+          },
+          "context": {
+            "type": "JK",
+            "q": 1,
+            "qNext": 1,
+            "inputName": "K"
+          }
+        }
+      ],
+      "finalAnswer": {
+        "0->0": { "J": 0, "K": "X" },
+        "0->1": { "J": 1, "K": "X" },
+        "1->0": { "J": "X", "K": 1 },
+        "1->1": { "J": "X", "K": 0 }
+      },
+      "explanation": [
+        "Transition 0->0 can be achieved via No Change (J=0, K=0) or Reset (J=0, K=1), so J must be 0 while K is a don't-care (X).",
+        "K is unconstrained because both K=0 (hold) and K=1 (reset) maintain Q=0.",
+        "Transition 0->1 can be achieved via Set (J=1, K=0) or Toggle (J=1, K=1), so J must be 1 while K is a don't-care (X).",
+        "K is unconstrained because both K=0 (set) and K=1 (toggle) force Q to 1.",
+        "Transition 1->0 can be achieved via Reset (J=0, K=1) or Toggle (J=1, K=1), so J is a don't-care (X) while K must be 1.",
+        "K must be 1 to either reset or toggle the flip-flop to 0.",
+        "Transition 1->1 can be achieved via No Change (J=0, K=0) or Set (J=1, K=0), so J is a don't-care (X) while K must be 0.",
+        "K must be 0 to prevent resetting or toggling away from state 1."
+      ],
+      "learningObjective": "Derive excitation table entries for the JK flip-flop by identifying hold, set, reset, and toggle transitions.",
+      "tags": ["wrong-excitation-table", "confused-q-and-qnext"],
+      "projectSeed": {
+        "flipFlopType": "JK"
+      }
+    },
+    {
+      "id": "ff-t-characteristic-equation",
+      "moduleId": "flipflop-simulator",
+      "difficulty": "easy",
+      "title": "T Flip-Flop Characteristic Equation",
+      "statement": "Derive the next-state characteristic equation Q(next) for a T flip-flop from its characteristic truth table.",
+      "parameters": {
+        "flipFlop": "T"
+      },
+      "steps": [
+        {
+          "key": "t-row-00",
+          "prompt": "Evaluate next state Q+ for T = 0 and present state Q = 0.",
+          "kind": "ff-characteristic-row",
+          "expected": {
+            "kind": "state-table-row",
+            "nextState": "0"
+          },
+          "context": {
+            "type": "T",
+            "inputs": [0],
+            "q": 0
+          }
+        },
+        {
+          "key": "t-row-01",
+          "prompt": "Evaluate next state Q+ for T = 0 and present state Q = 1.",
+          "kind": "ff-characteristic-row",
+          "expected": {
+            "kind": "state-table-row",
+            "nextState": "1"
+          },
+          "context": {
+            "type": "T",
+            "inputs": [0],
+            "q": 1
+          }
+        },
+        {
+          "key": "t-row-10",
+          "prompt": "Evaluate next state Q+ for T = 1 and present state Q = 0.",
+          "kind": "ff-characteristic-row",
+          "expected": {
+            "kind": "state-table-row",
+            "nextState": "1"
+          },
+          "context": {
+            "type": "T",
+            "inputs": [1],
+            "q": 0
+          }
+        },
+        {
+          "key": "t-row-11",
+          "prompt": "Evaluate next state Q+ for T = 1 and present state Q = 1.",
+          "kind": "ff-characteristic-row",
+          "expected": {
+            "kind": "state-table-row",
+            "nextState": "0"
+          },
+          "context": {
+            "type": "T",
+            "inputs": [1],
+            "q": 1
+          }
+        },
+        {
+          "key": "t-equation",
+          "prompt": "Express next state Q+ as a minimal Boolean function of T and Q.",
+          "kind": "boolean-step",
+          "expected": {
+            "kind": "boolean-step",
+            "resultingExpression": "T ^ Q",
+            "appliedLaw": "Definition of XOR"
+          }
+        }
+      ],
+      "finalAnswer": "T ^ Q",
+      "explanation": [
+        "When T = 0, the flip-flop maintains its current state (Q+ = 0 when Q = 0).",
+        "When T = 0, holding state gives Q+ = 1 when Q = 1.",
+        "When T = 1, the flip-flop toggles its output (Q+ = 1 when starting from Q = 0).",
+        "When T = 1, toggling from Q = 1 yields Q+ = 0.",
+        "The characteristic truth table outputs 1 when T != Q, which is precisely the XOR function: Q+ = T ^ Q (or TQ' + T'Q)."
+      ],
+      "learningObjective": "Construct the characteristic table of a T flip-flop and recognize that the next state is the XOR of T and Q.",
+      "tags": ["confused-q-and-qnext", "wrong-law-applied"],
+      "projectSeed": {
+        "flipFlopType": "T"
+      }
+    },
+    {
+      "id": "ff-sr-invalid-state",
+      "moduleId": "flipflop-simulator",
+      "difficulty": "medium",
+      "title": "SR Latch Invalid Input State Analysis",
+      "statement": "Analyze the operational modes of an active-high SR flip-flop and identify why simultaneous S = 1 and R = 1 produces an indeterminate/forbidden condition.",
+      "parameters": {
+        "flipFlop": "SR"
+      },
+      "steps": [
+        {
+          "key": "sr-hold",
+          "prompt": "Evaluate next state Q+ when S = 0, R = 0, starting from present state Q = 0.",
+          "kind": "ff-characteristic-row",
+          "expected": {
+            "kind": "state-table-row",
+            "nextState": "0"
+          },
+          "context": {
+            "type": "SR",
+            "inputs": [0, 0],
+            "q": 0
+          }
+        },
+        {
+          "key": "sr-reset",
+          "prompt": "Evaluate next state Q+ when S = 0, R = 1, starting from present state Q = 1.",
+          "kind": "ff-characteristic-row",
+          "expected": {
+            "kind": "state-table-row",
+            "nextState": "0"
+          },
+          "context": {
+            "type": "SR",
+            "inputs": [0, 1],
+            "q": 1
+          }
+        },
+        {
+          "key": "sr-set",
+          "prompt": "Evaluate next state Q+ when S = 1, R = 0, starting from present state Q = 0.",
+          "kind": "ff-characteristic-row",
+          "expected": {
+            "kind": "state-table-row",
+            "nextState": "1"
+          },
+          "context": {
+            "type": "SR",
+            "inputs": [1, 0],
+            "q": 0
+          }
+        },
+        {
+          "key": "sr-forbidden",
+          "prompt": "Evaluate next state Q+ when S = 1, R = 1. What is the defined next state?",
+          "kind": "ff-characteristic-row",
+          "expected": {
+            "kind": "state-table-row",
+            "nextState": "X"
+          },
+          "context": {
+            "type": "SR",
+            "inputs": [1, 1],
+            "q": 0
+          }
+        }
+      ],
+      "finalAnswer": "X",
+      "explanation": [
+        "S = 0, R = 0 represents the Hold state; the current value Q = 0 is retained.",
+        "S = 0, R = 1 asserts Reset, forcing next state Q+ = 0.",
+        "S = 1, R = 0 asserts Set, forcing next state Q+ = 1.",
+        "S = 1, R = 1 is the forbidden/invalid state: both outputs Q and Qbar are forced to 0 simultaneously in a NOR latch, and releasing inputs simultaneously produces metastability, leaving the settled state indeterminate (X)."
+      ],
+      "learningObjective": "Explain the operational states of an SR flip-flop and recognize that S = 1, R = 1 violates complementary outputs and causes indeterminate behavior.",
+      "tags": ["confused-q-and-qnext", "other"],
+      "projectSeed": {
+        "flipFlopType": "SR"
+      }
+    },
+    {
+      "id": "ff-jk-race-around",
+      "moduleId": "flipflop-simulator",
+      "difficulty": "hard",
+      "title": "Level-Triggered JK Flip-Flop Race-Around Condition",
+      "statement": "Evaluate race-around toggling in a level-sensitive JK flip-flop where clock pulse width t_w = 40 ns and propagation delay t_pd = 10 ns with continuous inputs J = 1, K = 1.",
+      "parameters": {
+        "flipFlop": "JK",
+        "trigger": "level-high",
+        "pulseWidth": 40,
+        "propagationDelay": 10,
+        "inputs": { "J": 1, "K": 1 }
+      },
+      "steps": [
+        {
+          "key": "toggle-count",
+          "prompt": "Calculate estimated toggle count N = ceil(t_w / t_pd) during the active clock pulse.",
+          "kind": "number-conversion-step",
+          "expected": {
+            "kind": "number-conversion-step",
+            "sourceValue": "4",
+            "sourceRadix": 10,
+            "targetRadix": 10,
+            "intermediateWork": ["40 / 10 = 4"],
+            "finalAnswer": "4"
+          }
+        },
+        {
+          "key": "settled-q",
+          "prompt": "Since N = 4 is an even number of toggles, what is the final state Q relative to initial state Q = 0?",
+          "kind": "ff-characteristic-row",
+          "expected": {
+            "kind": "state-table-row",
+            "nextState": "0"
+          },
+          "context": {
+            "type": "JK",
+            "inputs": [0, 0],
+            "q": 0
+          }
+        },
+        {
+          "key": "edge-remedy",
+          "prompt": "In an edge-triggered or master-slave JK flip-flop, how many times does Q toggle on one clock pulse?",
+          "kind": "ff-characteristic-row",
+          "expected": {
+            "kind": "state-table-row",
+            "nextState": "1"
+          },
+          "context": {
+            "type": "JK",
+            "inputs": [1, 1],
+            "q": 0
+          }
+        }
+      ],
+      "finalAnswer": {
+        "toggleCount": 4,
+        "finalQ": 0,
+        "edgeTriggeredQ": 1
+      },
+      "explanation": [
+        "In a level-sensitive latch with J = 1, K = 1, the output continuously inverts while CLK = 1. With t_w = 40 ns and t_pd = 10 ns, the signal races around N = 40 / 10 = 4 times.",
+        "An even number of toggles (4) returns Q back to its initial value 0; however, real physical delay variance makes the exact final state unpredictable.",
+        "Using master-slave architecture or edge-triggering completely eliminates race-around, ensuring exactly one deterministic toggle per clock cycle (Q+ = 1)."
+      ],
+      "learningObjective": "Calculate the race-around toggle count N = ceil(t_w / t_pd) in level-sensitive flip-flops and describe how edge-triggering resolves this hazard.",
+      "tags": ["wrong-radix-weight", "other"],
+      "projectSeed": {
+        "flipFlopType": "JK"
+      }
+    },
+    {
+      "id": "ff-d-to-t-conversion",
+      "moduleId": "flipflop-simulator",
+      "difficulty": "hard",
+      "title": "Convert D Flip-Flop to T Flip-Flop",
+      "statement": "Synthesize a T flip-flop from an available D flip-flop by deriving the combinational steering logic for input D using the excitation tables of both flip-flops.",
+      "parameters": {
+        "targetFlipFlop": "T",
+        "availableFlipFlop": "D"
+      },
+      "steps": [
+        {
+          "key": "d-exc-01",
+          "prompt": "For transition Q = 0 with T = 1 (target next state Q+ = 1), determine the required D input.",
+          "kind": "excitation-entry",
+          "expected": {
+            "kind": "excitation-entry",
+            "flipFlop": "D",
+            "inputValues": { "D": 1 }
+          },
+          "context": {
+            "type": "D",
+            "q": 0,
+            "qNext": 1,
+            "inputName": "D"
+          }
+        },
+        {
+          "key": "d-exc-10",
+          "prompt": "For transition Q = 1 with T = 1 (target next state Q+ = 0), determine the required D input.",
+          "kind": "excitation-entry",
+          "expected": {
+            "kind": "excitation-entry",
+            "flipFlop": "D",
+            "inputValues": { "D": 0 }
+          },
+          "context": {
+            "type": "D",
+            "q": 1,
+            "qNext": 0,
+            "inputName": "D"
+          }
+        },
+        {
+          "key": "d-equation",
+          "prompt": "Express input D as a minimal Boolean function of T and Q.",
+          "kind": "boolean-step",
+          "expected": {
+            "kind": "boolean-step",
+            "resultingExpression": "T ^ Q",
+            "appliedLaw": "Definition of XOR"
+          }
+        }
+      ],
+      "finalAnswer": "D = T ^ Q",
+      "explanation": [
+        "In a D flip-flop, the excitation requirement is simply D = Q+. When Q = 0 and T = 1, next state Q+ = 1, requiring D = 1.",
+        "When Q = 1 and T = 1, next state Q+ = 0, requiring D = 0.",
+        "Comparing all four combinations yields D = 0 when (T=0, Q=0), D = 1 when (T=0, Q=1), D = 1 when (T=1, Q=0), and D = 0 when (T=1, Q=1). This matches the XOR function: D = T ^ Q (or T'Q + TQ')."
+      ],
+      "learningObjective": "Convert a D flip-flop into a T flip-flop by matching the target next-state behavior to the excitation input requirements.",
+      "tags": ["wrong-excitation-table", "confused-q-and-qnext"],
+      "projectSeed": {
+        "flipFlopType": "D"
+      }
+    }
+  ]
+}

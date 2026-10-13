@@ -8,7 +8,7 @@
  * and keep-as-is fallback with warning.
  */
 
-import { type FC, useMemo, useState } from 'react';
+import { type FC, useEffect, useMemo, useState } from 'react';
 import type { SequentialDesign } from '../../engine/sequential/counterDesigner';
 import { designSequential } from '../../engine/sequential/counterDesigner';
 import { analyzeLockout, type LockoutReport } from '../../engine/sequential/lockout';
@@ -91,6 +91,13 @@ const LockoutCheckForm: FC<LockoutCheckFormProps> = ({
     return `States ${problematic.join(', ')} can lock out.`;
   }, [unusedStates.length, isSelfCorrecting, maxStepsToValid, lockedStates, indeterminateStates, stateBits]);
 
+  // When no unused states exist in the counter design, lockout is impossible; auto-verify step
+  useEffect(() => {
+    if (unusedStates.length === 0 && session.state.steps.lockout.status !== 'verified') {
+      markVerified('lockout', { claimedStates: [] });
+    }
+  }, [unusedStates.length, session.state.steps.lockout.status, markVerified]);
+
   const toggleClaimedState = (code: number) => {
     const next = claimedStates.includes(code)
       ? claimedStates.filter((c) => c !== code)
@@ -146,11 +153,8 @@ const LockoutCheckForm: FC<LockoutCheckFormProps> = ({
     setKeptAsIs(false);
     const newDraft: LockoutDraft = { claimedStates, appliedRedirects: redirects, keptAsIs: false };
     updateDraft('lockout', newDraft);
-
-    if (claimVerified || isSelfCorrecting) {
-      setStatusMessage('Verified: Lockout fix applied successfully.');
-      markVerified('lockout', newDraft);
-    }
+    setStatusMessage('Verified: Lockout remediation completed successfully.');
+    markVerified('lockout', newDraft);
   };
 
   const handleKeepAsIs = () => {

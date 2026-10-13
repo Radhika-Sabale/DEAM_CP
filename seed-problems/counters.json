@@ -1,0 +1,497 @@
+{
+  "moduleId": "sequential-designer",
+  "problems": [
+    {
+      "id": "counter-mod8-down-t",
+      "moduleId": "sequential-designer",
+      "difficulty": "easy",
+      "title": "Mod-8 Synchronous Down Counter with T Flip-Flops",
+      "statement": "Design a 3-bit synchronous down counter cycling through states 7->6->5->4->3->2->1->0->7 using T flip-flops.",
+      "parameters": {
+        "modulus": 8,
+        "direction": "down",
+        "flipFlop": "T",
+        "style": "sync"
+      },
+      "steps": [
+        {
+          "key": "trans-s0",
+          "prompt": "Determine next state from S0 (000) in a down counter.",
+          "kind": "seq-state-table-cell",
+          "expected": {
+            "kind": "state-table-row",
+            "nextState": "7"
+          },
+          "context": {
+            "spec": {
+              "kind": "counter",
+              "modulus": 8,
+              "direction": "down",
+              "flipFlop": "T",
+              "style": "sync"
+            },
+            "code": 0,
+            "field": "next"
+          }
+        },
+        {
+          "key": "trans-s7",
+          "prompt": "Determine next state from S7 (111) in a down counter.",
+          "kind": "seq-state-table-cell",
+          "expected": {
+            "kind": "state-table-row",
+            "nextState": "6"
+          },
+          "context": {
+            "spec": {
+              "kind": "counter",
+              "modulus": 8,
+              "direction": "down",
+              "flipFlop": "T",
+              "style": "sync"
+            },
+            "code": 7,
+            "field": "next"
+          }
+        },
+        {
+          "key": "eq-t0",
+          "prompt": "Derive the simplified excitation Boolean equation for T0 (least-significant bit).",
+          "kind": "seq-equation",
+          "expected": {
+            "kind": "boolean-step",
+            "resultingExpression": "1"
+          },
+          "context": {
+            "spec": {
+              "kind": "counter",
+              "modulus": 8,
+              "direction": "down",
+              "flipFlop": "T",
+              "style": "sync"
+            },
+            "functionName": "T0"
+          }
+        },
+        {
+          "key": "eq-t1",
+          "prompt": "Derive the simplified excitation Boolean equation for T1.",
+          "kind": "seq-equation",
+          "expected": {
+            "kind": "boolean-step",
+            "resultingExpression": "!Q0"
+          },
+          "context": {
+            "spec": {
+              "kind": "counter",
+              "modulus": 8,
+              "direction": "down",
+              "flipFlop": "T",
+              "style": "sync"
+            },
+            "functionName": "T1"
+          }
+        },
+        {
+          "key": "eq-t2",
+          "prompt": "Derive the simplified excitation Boolean equation for T2 (most-significant bit).",
+          "kind": "seq-equation",
+          "expected": {
+            "kind": "boolean-step",
+            "resultingExpression": "!Q1 & !Q0"
+          },
+          "context": {
+            "spec": {
+              "kind": "counter",
+              "modulus": 8,
+              "direction": "down",
+              "flipFlop": "T",
+              "style": "sync"
+            },
+            "functionName": "T2"
+          }
+        }
+      ],
+      "finalAnswer": {
+        "T0": "1",
+        "T1": "!Q0",
+        "T2": "!Q1 & !Q0"
+      },
+      "explanation": [
+        "In down counting, state 0 (000) decrements with wraparound to state 7 (111).",
+        "State 7 (111) decrements to state 6 (110).",
+        "Bit Q0 toggles on every single clock pulse, so T0 is tied constantly to logic 1.",
+        "In a down counter, bit Q1 must toggle whenever Q0 is 0, so T1 = !Q0 (or Q0').",
+        "Bit Q2 must toggle only when both lower bits Q1 and Q0 are 0, giving T2 = !Q1 & !Q0 (or Q1'Q0')."
+      ],
+      "learningObjective": "Derive excitation equations for synchronous down counters using T flip-flops.",
+      "tags": ["wrong-excitation-table", "wrong-law-applied"],
+      "projectSeed": {
+        "flipFlopType": "T",
+        "sequentialSpec": {
+          "kind": "counter",
+          "modulus": 8,
+          "direction": "down",
+          "flipFlop": "T",
+          "style": "sync"
+        }
+      }
+    },
+    {
+      "id": "counter-mod5-sync-jk",
+      "moduleId": "sequential-designer",
+      "difficulty": "medium",
+      "title": "Mod-5 Synchronous Up Counter with JK Flip-Flops",
+      "statement": "Design a Mod-5 (0->1->2->3->4->0) synchronous up counter using three JK flip-flops (Q2, Q1, Q0) with unused states 5, 6, and 7 treated as don't-cares.",
+      "parameters": {
+        "modulus": 5,
+        "direction": "up",
+        "flipFlop": "JK",
+        "style": "sync"
+      },
+      "steps": [
+        {
+          "key": "trans-s4",
+          "prompt": "Determine the next state transition from state S4 (100) for a Mod-5 up counter.",
+          "kind": "seq-state-table-cell",
+          "expected": {
+            "kind": "state-table-row",
+            "nextState": "0"
+          },
+          "context": {
+            "spec": {
+              "kind": "counter",
+              "modulus": 5,
+              "direction": "up",
+              "flipFlop": "JK",
+              "style": "sync"
+            },
+            "code": 4,
+            "field": "next"
+          }
+        },
+        {
+          "key": "eq-j0",
+          "prompt": "Derive the minimal excitation Boolean equation for J0.",
+          "kind": "seq-equation",
+          "expected": {
+            "kind": "boolean-step",
+            "resultingExpression": "!Q2"
+          },
+          "context": {
+            "spec": {
+              "kind": "counter",
+              "modulus": 5,
+              "direction": "up",
+              "flipFlop": "JK",
+              "style": "sync"
+            },
+            "functionName": "J0"
+          }
+        },
+        {
+          "key": "eq-k0",
+          "prompt": "Derive the minimal excitation Boolean equation for K0.",
+          "kind": "seq-equation",
+          "expected": {
+            "kind": "boolean-step",
+            "resultingExpression": "1"
+          },
+          "context": {
+            "spec": {
+              "kind": "counter",
+              "modulus": 5,
+              "direction": "up",
+              "flipFlop": "JK",
+              "style": "sync"
+            },
+            "functionName": "K0"
+          }
+        },
+        {
+          "key": "eq-j2",
+          "prompt": "Derive the minimal excitation Boolean equation for J2.",
+          "kind": "seq-equation",
+          "expected": {
+            "kind": "boolean-step",
+            "resultingExpression": "Q1 & Q0"
+          },
+          "context": {
+            "spec": {
+              "kind": "counter",
+              "modulus": 5,
+              "direction": "up",
+              "flipFlop": "JK",
+              "style": "sync"
+            },
+            "functionName": "J2"
+          }
+        },
+        {
+          "key": "eq-k2",
+          "prompt": "Derive the minimal excitation Boolean equation for K2.",
+          "kind": "seq-equation",
+          "expected": {
+            "kind": "boolean-step",
+            "resultingExpression": "1"
+          },
+          "context": {
+            "spec": {
+              "kind": "counter",
+              "modulus": 5,
+              "direction": "up",
+              "flipFlop": "JK",
+              "style": "sync"
+            },
+            "functionName": "K2"
+          }
+        }
+      ],
+      "finalAnswer": {
+        "J2": "Q1 & Q0",
+        "K2": "1",
+        "J1": "Q0",
+        "K1": "Q0",
+        "J0": "!Q2",
+        "K0": "1"
+      },
+      "explanation": [
+        "In a Mod-5 counter, state 4 (100) must wrap around to state 0 (000).",
+        "Using K-map minimization with unused states 5, 6, 7 as don't-cares, J0 minimizes to !Q2 (inhibiting increment when Q2=1).",
+        "K0 is covered as constant 1 because Q0 resets or toggles on every odd transition.",
+        "J2 must assert only when transitioning from state 3 (011) to state 4 (100), yielding J2 = Q1 & Q0.",
+        "K2 minimizes to constant 1 because state 4 (100) immediately resets Q2 back to 0 on the next pulse."
+      ],
+      "learningObjective": "Synthesize a truncated synchronous counter with JK flip-flops using K-map don't-cares for unused states.",
+      "tags": ["wrong-excitation-table", "missed-dont-cares"],
+      "projectSeed": {
+        "flipFlopType": "JK",
+        "sequentialSpec": {
+          "kind": "counter",
+          "modulus": 5,
+          "direction": "up",
+          "flipFlop": "JK",
+          "style": "sync"
+        }
+      }
+    },
+    {
+      "id": "counter-mod10-sync-d",
+      "moduleId": "sequential-designer",
+      "difficulty": "medium",
+      "title": "Mod-10 (BCD) Synchronous Up Counter with D Flip-Flops",
+      "statement": "Design a 4-bit Mod-10 synchronous decimal up counter (0 to 9) using D flip-flops, leaving binary states 10 to 15 unassigned.",
+      "parameters": {
+        "modulus": 10,
+        "direction": "up",
+        "flipFlop": "D",
+        "style": "sync"
+      },
+      "steps": [
+        {
+          "key": "trans-s9",
+          "prompt": "Determine next state from state S9 (1001) in a BCD decade counter.",
+          "kind": "seq-state-table-cell",
+          "expected": {
+            "kind": "state-table-row",
+            "nextState": "0"
+          },
+          "context": {
+            "spec": {
+              "kind": "counter",
+              "modulus": 10,
+              "direction": "up",
+              "flipFlop": "D",
+              "style": "sync"
+            },
+            "code": 9,
+            "field": "next"
+          }
+        },
+        {
+          "key": "eq-d0",
+          "prompt": "Derive the minimal next-state Boolean equation for D0.",
+          "kind": "seq-equation",
+          "expected": {
+            "kind": "boolean-step",
+            "resultingExpression": "!Q0"
+          },
+          "context": {
+            "spec": {
+              "kind": "counter",
+              "modulus": 10,
+              "direction": "up",
+              "flipFlop": "D",
+              "style": "sync"
+            },
+            "functionName": "D0"
+          }
+        },
+        {
+          "key": "eq-d3",
+          "prompt": "Derive the minimal next-state Boolean equation for D3 (most-significant bit).",
+          "kind": "seq-equation",
+          "expected": {
+            "kind": "boolean-step",
+            "resultingExpression": "Q2 & Q1 & Q0 | Q3 & !Q0"
+          },
+          "context": {
+            "spec": {
+              "kind": "counter",
+              "modulus": 10,
+              "direction": "up",
+              "flipFlop": "D",
+              "style": "sync"
+            },
+            "functionName": "D3"
+          }
+        }
+      ],
+      "finalAnswer": {
+        "D0": "!Q0",
+        "D3": "Q2 & Q1 & Q0 | Q3 & !Q0"
+      },
+      "explanation": [
+        "In a BCD decade counter, state 9 (1001) resets back to 0 (0000).",
+        "D0 continuously toggles between 0 and 1, so D0 = !Q0.",
+        "Bit Q3 turns high at state 8 (reached from state 7 via Q2 & Q1 & Q0) and stays high through state 9 until Q0 clears, yielding D3 = Q2 & Q1 & Q0 | Q3 & !Q0."
+      ],
+      "learningObjective": "Synthesize a 4-bit decade counter using D flip-flops and derive minimal SOP equations with K-map don't-cares.",
+      "tags": ["wrong-excitation-table", "missed-dont-cares"],
+      "projectSeed": {
+        "flipFlopType": "D",
+        "sequentialSpec": {
+          "kind": "counter",
+          "modulus": 10,
+          "direction": "up",
+          "flipFlop": "D",
+          "style": "sync"
+        }
+      }
+    },
+    {
+      "id": "counter-custom-lockout-fix",
+      "moduleId": "sequential-designer",
+      "difficulty": "hard",
+      "title": "Custom Sequence Counter with Lockout Analysis and Self-Correction",
+      "statement": "Analyze a custom synchronous counter cycling through states 0->2->4->6->0 with JK flip-flops. Detect trapped unused states and apply an all-to-initial self-correcting fix.",
+      "parameters": {
+        "sequence": [0, 2, 4, 6],
+        "flipFlop": "JK",
+        "style": "sync"
+      },
+      "steps": [
+        {
+          "key": "trans-s2",
+          "prompt": "Determine next state from state S2 (010) in the custom sequence.",
+          "kind": "seq-state-table-cell",
+          "expected": {
+            "kind": "state-table-row",
+            "nextState": "4"
+          },
+          "context": {
+            "spec": {
+              "kind": "counter",
+              "direction": "custom",
+              "sequence": [0, 2, 4, 6],
+              "flipFlop": "JK",
+              "style": "sync"
+            },
+            "code": 2,
+            "field": "next"
+          }
+        },
+        {
+          "key": "lockout-before",
+          "prompt": "Identify which unused states [1, 3, 5, 7] form an isolated lockout cycle when designed with unconstrained don't-cares.",
+          "kind": "seq-lockout-claim",
+          "expected": {
+            "kind": "state-table-row",
+            "lockedStates": [1, 3, 5, 7]
+          },
+          "context": {
+            "spec": {
+              "kind": "counter",
+              "direction": "custom",
+              "sequence": [0, 2, 4, 6],
+              "flipFlop": "JK",
+              "style": "sync"
+            }
+          }
+        },
+        {
+          "key": "lockout-after",
+          "prompt": "After redirecting unused states {1:0, 3:0, 5:0, 7:0} to initial state S0, verify the remaining locked states.",
+          "kind": "seq-lockout-claim",
+          "expected": {
+            "kind": "state-table-row",
+            "lockedStates": []
+          },
+          "context": {
+            "spec": {
+              "kind": "counter",
+              "direction": "custom",
+              "sequence": [0, 2, 4, 6],
+              "flipFlop": "JK",
+              "style": "sync"
+            },
+            "unusedRedirects": {
+              "1": 0,
+              "3": 0,
+              "5": 0,
+              "7": 0
+            }
+          }
+        },
+        {
+          "key": "eq-j1-fixed",
+          "prompt": "Derive the new excitation equation for J1 with all unused states redirected to S0.",
+          "kind": "seq-equation",
+          "expected": {
+            "kind": "boolean-step",
+            "resultingExpression": "!Q0"
+          },
+          "context": {
+            "spec": {
+              "kind": "counter",
+              "direction": "custom",
+              "sequence": [0, 2, 4, 6],
+              "flipFlop": "JK",
+              "style": "sync"
+            },
+            "unusedRedirects": {
+              "1": 0,
+              "3": 0,
+              "5": 0,
+              "7": 0
+            },
+            "functionName": "J1"
+          }
+        }
+      ],
+      "finalAnswer": {
+        "lockedStatesBefore": [1, 3, 5, 7],
+        "redirects": { "1": 0, "3": 0, "5": 0, "7": 0 },
+        "lockedStatesAfter": []
+      },
+      "explanation": [
+        "In the custom sequence, S2 (010) advances to S4 (100).",
+        "When unused states [1, 3, 5, 7] are treated as unconstrained don't-cares, they form an isolated self-sustaining cycle (1->3->5->7->1), causing circuit lockout.",
+        "Applying deterministic redirects {1:0, 3:0, 5:0, 7:0} ensures any stray power-on state safely recovers to operational state S0 within one clock pulse.",
+        "Re-synthesizing the excitation functions with fixed redirects yields J1 = !Q0."
+      ],
+      "learningObjective": "Diagnose unused state lockout cycles in sequential circuits and apply deterministic redirects to guarantee a self-correcting design.",
+      "tags": ["ignored-lockout-state", "wrong-excitation-table"],
+      "projectSeed": {
+        "flipFlopType": "JK",
+        "sequentialSpec": {
+          "kind": "counter",
+          "direction": "custom",
+          "sequence": [0, 2, 4, 6],
+          "flipFlop": "JK",
+          "style": "sync"
+        }
+      }
+    }
+  ]
+}

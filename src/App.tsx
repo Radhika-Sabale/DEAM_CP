@@ -28,9 +28,33 @@ export const App: FC = () => {
   // We use client-side window.location.hash for routing so the app remains fully static and offline-capable without a server or router package.
   useEffect(() => {
     const handleHashSync = (): void => {
-      const hash = window.location.hash.replace('#', '') as ModuleId;
-      if (MODULE_REGISTRY.some((m) => m.id === hash)) {
-        setModule(hash);
+      const raw = window.location.hash.replace(/^#\/?/, '');
+      const aliasMap: Record<string, ModuleId> = {
+        boolean: 'boolean-tool',
+        'boolean-tool': 'boolean-tool',
+        kmap: 'kmap-solver',
+        'kmap-solver': 'kmap-solver',
+        circuit: 'circuit-simulator',
+        'circuit-simulator': 'circuit-simulator',
+        flipflop: 'flipflop-simulator',
+        'flipflop-simulator': 'flipflop-simulator',
+        sequential: 'sequential-designer',
+        'sequential-designer': 'sequential-designer',
+        'number-systems': 'number-systems',
+        practice: 'practice',
+        quiz: 'quiz',
+        'prepost-test': 'prepost-test',
+        'sus-survey': 'sus-survey',
+        'teacher-dashboard': 'teacher-dashboard',
+        alu: 'alu',
+        '8086-cpu': '8086-cpu',
+        'interrupt-controller': 'interrupt-controller',
+      };
+      const resolved =
+        aliasMap[raw] ||
+        (MODULE_REGISTRY.some((m) => m.id === raw) ? (raw as ModuleId) : undefined);
+      if (resolved) {
+        setModule(resolved);
       }
     };
 

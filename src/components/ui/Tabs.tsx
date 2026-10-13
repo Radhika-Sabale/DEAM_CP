@@ -93,11 +93,11 @@ export const Tabs: FC<TabsProps> = ({
   const activeTab = tabs.find((t) => t.id === activeTabId);
 
   return (
-    <div className={`w-full ${className}`}>
+    <div className={`w-full min-w-0 max-w-full ${className}`}>
       <div
         role="tablist"
         aria-orientation="horizontal"
-        className="flex space-x-1 border-b border-gray-200 dark:border-gray-800"
+        className="flex space-x-1 border-b border-gray-200 dark:border-gray-800 overflow-x-auto"
       >
         {tabs.map((tab, idx) => {
           const isSelected = tab.id === activeTabId;

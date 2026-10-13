@@ -1,0 +1,316 @@
+{
+  "moduleId": "kmap-solver",
+  "description": "Seed problems for Karnaugh Map Minimization and Quine-McCluskey Optimization",
+  "problems": [
+    {
+      "id": "kmap-essentials-only-4var",
+      "moduleId": "kmap-solver",
+      "difficulty": "easy",
+      "title": "Essential prime implicants only: F = BD",
+      "statement": "Minimize the 4-variable function F(A,B,C,D) = Σm(5, 7, 13, 15) using a Karnaugh map.",
+      "parameters": {
+        "variableCount": 4,
+        "variables": ["A", "B", "C", "D"],
+        "minterms": [5, 7, 13, 15],
+        "dontCares": [],
+        "mode": "SOP"
+      },
+      "steps": [
+        {
+          "key": "group-essential-bd",
+          "prompt": "Identify the maximal group covering all minterms {5, 7, 13, 15}.",
+          "expected": {
+            "kind": "kmap-group-set",
+            "groups": [
+              [5, 7, 13, 15]
+            ],
+            "expression": "BD"
+          },
+          "kind": "kmap-group-set",
+          "context": {
+            "kmap": {
+              "variableCount": 4,
+              "minterms": [5, 7, 13, 15],
+              "dontCares": [],
+              "mode": "SOP",
+              "variableNames": ["A", "B", "C", "D"]
+            }
+          }
+        }
+      ],
+      "finalAnswer": "BD",
+      "explanation": [
+        "Minterms m5 (0101), m7 (0111), m13 (1101), and m15 (1111) form a contiguous 2x2 square in columns CD=01, 11 across rows AB=01, 11. The common literals are B=1 and D=1, giving BD as the single essential prime implicant."
+      ],
+      "learningObjective": "Form a maximal rectangular group of size 4 on a 4-variable K-map and extract the minimal product term.",
+      "tags": [
+        "group-not-maximal"
+      ],
+      "projectSeed": {
+        "targetModule": "kmap-solver",
+        "variables": ["A", "B", "C", "D"],
+        "minterms": [5, 7, 13, 15]
+      }
+    },
+    {
+      "id": "kmap-four-corners-wraparound",
+      "moduleId": "kmap-solver",
+      "difficulty": "medium",
+      "title": "Four-corner wrap-around grouping: F = B'D'",
+      "statement": "Find the minimal SOP expression for F(A,B,C,D) = Σm(0, 2, 8, 10) utilizing toroidal edge adjacency.",
+      "parameters": {
+        "variableCount": 4,
+        "variables": ["A", "B", "C", "D"],
+        "minterms": [0, 2, 8, 10],
+        "dontCares": [],
+        "mode": "SOP"
+      },
+      "steps": [
+        {
+          "key": "group-four-corners",
+          "prompt": "Circle the four corners {0, 2, 8, 10} as a single group of 4.",
+          "expected": {
+            "kind": "kmap-group-set",
+            "groups": [
+              [0, 2, 8, 10]
+            ],
+            "expression": "B'D'"
+          },
+          "kind": "kmap-group-set",
+          "context": {
+            "kmap": {
+              "variableCount": 4,
+              "minterms": [0, 2, 8, 10],
+              "dontCares": [],
+              "mode": "SOP",
+              "variableNames": ["A", "B", "C", "D"]
+            }
+          }
+        }
+      ],
+      "finalAnswer": "B'D'",
+      "explanation": [
+        "Cells 0 (0000), 2 (0010), 8 (1000), and 10 (1010) occupy the four corners of the map. Because the top/bottom and left/right borders are adjacent on the Gray-code torus, these 4 cells form a single group. Across all four cells, B=0 and D=0 remain invariant, yielding B'D'."
+      ],
+      "learningObjective": "Exploit toroidal border wrap-around adjacency to group four corner cells into a 2-literal term.",
+      "tags": [
+        "forgot-wraparound-grouping"
+      ],
+      "projectSeed": {
+        "targetModule": "kmap-solver",
+        "variables": ["A", "B", "C", "D"],
+        "minterms": [0, 2, 8, 10]
+      }
+    },
+    {
+      "id": "kmap-dont-cares-matter",
+      "moduleId": "kmap-solver",
+      "difficulty": "medium",
+      "title": "Critical don't-care expansion: F = A'D + CD",
+      "statement": "Minimize F(A,B,C,D) = Σm(1, 3, 7, 11, 15) with don't-cares d(5, 9).",
+      "parameters": {
+        "variableCount": 4,
+        "variables": ["A", "B", "C", "D"],
+        "minterms": [1, 3, 7, 11, 15],
+        "dontCares": [5, 9],
+        "mode": "SOP"
+      },
+      "steps": [
+        {
+          "key": "group-with-dont-cares",
+          "prompt": "Form groups incorporating don't-care cell 5 to maximize group size.",
+          "expected": {
+            "kind": "kmap-group-set",
+            "groups": [
+              [1, 3, 5, 7],
+              [3, 7, 11, 15]
+            ],
+            "expression": "A'D + CD"
+          },
+          "kind": "kmap-group-set",
+          "context": {
+            "kmap": {
+              "variableCount": 4,
+              "minterms": [1, 3, 7, 11, 15],
+              "dontCares": [5, 9],
+              "mode": "SOP",
+              "variableNames": ["A", "B", "C", "D"]
+            }
+          }
+        }
+      ],
+      "finalAnswer": "A'D + CD",
+      "explanation": [
+        "Minterms {3, 7, 11, 15} form a full column where C=1 and D=1 -> CD. For the remaining minterm m1, grouping with m3, m7 and don't-care m5 forms a group of 4 {1, 3, 5, 7} where A=0 and D=1 -> A'D. Don't-care m9 is left unused because it does not further simplify any required minterms. Minimal SOP: A'D + CD."
+      ],
+      "learningObjective": "Selectively include don't-care cells only when they expand group size and reduce term cost.",
+      "tags": [
+        "missed-dont-cares"
+      ],
+      "projectSeed": {
+        "targetModule": "kmap-solver",
+        "variables": ["A", "B", "C", "D"],
+        "minterms": [1, 3, 7, 11, 15],
+        "dontCares": [5, 9]
+      }
+    },
+    {
+      "id": "kmap-cyclic-core-multiple-covers",
+      "moduleId": "kmap-solver",
+      "difficulty": "hard",
+      "title": "Cyclic core with dual minimal covers (Petrick's Method)",
+      "statement": "Find all minimal covers for 3-variable cyclic core function F(A,B,C) = Σm(0, 1, 2, 5, 6, 7).",
+      "parameters": {
+        "variableCount": 3,
+        "variables": ["A", "B", "C"],
+        "minterms": [0, 1, 2, 5, 6, 7],
+        "dontCares": [],
+        "mode": "SOP",
+        "minimalCovers": [
+          "A'B' + AC + BC'",
+          "A'C' + AB + B'C"
+        ]
+      },
+      "steps": [
+        {
+          "key": "cover-option-1",
+          "prompt": "Find a minimal 3-group cover for the cyclic core.",
+          "expected": {
+            "kind": "kmap-group-set",
+            "groups": [
+              [0, 1],
+              [5, 7],
+              [2, 6]
+            ],
+            "expression": "A'B' + AC + BC'"
+          },
+          "kind": "kmap-group-set",
+          "context": {
+            "kmap": {
+              "variableCount": 3,
+              "minterms": [0, 1, 2, 5, 6, 7],
+              "dontCares": [],
+              "mode": "SOP",
+              "variableNames": ["A", "B", "C"]
+            }
+          }
+        }
+      ],
+      "finalAnswer": "A'B' + AC + BC'",
+      "explanation": [
+        "All prime implicants are pairs: {0,1}=A'B', {0,2}=A'C', {1,5}=B'C, {2,6}=BC', {5,7}=AC, {6,7}=AB. None is essential because every minterm is covered by exactly two PIs. Petrick's expansion reveals two symmetrical minimal covers of 3 terms: (1) A'B' + AC + BC' and (2) A'C' + AB + B'C."
+      ],
+      "learningObjective": "Resolve cyclic prime implicant charts without essential implicants using Petrick's method and list alternative minimal covers.",
+      "tags": [
+        "group-not-maximal",
+        "redundant-group"
+      ],
+      "projectSeed": {
+        "targetModule": "kmap-solver",
+        "variables": ["A", "B", "C"],
+        "minterms": [0, 1, 2, 5, 6, 7]
+      }
+    },
+    {
+      "id": "kmap-5var-both-layers",
+      "moduleId": "kmap-solver",
+      "difficulty": "hard",
+      "title": "5-variable 3D grouping spanning both layers: F = B'D'",
+      "statement": "Minimize 5-variable function F(A,B,C,D,E) = Σm(0, 1, 4, 5, 16, 17, 20, 21) across layers A=0 and A=1.",
+      "parameters": {
+        "variableCount": 5,
+        "variables": ["A", "B", "C", "D", "E"],
+        "minterms": [0, 1, 4, 5, 16, 17, 20, 21],
+        "dontCares": [],
+        "mode": "SOP"
+      },
+      "steps": [
+        {
+          "key": "group-spanning-layers",
+          "prompt": "Combine the identical 4-cell groups in Layer 0 (A=0) and Layer 1 (A=1) into a single 8-cell 3D group.",
+          "expected": {
+            "kind": "kmap-group-set",
+            "groups": [
+              [0, 1, 4, 5, 16, 17, 20, 21]
+            ],
+            "expression": "B'D'"
+          },
+          "kind": "kmap-group-set",
+          "context": {
+            "kmap": {
+              "variableCount": 5,
+              "minterms": [0, 1, 4, 5, 16, 17, 20, 21],
+              "dontCares": [],
+              "mode": "SOP",
+              "variableNames": ["A", "B", "C", "D", "E"]
+            }
+          }
+        }
+      ],
+      "finalAnswer": "B'D'",
+      "explanation": [
+        "In Layer 0 (A=0), cells {0, 1, 4, 5} form a 4-cell group B'D'. In Layer 1 (A=1), cells {16, 17, 20, 21} occupy the exact same subgrid positions. Because they are adjacent along the 5th variable dimension A, they combine into an 8-cell group. Variable A is eliminated, yielding B'D'."
+      ],
+      "learningObjective": "Identify cross-layer symmetry in 5-variable K-maps to eliminate the 5th variable across dual 4x4 subgrids.",
+      "tags": [
+        "group-not-maximal"
+      ],
+      "projectSeed": {
+        "targetModule": "kmap-solver",
+        "variables": ["A", "B", "C", "D", "E"],
+        "minterms": [0, 1, 4, 5, 16, 17, 20, 21]
+      }
+    },
+    {
+      "id": "kmap-pos-4var",
+      "moduleId": "kmap-solver",
+      "difficulty": "medium",
+      "title": "Minimal Product of Sums (POS) grouping: F = (A + C)",
+      "statement": "Find the minimal POS expression for the 4-variable function whose maxterms are M(0, 1, 4, 5).",
+      "parameters": {
+        "variableCount": 4,
+        "variables": ["A", "B", "C", "D"],
+        "maxterms": [0, 1, 4, 5],
+        "minterms": [2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+        "dontCares": [],
+        "mode": "POS"
+      },
+      "steps": [
+        {
+          "key": "group-zeros-pos",
+          "prompt": "Group the four 0-cells {0, 1, 4, 5} and write the dual sum term.",
+          "expected": {
+            "kind": "kmap-group-set",
+            "groups": [
+              [0, 1, 4, 5]
+            ],
+            "expression": "(A + C)"
+          },
+          "kind": "kmap-group-set",
+          "context": {
+            "kmap": {
+              "variableCount": 4,
+              "minterms": [2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+              "dontCares": [],
+              "mode": "POS",
+              "variableNames": ["A", "B", "C", "D"]
+            }
+          }
+        }
+      ],
+      "finalAnswer": "(A + C)",
+      "explanation": [
+        "To find the minimal POS, group the 0-cells on the map: cells {0, 1, 4, 5}. In these cells, A=0 and C=0. In dual POS form, a literal of 0 is represented uncomplemented: (A + C)."
+      ],
+      "learningObjective": "Group 0-cells on a Karnaugh map to obtain simplified Product of Sums expressions with correct dual literal polarities.",
+      "tags": [
+        "covered-a-zero"
+      ],
+      "projectSeed": {
+        "targetModule": "kmap-solver",
+        "variables": ["A", "B", "C", "D"],
+        "minterms": [2, 3, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]
+      }
+    }
+  ]
+}

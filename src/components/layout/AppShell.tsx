@@ -14,6 +14,7 @@ import {
 } from 'react';
 import { MODULE_REGISTRY } from '../../modules/registry';
 import { exportProjectToJson, importProject } from '../../store/projectIO';
+import { isStorageAvailable } from '../../store/persistence';
 import {
   selectCurrentProject,
   selectIsDirty,
@@ -38,6 +39,7 @@ import {
 } from '../ui/Icons';
 import { Modal } from '../ui/Modal';
 import { ToastContainer } from '../ui/Toast';
+import { ExamplesMenu } from './ExamplesMenu';
 import { PipelineStepper } from './PipelineStepper';
 import { ThemeToggle } from './ThemeToggle';
 
@@ -75,6 +77,14 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [importJsonText, setImportJsonText] = useState('');
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [examplesModalOpen, setExamplesModalOpen] = useState(false);
+  const [storageBlocked, setStorageBlocked] = useState(false);
+
+  useEffect(() => {
+    if (!isStorageAvailable()) {
+      setStorageBlocked(true);
+    }
+  }, []);
 
   useEffect(() => {
     setTempName(project.name);
@@ -156,27 +166,40 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
       {/* Global Notifications */}
       <ToastContainer />
 
+      {/* Storage Unavailable / Blocked Banner */}
+      {storageBlocked && (
+        <div
+          role="alert"
+          aria-live="polite"
+          className="bg-amber-100 border-b border-amber-300 text-amber-900 px-4 py-2 text-xs font-semibold text-center flex items-center justify-center gap-2"
+        >
+          <span>
+            Storage is disabled or blocked. Running in in-memory session mode. Changes will not persist across reloads.
+          </span>
+        </div>
+      )}
+
       {/* Top Application Header */}
-      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-gray-200 bg-white/95 px-4 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/95 sm:px-6">
-        <div className="flex items-center gap-3">
+      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-gray-200 bg-white/95 px-3 sm:px-6 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/95">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             type="button"
             onClick={toggleSidebar}
             aria-label={sidebarOpen ? 'Collapse navigation menu' : 'Expand navigation menu'}
-            className="rounded-lg p-1.5 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 focus-visible:outline-2 focus-visible:outline-blue-600"
+            className="rounded-lg p-1.5 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-800 focus-visible:outline-2 focus-visible:outline-blue-600 shrink-0"
           >
             <MenuIcon className="h-5 w-5" />
           </button>
 
-          <div className="flex items-center gap-2">
-            <h1 className="text-base font-bold tracking-tight text-blue-600 dark:text-blue-400 sm:text-lg">
+          <div className="flex items-center gap-2 min-w-0">
+            <h1 className="text-sm sm:text-base font-bold tracking-tight text-blue-600 dark:text-blue-400 sm:text-lg truncate">
               Digital Electronics Virtual Lab
             </h1>
 
             <span className="hidden text-gray-300 dark:text-gray-700 sm:inline">|</span>
 
             {/* Inline Project Rename */}
-            <div className="flex items-center gap-1.5">
+            <div className="hidden sm:flex items-center gap-1.5">
               {isEditingName ? (
                 <input
                   ref={nameInputRef}
@@ -261,6 +284,19 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
                 >
                   <FolderOpenIcon className="h-4 w-4" />
                   <span>Open / Switch...</span>
+                </button>
+
+                <button
+                  role="menuitem"
+                  type="button"
+                  onClick={() => {
+                    setProjectMenuOpen(false);
+                    setExamplesModalOpen(true);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800"
+                >
+                  <FolderOpenIcon className="h-4 w-4" />
+                  <span>Open Example...</span>
                 </button>
 
                 <div className="my-1 border-t border-gray-100 dark:border-gray-800" />
@@ -414,9 +450,9 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
         {/* Main Content Area */}
         <main
           id="main"
-          className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 focus:outline-none"
+          className="flex-1 min-w-0 overflow-y-auto p-4 sm:p-6 lg:p-8 focus:outline-none"
         >
-          <div className="mx-auto max-w-6xl">
+          <div className="mx-auto max-w-6xl min-w-0">
             <PipelineStepper />
             {children}
           </div>
@@ -578,6 +614,12 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
           </div>
         </div>
       </Modal>
+
+      {/* 5. Examples Modal */}
+      <ExamplesMenu
+        isOpen={examplesModalOpen}
+        onClose={() => setExamplesModalOpen(false)}
+      />
     </div>
   );
 };

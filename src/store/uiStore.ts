@@ -98,7 +98,23 @@ export const useUiStore = create<UiState>((set, get) => ({
   setModule: (moduleId: ModuleId) => {
     set({ currentModule: moduleId });
     if (typeof window !== 'undefined') {
-      window.location.hash = `#${moduleId}`;
+      const HASH_MAP: Partial<Record<ModuleId, string>> = {
+        'boolean-tool': '#/boolean',
+        'kmap-solver': '#/kmap',
+        'circuit-simulator': '#/circuit',
+        'flipflop-simulator': '#/flipflop',
+        'sequential-designer': '#/sequential',
+        'number-systems': '#/number-systems',
+        practice: '#/practice',
+        quiz: '#/quiz',
+        'prepost-test': '#/prepost-test',
+        'sus-survey': '#/sus-survey',
+        'teacher-dashboard': '#/teacher-dashboard',
+        alu: '#/alu',
+        '8086-cpu': '#/8086-cpu',
+        'interrupt-controller': '#/interrupt-controller',
+      };
+      window.location.hash = HASH_MAP[moduleId] || `#${moduleId}`;
     }
   },
 

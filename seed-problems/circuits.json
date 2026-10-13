@@ -1,0 +1,382 @@
+{
+  "moduleId": "circuit-simulator",
+  "description": "Seed problems for Digital Circuit Schematic Simulation and Verification",
+  "problems": [
+    {
+      "id": "circ-half-adder",
+      "moduleId": "circuit-simulator",
+      "difficulty": "easy",
+      "title": "1-Bit Half Adder gate synthesis",
+      "statement": "Analyze the schematic for a 1-bit Half Adder computing Sum (S = A ⊕ B) and Carry (Cout = AB).",
+      "parameters": {
+        "inputs": ["A", "B"],
+        "outputs": ["S", "Cout"],
+        "gateCount": 2
+      },
+      "steps": [
+        {
+          "key": "half-adder-gate-count",
+          "prompt": "Determine the number of logic gates needed to build a 1-bit Half Adder (XOR for Sum, AND for Cout).",
+          "expected": {
+            "kind": "circuit-step",
+            "value": 2
+          },
+          "kind": "circuit-step",
+          "context": {
+            "expectedValue": 2
+          }
+        }
+      ],
+      "finalAnswer": 2,
+      "explanation": [
+        "A 1-bit Half Adder computes Sum S = A XOR B using 1 XOR gate and Carry Cout = A AND B using 1 AND gate. Total: 2 logic gates."
+      ],
+      "learningObjective": "Synthesize arithmetic combinational functions into primitive logic gate topologies.",
+      "tags": [
+        "other"
+      ],
+      "projectSeed": {
+        "targetModule": "circuit-simulator",
+        "variables": ["A", "B"],
+        "circuit": {
+          "nodes": [
+            { "id": "in_a", "kind": "input", "label": "A", "value": 0, "x": 80, "y": 100 },
+            { "id": "in_b", "kind": "input", "label": "B", "value": 0, "x": 80, "y": 180 },
+            { "id": "g_xor", "kind": "gate", "gateType": "XOR", "inputCount": 2, "x": 260, "y": 100 },
+            { "id": "g_and", "kind": "gate", "gateType": "AND", "inputCount": 2, "x": 260, "y": 180 },
+            { "id": "out_s", "kind": "output", "label": "S", "x": 440, "y": 100 },
+            { "id": "out_cout", "kind": "output", "label": "Cout", "x": 440, "y": 180 }
+          ],
+          "wires": [
+            { "id": "w1", "from": { "nodeId": "in_a", "pin": 0 }, "to": { "nodeId": "g_xor", "pin": 0 } },
+            { "id": "w2", "from": { "nodeId": "in_b", "pin": 0 }, "to": { "nodeId": "g_xor", "pin": 1 } },
+            { "id": "w3", "from": { "nodeId": "in_a", "pin": 0 }, "to": { "nodeId": "g_and", "pin": 0 } },
+            { "id": "w4", "from": { "nodeId": "in_b", "pin": 0 }, "to": { "nodeId": "g_and", "pin": 1 } },
+            { "id": "w5", "from": { "nodeId": "g_xor", "pin": 0 }, "to": { "nodeId": "out_s", "pin": 0 } },
+            { "id": "w6", "from": { "nodeId": "g_and", "pin": 0 }, "to": { "nodeId": "out_cout", "pin": 0 } }
+          ]
+        }
+      }
+    },
+    {
+      "id": "circ-full-adder",
+      "moduleId": "circuit-simulator",
+      "difficulty": "medium",
+      "title": "1-Bit Full Adder gate synthesis",
+      "statement": "Analyze the schematic for a 1-bit Full Adder with carry-in Cin, producing Sum S and Carry-out Cout.",
+      "parameters": {
+        "inputs": ["A", "B", "Cin"],
+        "outputs": ["S", "Cout"],
+        "gateCount": 5
+      },
+      "steps": [
+        {
+          "key": "full-adder-gate-count",
+          "prompt": "Determine the total logic gate count for a 1-bit Full Adder (2 XOR, 2 AND, 1 OR).",
+          "expected": {
+            "kind": "circuit-step",
+            "value": 5
+          },
+          "kind": "circuit-step",
+          "context": {
+            "expectedValue": 5
+          }
+        }
+      ],
+      "finalAnswer": 5,
+      "explanation": [
+        "A Full Adder uses two cascaded half adders plus an OR gate: S = (A XOR B) XOR Cin (2 XOR gates). The carry output Cout = (A AND B) OR ((A XOR B) AND Cin) requires 2 AND gates and 1 OR gate. Total: 5 gates."
+      ],
+      "learningObjective": "Construct multi-input arithmetic bit-slices by cascading half adder stages.",
+      "tags": [
+        "other",
+        "wrong-carry-propagation"
+      ],
+      "projectSeed": {
+        "targetModule": "circuit-simulator",
+        "variables": ["A", "B", "Cin"],
+        "circuit": {
+          "nodes": [
+            { "id": "in_a", "kind": "input", "label": "A", "value": 0, "x": 80, "y": 100 },
+            { "id": "in_b", "kind": "input", "label": "B", "value": 0, "x": 80, "y": 180 },
+            { "id": "in_cin", "kind": "input", "label": "Cin", "value": 0, "x": 80, "y": 260 },
+            { "id": "g_xor1", "kind": "gate", "gateType": "XOR", "inputCount": 2, "x": 240, "y": 140 },
+            { "id": "g_xor2", "kind": "gate", "gateType": "XOR", "inputCount": 2, "x": 400, "y": 140 },
+            { "id": "g_and1", "kind": "gate", "gateType": "AND", "inputCount": 2, "x": 240, "y": 240 },
+            { "id": "g_and2", "kind": "gate", "gateType": "AND", "inputCount": 2, "x": 400, "y": 220 },
+            { "id": "g_or1", "kind": "gate", "gateType": "OR", "inputCount": 2, "x": 560, "y": 230 },
+            { "id": "out_s", "kind": "output", "label": "S", "x": 560, "y": 140 },
+            { "id": "out_cout", "kind": "output", "label": "Cout", "x": 700, "y": 230 }
+          ],
+          "wires": [
+            { "id": "w1", "from": { "nodeId": "in_a", "pin": 0 }, "to": { "nodeId": "g_xor1", "pin": 0 } },
+            { "id": "w2", "from": { "nodeId": "in_b", "pin": 0 }, "to": { "nodeId": "g_xor1", "pin": 1 } },
+            { "id": "w3", "from": { "nodeId": "g_xor1", "pin": 0 }, "to": { "nodeId": "g_xor2", "pin": 0 } },
+            { "id": "w4", "from": { "nodeId": "in_cin", "pin": 0 }, "to": { "nodeId": "g_xor2", "pin": 1 } },
+            { "id": "w5", "from": { "nodeId": "g_xor2", "pin": 0 }, "to": { "nodeId": "out_s", "pin": 0 } },
+            { "id": "w6", "from": { "nodeId": "in_a", "pin": 0 }, "to": { "nodeId": "g_and1", "pin": 0 } },
+            { "id": "w7", "from": { "nodeId": "in_b", "pin": 0 }, "to": { "nodeId": "g_and1", "pin": 1 } },
+            { "id": "w8", "from": { "nodeId": "g_xor1", "pin": 0 }, "to": { "nodeId": "g_and2", "pin": 0 } },
+            { "id": "w9", "from": { "nodeId": "in_cin", "pin": 0 }, "to": { "nodeId": "g_and2", "pin": 1 } },
+            { "id": "w10", "from": { "nodeId": "g_and1", "pin": 0 }, "to": { "nodeId": "g_or1", "pin": 0 } },
+            { "id": "w11", "from": { "nodeId": "g_and2", "pin": 0 }, "to": { "nodeId": "g_or1", "pin": 1 } },
+            { "id": "w12", "from": { "nodeId": "g_or1", "pin": 0 }, "to": { "nodeId": "out_cout", "pin": 0 } }
+          ]
+        }
+      }
+    },
+    {
+      "id": "circ-kmap-sop-implementation",
+      "moduleId": "circuit-simulator",
+      "difficulty": "medium",
+      "title": "Circuit realization of minimized K-map expression F = A'B + CD",
+      "statement": "Determine the logic gate count to implement the two-level SOP circuit for F = A'B + CD.",
+      "parameters": {
+        "expression": "A'B + CD",
+        "variables": ["A", "B", "C", "D"],
+        "gateCount": 4
+      },
+      "steps": [
+        {
+          "key": "sop-circuit-gate-count",
+          "prompt": "Count the gates required to implement the minimized SOP expression F = A'B + CD using standard NOT, AND, and OR gates.",
+          "expected": {
+            "kind": "circuit-step",
+            "value": 4
+          },
+          "kind": "circuit-step",
+          "context": {
+            "expectedValue": 4
+          }
+        }
+      ],
+      "finalAnswer": 4,
+      "explanation": [
+        "1 NOT gate generates A'. 2 AND gates compute the product terms A'B and CD. 1 OR gate combines the products into F = A'B + CD. Total: 1 + 2 + 1 = 4 gates."
+      ],
+      "learningObjective": "Translate minimized two-level SOP Boolean expressions into physical schematic netlists.",
+      "tags": [
+        "other"
+      ],
+      "projectSeed": {
+        "targetModule": "circuit-simulator",
+        "variables": ["A", "B", "C", "D"],
+        "circuit": {
+          "nodes": [
+            { "id": "in_a", "kind": "input", "label": "A", "value": 0, "x": 60, "y": 80 },
+            { "id": "in_b", "kind": "input", "label": "B", "value": 0, "x": 60, "y": 140 },
+            { "id": "in_c", "kind": "input", "label": "C", "value": 0, "x": 60, "y": 200 },
+            { "id": "in_d", "kind": "input", "label": "D", "value": 0, "x": 60, "y": 260 },
+            { "id": "g_not", "kind": "gate", "gateType": "NOT", "inputCount": 1, "x": 180, "y": 80 },
+            { "id": "g_and1", "kind": "gate", "gateType": "AND", "inputCount": 2, "x": 300, "y": 100 },
+            { "id": "g_and2", "kind": "gate", "gateType": "AND", "inputCount": 2, "x": 300, "y": 230 },
+            { "id": "g_or", "kind": "gate", "gateType": "OR", "inputCount": 2, "x": 440, "y": 160 },
+            { "id": "out_f", "kind": "output", "label": "F", "x": 560, "y": 160 }
+          ],
+          "wires": [
+            { "id": "w1", "from": { "nodeId": "in_a", "pin": 0 }, "to": { "nodeId": "g_not", "pin": 0 } },
+            { "id": "w2", "from": { "nodeId": "g_not", "pin": 0 }, "to": { "nodeId": "g_and1", "pin": 0 } },
+            { "id": "w3", "from": { "nodeId": "in_b", "pin": 0 }, "to": { "nodeId": "g_and1", "pin": 1 } },
+            { "id": "w4", "from": { "nodeId": "in_c", "pin": 0 }, "to": { "nodeId": "g_and2", "pin": 0 } },
+            { "id": "w5", "from": { "nodeId": "in_d", "pin": 0 }, "to": { "nodeId": "g_and2", "pin": 1 } },
+            { "id": "w6", "from": { "nodeId": "g_and1", "pin": 0 }, "to": { "nodeId": "g_or", "pin": 0 } },
+            { "id": "w7", "from": { "nodeId": "g_and2", "pin": 0 }, "to": { "nodeId": "g_or", "pin": 1 } },
+            { "id": "w8", "from": { "nodeId": "g_or", "pin": 0 }, "to": { "nodeId": "out_f", "pin": 0 } }
+          ]
+        }
+      }
+    },
+    {
+      "id": "circ-faulty-gate-diagnosis",
+      "moduleId": "circuit-simulator",
+      "difficulty": "hard",
+      "title": "Faulty gate localization in combinational netlist",
+      "statement": "In a 4-NAND implementation of 2-input XOR, gate g_nand1 is improperly wired as an AND gate, creating an output fault. Identify the faulty node ID.",
+      "parameters": {
+        "faultyNodeId": "g_nand1",
+        "intendedGate": "NAND",
+        "actualGate": "AND"
+      },
+      "steps": [
+        {
+          "key": "identify-faulty-node",
+          "prompt": "Identify the node ID of the gate causing the simulation output to fail.",
+          "expected": {
+            "kind": "circuit-step",
+            "value": "g_nand1"
+          },
+          "kind": "circuit-step",
+          "context": {
+            "expectedValue": "g_nand1"
+          }
+        }
+      ],
+      "finalAnswer": "g_nand1",
+      "explanation": [
+        "In a 4-NAND XOR configuration, the first stage gate g_nand1 must produce (AB)' to feed the cross-coupling inputs of g_nand2 and g_nand3. If g_nand1 produces AB instead of (AB)', the output fails when A=0, B=0, resulting in an incorrect output. Hence g_nand1 is the faulty gate."
+      ],
+      "learningObjective": "Diagnose structural schematic errors by comparing simulated gate outputs against golden truth tables.",
+      "tags": [
+        "other"
+      ],
+      "projectSeed": {
+        "targetModule": "circuit-simulator",
+        "variables": ["A", "B"],
+        "circuit": {
+          "nodes": [
+            { "id": "in_a", "kind": "input", "label": "A", "value": 0, "x": 80, "y": 100 },
+            { "id": "in_b", "kind": "input", "label": "B", "value": 0, "x": 80, "y": 220 },
+            { "id": "g_nand1", "kind": "gate", "gateType": "AND", "inputCount": 2, "x": 220, "y": 160 },
+            { "id": "g_nand2", "kind": "gate", "gateType": "NAND", "inputCount": 2, "x": 360, "y": 100 },
+            { "id": "g_nand3", "kind": "gate", "gateType": "NAND", "inputCount": 2, "x": 360, "y": 220 },
+            { "id": "g_nand4", "kind": "gate", "gateType": "NAND", "inputCount": 2, "x": 500, "y": 160 },
+            { "id": "out_y", "kind": "output", "label": "OUT", "x": 640, "y": 160 }
+          ],
+          "wires": [
+            { "id": "w1", "from": { "nodeId": "in_a", "pin": 0 }, "to": { "nodeId": "g_nand1", "pin": 0 } },
+            { "id": "w2", "from": { "nodeId": "in_b", "pin": 0 }, "to": { "nodeId": "g_nand1", "pin": 1 } },
+            { "id": "w3", "from": { "nodeId": "in_a", "pin": 0 }, "to": { "nodeId": "g_nand2", "pin": 0 } },
+            { "id": "w4", "from": { "nodeId": "g_nand1", "pin": 0 }, "to": { "nodeId": "g_nand2", "pin": 1 } },
+            { "id": "w5", "from": { "nodeId": "g_nand1", "pin": 0 }, "to": { "nodeId": "g_nand3", "pin": 0 } },
+            { "id": "w6", "from": { "nodeId": "in_b", "pin": 0 }, "to": { "nodeId": "g_nand3", "pin": 1 } },
+            { "id": "w7", "from": { "nodeId": "g_nand2", "pin": 0 }, "to": { "nodeId": "g_nand4", "pin": 0 } },
+            { "id": "w8", "from": { "nodeId": "g_nand3", "pin": 0 }, "to": { "nodeId": "g_nand4", "pin": 1 } },
+            { "id": "w9", "from": { "nodeId": "g_nand4", "pin": 0 }, "to": { "nodeId": "out_y", "pin": 0 } }
+          ]
+        }
+      }
+    },
+    {
+      "id": "circ-sr-latch-nor",
+      "moduleId": "circuit-simulator",
+      "difficulty": "easy",
+      "title": "Cross-coupled NOR SR Latch analysis",
+      "statement": "Examine the circuit schematic of an active-high Set-Reset (SR) latch formed by cross-coupling 2 NOR gates.",
+      "parameters": {
+        "inputs": ["R", "S"],
+        "outputs": ["Q", "Qbar"],
+        "gateCount": 2
+      },
+      "steps": [
+        {
+          "key": "sr-latch-gate-count",
+          "prompt": "Count the number of cross-coupled NOR gates comprising the basic active-high SR latch.",
+          "expected": {
+            "kind": "circuit-step",
+            "value": 2
+          },
+          "kind": "circuit-step",
+          "context": {
+            "expectedValue": 2
+          }
+        }
+      ],
+      "finalAnswer": 2,
+      "explanation": [
+        "The cross-coupled NOR latch uses exactly 2 NOR gates. When S=1 and R=0, Q sets to 1. When S=0 and R=1, Q resets to 0. When S=0 and R=0, the feedback loop latches the previous state."
+      ],
+      "learningObjective": "Analyze bistable feedback loops in basic cross-coupled NOR latch memory elements.",
+      "tags": [
+        "other"
+      ],
+      "projectSeed": {
+        "targetModule": "circuit-simulator",
+        "variables": ["R", "S"],
+        "circuit": {
+          "nodes": [
+            { "id": "in_r", "kind": "input", "label": "R", "value": 0, "x": 80, "y": 100 },
+            { "id": "in_s", "kind": "input", "label": "S", "value": 0, "x": 80, "y": 220 },
+            { "id": "g_nor1", "kind": "gate", "gateType": "NOR", "inputCount": 2, "x": 260, "y": 110 },
+            { "id": "g_nor2", "kind": "gate", "gateType": "NOR", "inputCount": 2, "x": 260, "y": 210 },
+            { "id": "out_q", "kind": "output", "label": "Q", "x": 440, "y": 110 },
+            { "id": "out_qbar", "kind": "output", "label": "Qbar", "x": 440, "y": 210 }
+          ],
+          "wires": [
+            { "id": "w1", "from": { "nodeId": "in_r", "pin": 0 }, "to": { "nodeId": "g_nor1", "pin": 0 } },
+            { "id": "w2", "from": { "nodeId": "g_nor2", "pin": 0 }, "to": { "nodeId": "g_nor1", "pin": 1 } },
+            { "id": "w3", "from": { "nodeId": "in_s", "pin": 0 }, "to": { "nodeId": "g_nor2", "pin": 0 } },
+            { "id": "w4", "from": { "nodeId": "g_nor1", "pin": 0 }, "to": { "nodeId": "g_nor2", "pin": 1 } },
+            { "id": "w5", "from": { "nodeId": "g_nor1", "pin": 0 }, "to": { "nodeId": "out_q", "pin": 0 } },
+            { "id": "w6", "from": { "nodeId": "g_nor2", "pin": 0 }, "to": { "nodeId": "out_qbar", "pin": 0 } }
+          ]
+        }
+      }
+    },
+    {
+      "id": "circ-master-slave-d-flipflop",
+      "moduleId": "circuit-simulator",
+      "difficulty": "hard",
+      "title": "Edge-triggered Master-Slave D Flip-Flop gate synthesis",
+      "statement": "Analyze the schematic of an edge-triggered Master-Slave D flip-flop constructed from two gated D latches and a clock inverter.",
+      "parameters": {
+        "inputs": ["D", "CLK"],
+        "outputs": ["Q", "Qbar"],
+        "gateCount": 9
+      },
+      "steps": [
+        {
+          "key": "master-slave-gate-count",
+          "prompt": "Count the total number of logic gates in the master-slave D flip-flop (two 4-NAND latches + 1 clock inverter).",
+          "expected": {
+            "kind": "circuit-step",
+            "value": 9
+          },
+          "kind": "circuit-step",
+          "context": {
+            "expectedValue": 9
+          }
+        }
+      ],
+      "finalAnswer": 9,
+      "explanation": [
+        "The master stage uses 4 NAND gates enabled when CLK=0. The slave stage uses 4 NAND gates enabled when CLK=1. An inverter inverts CLK to feed the master stage. Total: 4 + 4 + 1 = 9 logic gates."
+      ],
+      "learningObjective": "Understand edge-triggered bistable operation achieved by cascading complementary master and slave latch stages.",
+      "tags": [
+        "other"
+      ],
+      "projectSeed": {
+        "targetModule": "circuit-simulator",
+        "variables": ["D", "CLK"],
+        "circuit": {
+          "nodes": [
+            { "id": "clk_1", "kind": "clock", "label": "CLK", "halfPeriod": 10, "startValue": 0, "x": 80, "y": 160 },
+            { "id": "in_d", "kind": "input", "label": "D", "value": 0, "x": 80, "y": 80 },
+            { "id": "g_not_clk", "kind": "gate", "gateType": "NOT", "inputCount": 1, "x": 200, "y": 160 },
+            { "id": "g_m1", "kind": "gate", "gateType": "NAND", "inputCount": 2, "x": 320, "y": 80 },
+            { "id": "g_m2", "kind": "gate", "gateType": "NAND", "inputCount": 2, "x": 320, "y": 180 },
+            { "id": "g_m3", "kind": "gate", "gateType": "NAND", "inputCount": 2, "x": 460, "y": 80 },
+            { "id": "g_m4", "kind": "gate", "gateType": "NAND", "inputCount": 2, "x": 460, "y": 180 },
+            { "id": "g_s1", "kind": "gate", "gateType": "NAND", "inputCount": 2, "x": 600, "y": 80 },
+            { "id": "g_s2", "kind": "gate", "gateType": "NAND", "inputCount": 2, "x": 600, "y": 180 },
+            { "id": "g_s3", "kind": "gate", "gateType": "NAND", "inputCount": 2, "x": 740, "y": 80 },
+            { "id": "g_s4", "kind": "gate", "gateType": "NAND", "inputCount": 2, "x": 740, "y": 180 },
+            { "id": "out_q", "kind": "output", "label": "Q", "x": 880, "y": 80 },
+            { "id": "out_qbar", "kind": "output", "label": "Qbar", "x": 880, "y": 180 }
+          ],
+          "wires": [
+            { "id": "w_clk_inv", "from": { "nodeId": "clk_1", "pin": 0 }, "to": { "nodeId": "g_not_clk", "pin": 0 } },
+            { "id": "wm1", "from": { "nodeId": "in_d", "pin": 0 }, "to": { "nodeId": "g_m1", "pin": 0 } },
+            { "id": "wm2", "from": { "nodeId": "g_not_clk", "pin": 0 }, "to": { "nodeId": "g_m1", "pin": 1 } },
+            { "id": "wm3", "from": { "nodeId": "g_m1", "pin": 0 }, "to": { "nodeId": "g_m2", "pin": 0 } },
+            { "id": "wm4", "from": { "nodeId": "g_not_clk", "pin": 0 }, "to": { "nodeId": "g_m2", "pin": 1 } },
+            { "id": "wm5", "from": { "nodeId": "g_m1", "pin": 0 }, "to": { "nodeId": "g_m3", "pin": 0 } },
+            { "id": "wm6", "from": { "nodeId": "g_m4", "pin": 0 }, "to": { "nodeId": "g_m3", "pin": 1 } },
+            { "id": "wm7", "from": { "nodeId": "g_m2", "pin": 0 }, "to": { "nodeId": "g_m4", "pin": 0 } },
+            { "id": "wm8", "from": { "nodeId": "g_m3", "pin": 0 }, "to": { "nodeId": "g_m4", "pin": 1 } },
+            { "id": "ws1", "from": { "nodeId": "g_m3", "pin": 0 }, "to": { "nodeId": "g_s1", "pin": 0 } },
+            { "id": "ws2", "from": { "nodeId": "clk_1", "pin": 0 }, "to": { "nodeId": "g_s1", "pin": 1 } },
+            { "id": "ws3", "from": { "nodeId": "g_s1", "pin": 0 }, "to": { "nodeId": "g_s2", "pin": 0 } },
+            { "id": "ws4", "from": { "nodeId": "clk_1", "pin": 0 }, "to": { "nodeId": "g_s2", "pin": 1 } },
+            { "id": "ws5", "from": { "nodeId": "g_s1", "pin": 0 }, "to": { "nodeId": "g_s3", "pin": 0 } },
+            { "id": "ws6", "from": { "nodeId": "g_s4", "pin": 0 }, "to": { "nodeId": "g_s3", "pin": 1 } },
+            { "id": "ws7", "from": { "nodeId": "g_s2", "pin": 0 }, "to": { "nodeId": "g_s4", "pin": 0 } },
+            { "id": "ws8", "from": { "nodeId": "g_s3", "pin": 0 }, "to": { "nodeId": "g_s4", "pin": 1 } },
+            { "id": "wq", "from": { "nodeId": "g_s3", "pin": 0 }, "to": { "nodeId": "out_q", "pin": 0 } },
+            { "id": "wqb", "from": { "nodeId": "g_s4", "pin": 0 }, "to": { "nodeId": "out_qbar", "pin": 0 } }
+          ]
+        }
+      }
+    }
+  ]
+}

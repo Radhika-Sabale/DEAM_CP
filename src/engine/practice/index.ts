@@ -18,6 +18,9 @@ export * from './generatorRegistry';
 export * from './quizNormalize';
 export * from './quizBank';
 export * from './quiz';
+export * from './seed/types';
+export * from './seed/guards';
+export * from './seed/loader';
 
 // Import all generators to trigger module-level registration in generatorRegistry
 import './generators/numberSystems';

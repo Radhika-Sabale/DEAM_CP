@@ -117,6 +117,30 @@ export const KMapPage: FC = () => {
     }
   }, [varCount, minterms, dontCares, varNames, cells, studentGroups, applyPatch]);
 
+  // Sync local KMap state when active project changes (e.g. from ExamplesMenu or ProjectIO)
+  useEffect(() => {
+    const pVars = project.kmap?.variables ?? project.truthTable?.variables ?? project.variables ?? [];
+    const count = pVars.length >= 2 && pVars.length <= 5 ? pVars.length : 4;
+    setVarCount(count);
+    setVarNames(pVars.length === count ? [...pVars] : ['A', 'B', 'C', 'D', 'E'].slice(0, count));
+    const total = 1 << count;
+    if (project.kmap?.cells && project.kmap.cells.length === total) {
+      setCells([...project.kmap.cells]);
+    } else if (project.truthTable?.rows && project.truthTable.rows.length === total) {
+      const newCells: LogicValue[] = Array.from({ length: total }, () => 0 as LogicValue);
+      project.truthTable.rows.forEach((r) => {
+        if (r.index < total) newCells[r.index] = r.output;
+      });
+      setCells(newCells);
+    } else {
+      setCells(Array.from({ length: total }, () => 0 as LogicValue));
+    }
+    setSelectedCells([]);
+    setStudentGroups(project.kmap?.studentGroups ? project.kmap.studentGroups.map((g) => [...g.cellIndices]) : []);
+    setHighlightedCells([]);
+    setRevealedSolution(false);
+  }, [project.id]);
+
   // Auto-solve on initial load if unsolved or cells change
   useEffect(() => {
     executeSolve();

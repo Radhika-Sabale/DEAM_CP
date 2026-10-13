@@ -21,6 +21,7 @@ import { useStepTimer } from '../../hooks/useStepTimer';
 import { DiagnosisCard } from '../../components/feedback/DiagnosisCard';
 import { HintLadder } from '../../components/feedback/HintLadder';
 import { AnswerTrapBanner } from '../../components/feedback/AnswerTrapBanner';
+import { LlmSettings } from '../../components/feedback/LlmSettings';
 
 export interface StudentModePanelProps {
   readonly variableCount: number;
@@ -62,6 +63,7 @@ export const StudentModePanel: FC<StudentModePanelProps> = ({
   const latestAnswerTrap = useFeedbackStore((s) => s.latestAnswerTrap);
 
   const [currentStepKey, setCurrentStepKey] = useState<string>('group-1');
+  const [attemptCount, setAttemptCount] = useState<number>(1);
   const [currentDiagnosis, setCurrentDiagnosis] = useState<Diagnosis | null>(null);
   const [groupSetResult, setGroupSetResult] = useState<GroupSetValidationResult | null>(null);
   const [hasCheckedSet, setHasCheckedSet] = useState<boolean>(false);
@@ -88,7 +90,8 @@ export const StudentModePanel: FC<StudentModePanelProps> = ({
   );
 
   const handleAddGroupSubmit = () => {
-    const stepKey = `group-${studentGroups.length + 1}`;
+    const stepKey = `group-${studentGroups.length + 1}-att-${attemptCount}`;
+    setAttemptCount((prev) => prev + 1);
     setCurrentStepKey(stepKey);
 
     const submission: StepSubmission = {
@@ -398,9 +401,20 @@ export const StudentModePanel: FC<StudentModePanelProps> = ({
                 Note: Multiple minimal covers may exist, but minimal covers require exactly {groupSetResult.minimalTermCount} terms.
               </p>
             )}
+            {groupSetResult.valid &&
+              groupSetResult.isMinimal &&
+              solverSolution &&
+              studentExprResult.expressionString !== solverSolution.expressionString && (
+                <p className="mt-1 text-xs text-emerald-800 dark:text-emerald-300">
+                  Note: Different but equally minimal cover to solver reference!
+                </p>
+              )}
           </div>
         </div>
       )}
+
+      {/* Optional AI Hint Settings */}
+      <LlmSettings className="mt-4" />
     </div>
   );
 };

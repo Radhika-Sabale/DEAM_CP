@@ -1,0 +1,462 @@
+{
+  "moduleId": "sequential-designer",
+  "problems": [
+    {
+      "id": "seq-detector-mealy-101-overlap",
+      "moduleId": "sequential-designer",
+      "difficulty": "medium",
+      "title": "Mealy Sequence Detector for '101' Overlapping",
+      "statement": "Synthesize an overlapping binary sequence detector for the pattern '101' using a Mealy finite state machine and D flip-flops.",
+      "parameters": {
+        "pattern": "101",
+        "machine": "mealy",
+        "overlapping": true,
+        "flipFlop": "D"
+      },
+      "steps": [
+        {
+          "key": "s0-in1",
+          "prompt": "Determine next state from S0 (00, initial) when input IN = 1.",
+          "kind": "seq-state-table-cell",
+          "expected": {
+            "kind": "state-table-row",
+            "nextState": "1"
+          },
+          "context": {
+            "spec": {
+              "kind": "detector",
+              "pattern": "101",
+              "machine": "mealy",
+              "overlapping": true,
+              "flipFlop": "D"
+            },
+            "code": 0,
+            "input": 1,
+            "field": "next"
+          }
+        },
+        {
+          "key": "s1-in0",
+          "prompt": "Determine next state from S1 (01, seen '1') when input IN = 0.",
+          "kind": "seq-state-table-cell",
+          "expected": {
+            "kind": "state-table-row",
+            "nextState": "2"
+          },
+          "context": {
+            "spec": {
+              "kind": "detector",
+              "pattern": "101",
+              "machine": "mealy",
+              "overlapping": true,
+              "flipFlop": "D"
+            },
+            "code": 1,
+            "input": 0,
+            "field": "next"
+          }
+        },
+        {
+          "key": "s2-in1-next",
+          "prompt": "Determine next state from S2 (10, seen '10') when input IN = 1 in overlapping mode.",
+          "kind": "seq-state-table-cell",
+          "expected": {
+            "kind": "state-table-row",
+            "nextState": "1"
+          },
+          "context": {
+            "spec": {
+              "kind": "detector",
+              "pattern": "101",
+              "machine": "mealy",
+              "overlapping": true,
+              "flipFlop": "D"
+            },
+            "code": 2,
+            "input": 1,
+            "field": "next"
+          }
+        },
+        {
+          "key": "s2-in1-out",
+          "prompt": "Determine Mealy output Z from state S2 when input IN = 1.",
+          "kind": "seq-state-table-cell",
+          "expected": {
+            "kind": "state-table-row",
+            "output": "1"
+          },
+          "context": {
+            "spec": {
+              "kind": "detector",
+              "pattern": "101",
+              "machine": "mealy",
+              "overlapping": true,
+              "flipFlop": "D"
+            },
+            "code": 2,
+            "input": 1,
+            "field": "output"
+          }
+        },
+        {
+          "key": "eq-z",
+          "prompt": "Derive the minimal Boolean equation for Mealy output Z.",
+          "kind": "seq-equation",
+          "expected": {
+            "kind": "boolean-step",
+            "resultingExpression": "Q1 & IN"
+          },
+          "context": {
+            "spec": {
+              "kind": "detector",
+              "pattern": "101",
+              "machine": "mealy",
+              "overlapping": true,
+              "flipFlop": "D"
+            },
+            "functionName": "Z"
+          }
+        },
+        {
+          "key": "eq-d1",
+          "prompt": "Derive the minimal Boolean excitation equation for flip-flop input D1.",
+          "kind": "seq-equation",
+          "expected": {
+            "kind": "boolean-step",
+            "resultingExpression": "Q0 & !IN"
+          },
+          "context": {
+            "spec": {
+              "kind": "detector",
+              "pattern": "101",
+              "machine": "mealy",
+              "overlapping": true,
+              "flipFlop": "D"
+            },
+            "functionName": "D1"
+          }
+        }
+      ],
+      "finalAnswer": {
+        "D1": "Q0 & !IN",
+        "D0": "IN",
+        "Z": "Q1 & IN"
+      },
+      "explanation": [
+        "In state S0 (no bits matched), input 1 matches the first bit of '101', advancing to state S1.",
+        "In state S1 (prefix '1' matched), input 0 matches the second bit, advancing to state S2 (matched '10').",
+        "In state S2 with input 1, the full pattern '101' is detected. Because detection is overlapping, the trailing '1' serves as the starting bit of the next candidate sequence, looping back to state S1.",
+        "In a Mealy machine, output Z activates asynchronously when the final matching bit IN = 1 arrives while in state S2 (Q1=1, Q0=0), giving Z = 1.",
+        "The output equation asserts when in state S2 and IN = 1: Z = Q1 & IN.",
+        "Next state bit Q1 is 1 only when transitioning to state S2 (from S1 with IN = 0), yielding D1 = Q0 & !IN."
+      ],
+      "learningObjective": "Synthesize a Mealy sequence detector with overlapping recognition and derive combinational equations for state and output variables.",
+      "tags": ["wrong-excitation-table", "wrong-law-applied"],
+      "projectSeed": {
+        "flipFlopType": "D",
+        "sequentialSpec": {
+          "kind": "detector",
+          "pattern": "101",
+          "machine": "mealy",
+          "overlapping": true,
+          "flipFlop": "D"
+        }
+      }
+    },
+    {
+      "id": "seq-detector-moore-1011-nonoverlap",
+      "moduleId": "sequential-designer",
+      "difficulty": "hard",
+      "title": "Moore Sequence Detector for '1011' Non-Overlapping",
+      "statement": "Synthesize a 5-state Moore machine (S0..S4) to detect the non-overlapping binary sequence '1011' using D flip-flops.",
+      "parameters": {
+        "pattern": "1011",
+        "machine": "moore",
+        "overlapping": false,
+        "flipFlop": "D"
+      },
+      "steps": [
+        {
+          "key": "s3-in1",
+          "prompt": "Determine next state from state S3 (matched '101') when input IN = 1.",
+          "kind": "seq-state-table-cell",
+          "expected": {
+            "kind": "state-table-row",
+            "nextState": "4"
+          },
+          "context": {
+            "spec": {
+              "kind": "detector",
+              "pattern": "1011",
+              "machine": "moore",
+              "overlapping": false,
+              "flipFlop": "D"
+            },
+            "code": 3,
+            "input": 1,
+            "field": "next"
+          }
+        },
+        {
+          "key": "s4-in1",
+          "prompt": "In non-overlapping mode, determine next state from S4 (match state) when input IN = 1.",
+          "kind": "seq-state-table-cell",
+          "expected": {
+            "kind": "state-table-row",
+            "nextState": "1"
+          },
+          "context": {
+            "spec": {
+              "kind": "detector",
+              "pattern": "1011",
+              "machine": "moore",
+              "overlapping": false,
+              "flipFlop": "D"
+            },
+            "code": 4,
+            "input": 1,
+            "field": "next"
+          }
+        },
+        {
+          "key": "s4-in0",
+          "prompt": "In non-overlapping mode, determine next state from S4 (match state) when input IN = 0.",
+          "kind": "seq-state-table-cell",
+          "expected": {
+            "kind": "state-table-row",
+            "nextState": "0"
+          },
+          "context": {
+            "spec": {
+              "kind": "detector",
+              "pattern": "1011",
+              "machine": "moore",
+              "overlapping": false,
+              "flipFlop": "D"
+            },
+            "code": 4,
+            "input": 0,
+            "field": "next"
+          }
+        },
+        {
+          "key": "s4-out",
+          "prompt": "Determine Moore output Z associated with state S4.",
+          "kind": "seq-state-table-cell",
+          "expected": {
+            "kind": "state-table-row",
+            "output": "1"
+          },
+          "context": {
+            "spec": {
+              "kind": "detector",
+              "pattern": "1011",
+              "machine": "moore",
+              "overlapping": false,
+              "flipFlop": "D"
+            },
+            "code": 4,
+            "input": 0,
+            "field": "output"
+          }
+        },
+        {
+          "key": "eq-z-moore",
+          "prompt": "Derive the minimal Boolean equation for Moore output Z.",
+          "kind": "seq-equation",
+          "expected": {
+            "kind": "boolean-step",
+            "resultingExpression": "Q2"
+          },
+          "context": {
+            "spec": {
+              "kind": "detector",
+              "pattern": "1011",
+              "machine": "moore",
+              "overlapping": false,
+              "flipFlop": "D"
+            },
+            "functionName": "Z"
+          }
+        },
+        {
+          "key": "eq-d2",
+          "prompt": "Derive the minimal Boolean excitation equation for flip-flop input D2.",
+          "kind": "seq-equation",
+          "expected": {
+            "kind": "boolean-step",
+            "resultingExpression": "Q1 & Q0 & IN"
+          },
+          "context": {
+            "spec": {
+              "kind": "detector",
+              "pattern": "1011",
+              "machine": "moore",
+              "overlapping": false,
+              "flipFlop": "D"
+            },
+            "functionName": "D2"
+          }
+        }
+      ],
+      "finalAnswer": {
+        "D2": "Q1 & Q0 & IN",
+        "Z": "Q2"
+      },
+      "explanation": [
+        "In state S3 ('101' matched), receiving IN = 1 completes the sequence '1011', transitioning to state S4.",
+        "Because detection is non-overlapping, none of the bits from '1011' can be reused. However, the new incoming input 1 could be the start of a new sequence, so the machine transitions to state S1.",
+        "If the incoming input from S4 is 0, no prefix is matched, so the machine resets completely to S0.",
+        "In a Moore machine, output depends strictly on current state; state S4 represents full recognition, so Z = 1.",
+        "Using 3 state bits for 5 states, S4 is encoded as 100 (Q2=1). With unused states 5..7 as don't-cares, output Z minimizes to Z = Q2.",
+        "Bit Q2 turns on only when entering S4 from S3 (011) with IN = 1, giving D2 = Q1 & Q0 & IN."
+      ],
+      "learningObjective": "Synthesize a 5-state Moore sequence detector with non-overlapping recognition and evaluate state decoding logic.",
+      "tags": ["wrong-excitation-table", "wrong-law-applied"],
+      "projectSeed": {
+        "flipFlopType": "D",
+        "sequentialSpec": {
+          "kind": "detector",
+          "pattern": "1011",
+          "machine": "moore",
+          "overlapping": false,
+          "flipFlop": "D"
+        }
+      }
+    },
+    {
+      "id": "seq-detector-mealy-pipeline-circuit",
+      "moduleId": "sequential-designer",
+      "difficulty": "hard",
+      "title": "Full Pipeline: Mealy 101 Detector to Circuit Schematic",
+      "statement": "Carry a Mealy '101' detector through the complete design pipeline from state transition specification to minimized excitation equations and synthesized gate schematic netlist.",
+      "parameters": {
+        "pattern": "101",
+        "machine": "mealy",
+        "overlapping": true,
+        "flipFlop": "D",
+        "gateCount": 3
+      },
+      "steps": [
+        {
+          "key": "eq-d0",
+          "prompt": "Derive the minimal Boolean equation for flip-flop input D0.",
+          "kind": "seq-equation",
+          "expected": {
+            "kind": "boolean-step",
+            "resultingExpression": "IN"
+          },
+          "context": {
+            "spec": {
+              "kind": "detector",
+              "pattern": "101",
+              "machine": "mealy",
+              "overlapping": true,
+              "flipFlop": "D"
+            },
+            "functionName": "D0"
+          }
+        },
+        {
+          "key": "eq-d1",
+          "prompt": "Derive the minimal Boolean equation for flip-flop input D1.",
+          "kind": "seq-equation",
+          "expected": {
+            "kind": "boolean-step",
+            "resultingExpression": "Q0 & !IN"
+          },
+          "context": {
+            "spec": {
+              "kind": "detector",
+              "pattern": "101",
+              "machine": "mealy",
+              "overlapping": true,
+              "flipFlop": "D"
+            },
+            "functionName": "D1"
+          }
+        },
+        {
+          "key": "eq-z",
+          "prompt": "Derive the minimal Boolean equation for output Z.",
+          "kind": "seq-equation",
+          "expected": {
+            "kind": "boolean-step",
+            "resultingExpression": "Q1 & IN"
+          },
+          "context": {
+            "spec": {
+              "kind": "detector",
+              "pattern": "101",
+              "machine": "mealy",
+              "overlapping": true,
+              "flipFlop": "D"
+            },
+            "functionName": "Z"
+          }
+        },
+        {
+          "key": "gate-count",
+          "prompt": "How many total logic gates (AND, OR, NOT) are needed to implement the combinational steering logic for D1, D0, and Z?",
+          "kind": "number-conversion-step",
+          "expected": {
+            "kind": "number-conversion-step",
+            "sourceValue": "3",
+            "sourceRadix": 10,
+            "targetRadix": 10,
+            "intermediateWork": ["1 NOT gate for !IN, 1 AND gate for D1, 1 AND gate for Z"],
+            "finalAnswer": "3"
+          }
+        }
+
+      ],
+      "finalAnswer": {
+        "D0": "IN",
+        "D1": "Q0 & !IN",
+        "Z": "Q1 & IN",
+        "gates": 3
+      },
+      "explanation": [
+        "Bit D0 is 1 whenever IN = 1, so D0 connects directly to input IN without gates.",
+        "Bit D1 is asserted when Q0 = 1 and IN = 0, implemented using 1 inverter on IN and 1 two-input AND gate.",
+        "Output Z is asserted when Q1 = 1 and IN = 1, implemented using 1 two-input AND gate.",
+        "The complete combinational steering netlist requires exactly 3 gates: 1 NOT gate (shared for !IN) and 2 AND gates (one for D1, one for Z)."
+      ],
+      "learningObjective": "Execute end-to-end sequential circuit design from state graph to minimized equations and gate netlist synthesis.",
+      "tags": ["wrong-excitation-table", "wrong-law-applied"],
+      "projectSeed": {
+        "flipFlopType": "D",
+        "sequentialSpec": {
+          "kind": "detector",
+          "pattern": "101",
+          "machine": "mealy",
+          "overlapping": true,
+          "flipFlop": "D"
+        },
+        "circuit": {
+          "nodes": [
+            { "id": "in_Q0", "kind": "input", "label": "Q0", "x": 60, "y": 60, "value": 0 },
+            { "id": "in_IN", "kind": "input", "label": "IN", "x": 60, "y": 130, "value": 0 },
+            { "id": "in_Q1", "kind": "input", "label": "Q1", "x": 60, "y": 200, "value": 0 },
+            { "id": "g_not_1", "kind": "gate", "gateType": "NOT", "inputCount": 1, "x": 210, "y": 90 },
+            { "id": "g_and_3", "kind": "gate", "gateType": "AND", "inputCount": 2, "x": 210, "y": 160 },
+            { "id": "g_and_2", "kind": "gate", "gateType": "AND", "inputCount": 2, "x": 370, "y": 130 },
+            { "id": "out_D1", "kind": "output", "label": "D1", "x": 530, "y": 60 },
+            { "id": "out_D0", "kind": "output", "label": "D0", "x": 530, "y": 130 },
+            { "id": "out_Z", "kind": "output", "label": "Z", "x": 530, "y": 200 }
+          ],
+          "wires": [
+            { "id": "w_1", "from": { "nodeId": "in_IN", "pin": 0 }, "to": { "nodeId": "g_not_1", "pin": 0 } },
+            { "id": "w_2", "from": { "nodeId": "in_Q0", "pin": 0 }, "to": { "nodeId": "g_and_2", "pin": 0 } },
+            { "id": "w_3", "from": { "nodeId": "g_not_1", "pin": 0 }, "to": { "nodeId": "g_and_2", "pin": 1 } },
+            { "id": "w_4", "from": { "nodeId": "g_and_2", "pin": 0 }, "to": { "nodeId": "out_D1", "pin": 0 } },
+            { "id": "w_5", "from": { "nodeId": "in_IN", "pin": 0 }, "to": { "nodeId": "out_D0", "pin": 0 } },
+            { "id": "w_6", "from": { "nodeId": "in_Q1", "pin": 0 }, "to": { "nodeId": "g_and_3", "pin": 0 } },
+            { "id": "w_7", "from": { "nodeId": "in_IN", "pin": 0 }, "to": { "nodeId": "g_and_3", "pin": 1 } },
+            { "id": "w_8", "from": { "nodeId": "g_and_3", "pin": 0 }, "to": { "nodeId": "out_Z", "pin": 0 } }
+          ]
+        }
+      }
+    }
+  ]
+}

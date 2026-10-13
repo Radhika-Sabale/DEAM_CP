@@ -136,14 +136,15 @@ function validateProjectFields(raw: unknown): ValidationError[] {
 
   if (obj['circuit'] !== undefined && obj['circuit'] !== null) {
     const circ = obj['circuit'] as Record<string, unknown>;
+    const hasNodes = Array.isArray(circ['nodes']) || Array.isArray(circ['components']);
     if (
       typeof circ !== 'object' ||
-      !Array.isArray(circ['components']) ||
+      !hasNodes ||
       !Array.isArray(circ['wires'])
     ) {
       errors.push({
         field: 'circuit',
-        message: 'circuit must contain components array and wires array.',
+        message: 'circuit must contain nodes array and wires array.',
       });
     }
   }

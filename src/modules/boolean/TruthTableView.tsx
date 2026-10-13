@@ -115,7 +115,7 @@ export const TruthTableView: FC<TruthTableViewProps> = ({
 
       {/* Real HTML <table> with sticky header for up to 64 rows */}
       <div
-        className="max-h-96 overflow-y-auto rounded-lg border border-gray-200 dark:border-gray-800"
+        className="max-h-96 overflow-y-auto overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-800"
         aria-label="Truth Table with keyboard navigation"
       >
         <table className="w-full border-collapse text-left font-mono text-xs">

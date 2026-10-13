@@ -55,6 +55,23 @@ function getProjectKey(id: string): string {
 }
 
 /**
+ * Probes window.localStorage availability, verifying read/write permissions.
+ */
+export function isStorageAvailable(): boolean {
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) {
+      return false;
+    }
+    const testKey = '__delab_storage_probe__';
+    window.localStorage.setItem(testKey, testKey);
+    window.localStorage.removeItem(testKey);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Safely accesses window.localStorage with fallback for sandboxed environments.
  */
 function getStorage(): Storage | null {

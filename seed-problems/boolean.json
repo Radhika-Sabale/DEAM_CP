@@ -1,0 +1,305 @@
+{
+  "moduleId": "boolean-tool",
+  "description": "Seed problems for Boolean Expression Analysis and Simplification",
+  "problems": [
+    {
+      "id": "bool-simplify-a-plus-not-a-b",
+      "moduleId": "boolean-tool",
+      "difficulty": "easy",
+      "title": "Simplify A + A'B using Boolean laws",
+      "statement": "Simplify the Boolean expression A + A'B to its minimal literal form step by step.",
+      "parameters": {
+        "expression": "A + A'B",
+        "variables": ["A", "B"]
+      },
+      "steps": [
+        {
+          "key": "distribute-or-absorb",
+          "prompt": "Apply the distributive law: A + A'B = (A + A')(A + B).",
+          "expected": {
+            "kind": "boolean-step",
+            "appliedLaw": "distributive",
+            "resultingExpression": "(A + A')(A + B)"
+          },
+          "kind": "boolean-step",
+          "context": {
+            "previousStepAnswer": "A + A'B"
+          }
+        },
+        {
+          "key": "complement-step",
+          "prompt": "Replace (A + A') with 1 by the complement law.",
+          "expected": {
+            "kind": "boolean-step",
+            "appliedLaw": "identity",
+            "resultingExpression": "1(A + B)"
+          },
+          "kind": "boolean-step",
+          "context": {
+            "previousStepAnswer": "(A + A')(A + B)"
+          }
+        },
+        {
+          "key": "identity-step",
+          "prompt": "Simplify 1(A + B) to A + B by the identity law.",
+          "expected": {
+            "kind": "boolean-step",
+            "appliedLaw": "identity",
+            "resultingExpression": "A + B"
+          },
+          "kind": "boolean-step",
+          "context": {
+            "previousStepAnswer": "1(A + B)"
+          }
+        }
+      ],
+      "finalAnswer": "A + B",
+      "explanation": [
+        "Step 1: Distribute OR over AND: A + A'B = (A + A')(A + B).",
+        "Step 2: By the complement law, A + A' = 1, giving 1(A + B).",
+        "Step 3: By the identity law for AND, 1 · (A + B) = A + B."
+      ],
+      "learningObjective": "Demonstrate the distributive and complement reduction sequence to eliminate redundant negated literals.",
+      "tags": [
+        "wrong-law-applied"
+      ],
+      "projectSeed": {
+        "targetModule": "boolean-tool",
+        "variables": ["A", "B"],
+        "expression": "A + A'B"
+      }
+    },
+    {
+      "id": "bool-demorgan-product",
+      "moduleId": "boolean-tool",
+      "difficulty": "medium",
+      "title": "Apply De Morgan's Law to (A + B)'(C + D)",
+      "statement": "Apply De Morgan's theorem to the complemented factor (A + B)' in (A + B)'(C + D).",
+      "parameters": {
+        "expression": "(A + B)'(C + D)",
+        "variables": ["A", "B", "C", "D"]
+      },
+      "steps": [
+        {
+          "key": "demorgan-factor",
+          "prompt": "Expand (A + B)' using De Morgan's law into a product of complements.",
+          "expected": {
+            "kind": "boolean-step",
+            "appliedLaw": "de-morgan",
+            "resultingExpression": "A'B'(C + D)"
+          },
+          "kind": "boolean-step",
+          "context": {
+            "previousStepAnswer": "(A + B)'(C + D)"
+          }
+        },
+        {
+          "key": "distribute-terms",
+          "prompt": "Multiply A'B' into (C + D) using the distributive law.",
+          "expected": {
+            "kind": "boolean-step",
+            "appliedLaw": "distributive",
+            "resultingExpression": "A'B'C + A'B'D"
+          },
+          "kind": "boolean-step",
+          "context": {
+            "previousStepAnswer": "A'B'(C + D)"
+          }
+        }
+      ],
+      "finalAnswer": "A'B'C + A'B'D",
+      "explanation": [
+        "Step 1: By De Morgan's law, (A + B)' = A'B', transforming the expression to A'B'(C + D).",
+        "Step 2: Distribute A'B' over (C + D) to obtain the sum of products: A'B'C + A'B'D."
+      ],
+      "learningObjective": "Correctly transform negated sum terms into complement products without sign errors.",
+      "tags": [
+        "demorgan-misapplied"
+      ],
+      "projectSeed": {
+        "targetModule": "boolean-tool",
+        "variables": ["A", "B", "C", "D"],
+        "expression": "(A + B)'(C + D)"
+      }
+    },
+    {
+      "id": "bool-consensus-elimination",
+      "moduleId": "boolean-tool",
+      "difficulty": "hard",
+      "title": "Eliminate redundant consensus term in AB + A'C + BC",
+      "statement": "Identify and remove the redundant consensus term from AB + A'C + BC.",
+      "parameters": {
+        "expression": "AB + A'C + BC",
+        "variables": ["A", "B", "C"]
+      },
+      "steps": [
+        {
+          "key": "consensus-step",
+          "prompt": "Apply the consensus theorem to eliminate the redundant term BC spanned by AB and A'C.",
+          "expected": {
+            "kind": "boolean-step",
+            "appliedLaw": "consensus",
+            "resultingExpression": "AB + A'C"
+          },
+          "kind": "boolean-step",
+          "context": {
+            "previousStepAnswer": "AB + A'C + BC"
+          }
+        }
+      ],
+      "finalAnswer": "AB + A'C",
+      "explanation": [
+        "The consensus of AB and A'C is formed by the remaining literals (B and C) resulting in BC. By the Consensus Theorem (AB + A'C + BC = AB + A'C), the third product term BC is completely redundant and can be eliminated."
+      ],
+      "learningObjective": "Recognize and eliminate consensus terms across mutually complemented literals.",
+      "tags": [
+        "wrong-law-applied"
+      ],
+      "projectSeed": {
+        "targetModule": "boolean-tool",
+        "variables": ["A", "B", "C"],
+        "expression": "AB + A'C + BC"
+      }
+    },
+    {
+      "id": "bool-canonical-sop-pos-3var",
+      "moduleId": "boolean-tool",
+      "difficulty": "medium",
+      "title": "Canonical SOP and POS forms for 3-variable odd parity",
+      "statement": "Construct canonical Sum of Products (SOP) and Product of Sums (POS) expressions for F(A,B,C) = Σm(1, 2, 4, 7).",
+      "parameters": {
+        "variables": ["A", "B", "C"],
+        "minterms": [1, 2, 4, 7],
+        "maxterms": [0, 3, 5, 6]
+      },
+      "steps": [
+        {
+          "key": "canonical-sop",
+          "prompt": "Write the canonical Sum of Products (Σm) for minterms 1, 2, 4, 7.",
+          "expected": {
+            "kind": "boolean-step",
+            "appliedLaw": "canonical-expansion",
+            "resultingExpression": "A'B'C + A'BC' + AB'C' + ABC"
+          },
+          "kind": "boolean-step"
+        },
+        {
+          "key": "canonical-pos",
+          "prompt": "Write the canonical Product of Sums (ΠM) for maxterms 0, 3, 5, 6.",
+          "expected": {
+            "kind": "boolean-step",
+            "appliedLaw": "canonical-expansion",
+            "resultingExpression": "(A + B + C)(A + B' + C')(A' + B + C')(A' + B' + C)"
+          },
+          "kind": "boolean-step"
+        }
+      ],
+      "finalAnswer": "A'B'C + A'BC' + AB'C' + ABC",
+      "explanation": [
+        "Step 1: Each minterm index maps to an AND product term: m1 (001) = A'B'C, m2 (010) = A'BC', m4 (100) = AB'C', m7 (111) = ABC. Sum: A'B'C + A'BC' + AB'C' + ABC.",
+        "Step 2: Maxterms correspond to row outputs of 0: M0 (000) = (A+B+C), M3 (011) = (A+B'+C'), M5 (101) = (A'+B+C'), M6 (110) = (A'+B'+C). Product: (A + B + C)(A + B' + C')(A' + B + C')(A' + B' + C)."
+      ],
+      "learningObjective": "Derive dual canonical SOP and POS representations directly from truth table row indices.",
+      "tags": [
+        "wrong-bit-order"
+      ],
+      "projectSeed": {
+        "targetModule": "boolean-tool",
+        "variables": ["A", "B", "C"],
+        "expression": "A'B'C + A'BC' + AB'C' + ABC"
+      }
+    },
+    {
+      "id": "bool-nand-only-conversion",
+      "moduleId": "boolean-tool",
+      "difficulty": "hard",
+      "title": "Universal NAND-only conversion of A'B + C",
+      "statement": "Synthesize a functionally equivalent NAND-only expression for A'B + C using involution and De Morgan's theorem.",
+      "parameters": {
+        "expression": "A'B + C",
+        "variables": ["A", "B", "C"]
+      },
+      "steps": [
+        {
+          "key": "double-negation",
+          "prompt": "Apply double negation over the entire expression: ((A'B + C)')'.",
+          "expected": {
+            "kind": "boolean-step",
+            "appliedLaw": "involution",
+            "resultingExpression": "((A'B + C)')'"
+          },
+          "kind": "boolean-step",
+          "context": {
+            "previousStepAnswer": "A'B + C"
+          }
+        },
+        {
+          "key": "demorgan-nand",
+          "prompt": "Apply De Morgan's law to the inner complement: ((A'B)' · C')'.",
+          "expected": {
+            "kind": "boolean-step",
+            "appliedLaw": "involution",
+            "resultingExpression": "((A'B)'C')'"
+          },
+          "kind": "boolean-step",
+          "context": {
+            "previousStepAnswer": "((A'B + C)')'"
+          }
+        }
+      ],
+      "finalAnswer": "((A'B)'C')'",
+      "explanation": [
+        "Step 1: Introduce double negation: A'B + C = ((A'B + C)')'.",
+        "Step 2: By De Morgan's theorem on the inner OR operation, (X + Y)' = X' · Y'. Setting X = A'B and Y = C yields ((A'B)' · C')'. This expression contains solely NAND operations."
+      ],
+      "learningObjective": "Convert two-level AND-OR logic into an equivalent all-NAND structure using double negation and De Morgan's duality.",
+      "tags": [
+        "demorgan-misapplied"
+      ],
+      "projectSeed": {
+        "targetModule": "boolean-tool",
+        "variables": ["A", "B", "C"],
+        "expression": "A'B + C"
+      }
+    },
+    {
+      "id": "bool-equivalence-counterexample",
+      "moduleId": "boolean-tool",
+      "difficulty": "easy",
+      "title": "Verify non-equivalence with counterexample: A + B vs AB",
+      "statement": "Demonstrate that A + B is not equivalent to AB by finding an assignment of input variables where their outputs differ.",
+      "parameters": {
+        "expr1": "A + B",
+        "expr2": "AB",
+        "variables": ["A", "B"]
+      },
+      "steps": [
+        {
+          "key": "find-counterexample",
+          "prompt": "Identify variable values where A + B and AB evaluate to different truth values.",
+          "kind": "circuit-step",
+          "expected": {
+            "kind": "circuit-step",
+            "value": "A=1, B=0: (1+0=1) != (1·0=0)"
+          },
+          "context": {
+            "expectedValue": "A=1, B=0: (1+0=1) != (1·0=0)"
+          }
+        }
+      ],
+      "finalAnswer": "A=1, B=0: (1+0=1) != (1·0=0)",
+      "explanation": [
+        "Evaluate at A = 1, B = 0: Expression 1 (A + B) gives 1 + 0 = 1. Expression 2 (AB) gives 1 · 0 = 0. Since the truth outputs differ, the expressions are not equivalent."
+      ],
+      "learningObjective": "Prove non-equivalence between Boolean expressions using concrete truth assignment counterexamples.",
+      "tags": [
+        "other"
+      ],
+      "projectSeed": {
+        "targetModule": "boolean-tool",
+        "variables": ["A", "B"],
+        "expression": "A + B"
+      }
+    }
+  ]
+}
