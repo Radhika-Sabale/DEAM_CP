@@ -161,10 +161,11 @@ export const SimulateCounter: FC<SimulateCounterProps> = ({ session, className =
       <div className="flex flex-wrap items-end gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-xs dark:border-gray-800 dark:bg-gray-900">
         {/* Initial State Select */}
         <div>
-          <label className="block text-xs font-bold text-gray-700 dark:text-gray-300">
+          <label htmlFor="sim-initial-state" className="block text-xs font-bold text-gray-700 dark:text-gray-300">
             Initial State:
           </label>
           <select
+            id="sim-initial-state"
             value={initialState}
             onChange={(e) => {
               setInitialState(Number(e.target.value));
@@ -188,10 +189,11 @@ export const SimulateCounter: FC<SimulateCounterProps> = ({ session, className =
         {hasInput && (
           <div className="flex flex-wrap items-end gap-2">
             <div>
-              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300">
+              <label htmlFor="sim-input-bits" className="block text-xs font-bold text-gray-700 dark:text-gray-300">
                 Input Sequence ({inputLabel}):
               </label>
               <input
+                id="sim-input-bits"
                 type="text"
                 value={inputBits}
                 onChange={(e) => {
@@ -203,10 +205,11 @@ export const SimulateCounter: FC<SimulateCounterProps> = ({ session, className =
               />
             </div>
             <div>
-              <label className="block text-xs font-bold text-gray-700 dark:text-gray-300">
+              <label htmlFor="sim-random-seed" className="block text-xs font-bold text-gray-700 dark:text-gray-300">
                 Seed:
               </label>
               <input
+                id="sim-random-seed"
                 type="number"
                 value={randomSeed}
                 onChange={(e) => setRandomSeed(Number(e.target.value))}
@@ -226,10 +229,11 @@ export const SimulateCounter: FC<SimulateCounterProps> = ({ session, className =
 
         {/* Total Cycles */}
         <div>
-          <label className="block text-xs font-bold text-gray-700 dark:text-gray-300">
+          <label htmlFor="sim-clock-pulses" className="block text-xs font-bold text-gray-700 dark:text-gray-300">
             Clock Pulses:
           </label>
           <input
+            id="sim-clock-pulses"
             type="number"
             min={1}
             max={50}

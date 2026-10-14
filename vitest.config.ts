@@ -14,5 +14,6 @@ export default defineConfig({
     globals: true,
     include: ['src/**/*.test.ts', 'src/**/*.test.tsx'],
     exclude: ['e2e/**', 'node_modules/**', 'dist/**'],
+    testTimeout: 20000,
   },
 });

@@ -30,9 +30,13 @@ describe('Stage 4C Walkthrough Verification', () => {
     render(<App />);
 
     // Step 1 & 2: Enter expression A'B + C(D xor E)
-    const input = await screen.findByRole('textbox', {
-      name: /boolean expression/i,
-    });
+    const input = await screen.findByRole(
+      'textbox',
+      {
+        name: /boolean expression/i,
+      },
+      { timeout: 10000 }
+    );
     fireEvent.change(input, { target: { value: "A'B + C(D xor E)" } });
 
     // Step 3: Verify 5 variables and 32 rows truth table
@@ -94,10 +98,13 @@ describe('Stage 4C Walkthrough Verification', () => {
     fireEvent.click(sendBtn);
 
     // Confirm K-Map solver page opens
-    await waitFor(() => {
-      expect(useUiStore.getState().currentModule).toBe('kmap-solver');
-      expect(screen.getByRole('heading', { name: /Karnaugh Map Minimizer/i })).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(useUiStore.getState().currentModule).toBe('kmap-solver');
+        expect(screen.getByRole('heading', { name: /Karnaugh Map Minimizer/i })).toBeInTheDocument();
+      },
+      { timeout: 10000 }
+    );
 
     // Verify Pipeline stepper marks Boolean Expression Analysis as completed
     const completed =

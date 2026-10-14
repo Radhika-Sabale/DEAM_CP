@@ -210,10 +210,11 @@ export const SequentialPage: FC<SequentialPageProps> = ({ className = '' }) => {
             {/* K-Map Pipeline Handoff Toolbar */}
             <div className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-900">
               <div className="flex flex-wrap items-center gap-2">
-                <label className="text-xs font-bold text-gray-700 dark:text-gray-300">
+                <label htmlFor="kmap-func-counter" className="text-xs font-bold text-gray-700 dark:text-gray-300">
                   Choose function to open in the K-Map:
                 </label>
                 <select
+                  id="kmap-func-counter"
                   value={effectiveKMapFunc}
                   onChange={(e) => setSelectedKMapFunc(e.target.value)}
                   aria-label="Choose function to open in the K-Map"

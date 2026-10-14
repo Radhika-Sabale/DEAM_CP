@@ -85,6 +85,9 @@ function getInitialSidebar(): boolean {
   } catch {
     // Ignore storage errors
   }
+  if (typeof window !== 'undefined' && typeof window.innerWidth === 'number' && window.innerWidth < 768) {
+    return false;
+  }
   return true; // Default open on desktop
 }
 

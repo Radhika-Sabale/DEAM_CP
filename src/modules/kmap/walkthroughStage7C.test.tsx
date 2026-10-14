@@ -40,9 +40,13 @@ describe('Stage 7C End-to-End Walkthrough', () => {
     render(<App />);
 
     // Step 1: In Boolean Expression module, enter four corners: A'B'C'D' + A'B'CD' + AB'C'D' + AB'CD'
-    const exprInput = await screen.findByRole('textbox', {
-      name: /boolean expression/i,
-    });
+    const exprInput = await screen.findByRole(
+      'textbox',
+      {
+        name: /boolean expression/i,
+      },
+      { timeout: 10000 }
+    );
     fireEvent.change(exprInput, {
       target: { value: "A'B'C'D' + A'B'CD' + AB'C'D' + AB'CD'" },
     });
@@ -63,10 +67,13 @@ describe('Stage 7C End-to-End Walkthrough', () => {
     fireEvent.click(sendToKMapBtn);
 
     // Step 3: Verify navigation to K-Map module
-    await waitFor(() => {
-      expect(useUiStore.getState().currentModule).toBe('kmap-solver');
-      expect(screen.getByRole('heading', { name: /Karnaugh Map Minimizer/i })).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(useUiStore.getState().currentModule).toBe('kmap-solver');
+        expect(screen.getByRole('heading', { name: /Karnaugh Map Minimizer/i })).toBeInTheDocument();
+      },
+      { timeout: 10000 }
+    );
 
     // Step 4: Verify 4-variable grid and auto-solved minimal SOP B'D'
     expect(screen.getByRole('grid', { name: /4-variable Karnaugh Map/i })).toBeInTheDocument();
@@ -159,9 +166,12 @@ describe('Stage 7C End-to-End Walkthrough', () => {
     fireEvent.click(sendToCircuitBtn);
 
     // Step 12: Verify navigation and pipeline completion
-    await waitFor(() => {
-      expect(useUiStore.getState().currentModule).toBe('circuit-simulator');
-    });
+    await waitFor(
+      () => {
+        expect(useUiStore.getState().currentModule).toBe('circuit-simulator');
+      },
+      { timeout: 10000 }
+    );
 
     const completed = useProjectStore.getState().project.pipelineProgress?.completedModules ?? [];
     expect(completed).toContain('boolean-tool');

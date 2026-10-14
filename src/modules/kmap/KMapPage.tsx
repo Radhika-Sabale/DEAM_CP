@@ -139,6 +139,7 @@ export const KMapPage: FC = () => {
     setStudentGroups(project.kmap?.studentGroups ? project.kmap.studentGroups.map((g) => [...g.cellIndices]) : []);
     setHighlightedCells([]);
     setRevealedSolution(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project.id]);
 
   // Auto-solve on initial load if unsolved or cells change

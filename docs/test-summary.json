@@ -1,0 +1,145 @@
+{
+  "timestamp": "2026-10-14T09:52:54.584Z",
+  "environment": {
+    "nodeVersion": "v22.23.1",
+    "platform": "win32",
+    "arch": "x64",
+    "vitestVersion": "2.1.9",
+    "playwrightVersion": "1.49.1"
+  },
+  "suiteSummary": {
+    "totalTestFiles": 152,
+    "totalTests": 1022,
+    "passedTests": 1022,
+    "failedTests": 0,
+    "durationSeconds": 63,
+    "success": true
+  },
+  "engineBreakdown": {
+    "boolean": {
+      "files": 2,
+      "tests": 86
+    },
+    "circuit": {
+      "files": 12,
+      "tests": 104
+    },
+    "common": {
+      "files": 4,
+      "tests": 68
+    },
+    "evaluation": {
+      "files": 1,
+      "tests": 20
+    },
+    "feedback": {
+      "files": 6,
+      "tests": 115
+    },
+    "flipflop": {
+      "files": 7,
+      "tests": 58
+    },
+    "kmap": {
+      "files": 3,
+      "tests": 46
+    },
+    "numberSystems": {
+      "files": 1,
+      "tests": 26
+    },
+    "practice": {
+      "files": 3,
+      "tests": 30
+    },
+    "sequential": {
+      "files": 17,
+      "tests": 89
+    }
+  },
+  "uiBreakdown": {
+    "root": {
+      "files": 2,
+      "tests": 3
+    },
+    "hooks": {
+      "files": 2,
+      "tests": 10
+    },
+    "registry.test.ts": {
+      "files": 1,
+      "tests": 5
+    },
+    "walkthroughStage6C.test.tsx": {
+      "files": 1,
+      "tests": 1
+    },
+    "store": {
+      "files": 6,
+      "tests": 33
+    },
+    "types": {
+      "files": 1,
+      "tests": 2
+    },
+    "utils": {
+      "files": 2,
+      "tests": 8
+    },
+    "components": {
+      "files": 7,
+      "tests": 27
+    },
+    "boolean": {
+      "files": 7,
+      "tests": 27
+    },
+    "circuit": {
+      "files": 13,
+      "tests": 43
+    },
+    "flipflop": {
+      "files": 12,
+      "tests": 54
+    },
+    "kmap": {
+      "files": 6,
+      "tests": 25
+    },
+    "numberSystems": {
+      "files": 6,
+      "tests": 19
+    },
+    "practice": {
+      "files": 2,
+      "tests": 10
+    },
+    "research": {
+      "files": 5,
+      "tests": 17
+    },
+    "sequential": {
+      "files": 23,
+      "tests": 96
+    }
+  },
+  "verifiedCorrectnessClaims": {
+    "kmapOracleFunctionsChecked": 10954,
+    "kmapOracleDisagreements": 0,
+    "sequenceDetectorStringsTested": 131008,
+    "sequenceDetectorBitSteps": 1410208,
+    "lockoutDesignsTested": 88,
+    "lockoutRepairsNeeded": 18,
+    "circuit500GatesBitWidth": 100,
+    "circuit500GatesAdditions": 50,
+    "circuitEventQueueEvents": 10000,
+    "practiceProblemGeneratorSeedsPerModule": 100,
+    "practiceKMapOracleProblemsChecked": 300,
+    "e2eTestsTotal": 32,
+    "e2eTestsPassed": 32,
+    "e2eBrowsers": [
+      "Desktop Chromium",
+      "Mobile Chromium (Pixel 5)"
+    ]
+  }
+}

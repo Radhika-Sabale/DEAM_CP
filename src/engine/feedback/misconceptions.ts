@@ -60,6 +60,35 @@ export function toStage1Entry(entry: MisconceptionCatalogEntry): MisconceptionEn
 }
 
 /**
+ * Verified counts of validators and question distractors emitting each misconception tag.
+ */
+export const MISCONCEPTION_EMISSION_COUNTS: Readonly<
+  Record<MisconceptionTag, { readonly validators: number; readonly distractors: number }>
+> = {
+  'forgot-wraparound-grouping': { validators: 1, distractors: 10 },
+  'grouped-non-power-of-two': { validators: 3, distractors: 22 },
+  'group-not-rectangle': { validators: 3, distractors: 1 },
+  'group-not-maximal': { validators: 5, distractors: 3 },
+  'redundant-group': { validators: 7, distractors: 1 },
+  'missed-minterm': { validators: 2, distractors: 0 },
+  'covered-a-zero': { validators: 3, distractors: 2 },
+  'missed-dont-cares': { validators: 2, distractors: 10 },
+  'wrong-excitation-table': { validators: 1, distractors: 14 },
+  'confused-q-and-qnext': { validators: 4, distractors: 23 },
+  'ignored-lockout-state': { validators: 1, distractors: 8 },
+  'wrong-complement': { validators: 3, distractors: 14 },
+  'wrong-radix-weight': { validators: 2, distractors: 12 },
+  'demorgan-misapplied': { validators: 1, distractors: 11 },
+  'wrong-carry-propagation': { validators: 1, distractors: 3 },
+  'wrong-bit-order': { validators: 2, distractors: 1 },
+  'wrong-remainder-order': { validators: 1, distractors: 1 },
+  'wrong-overflow-rule': { validators: 1, distractors: 8 },
+  'wrong-law-applied': { validators: 1, distractors: 27 },
+  'algebra-sign-error': { validators: 2, distractors: 0 },
+  'other': { validators: 15, distractors: 130 },
+};
+
+/**
  * Renders the full misconception catalog as structured Markdown documentation.
  * Suitable for generating `docs/misconception-catalog.md`.
  */
@@ -67,25 +96,55 @@ export function renderCatalogMarkdown(): string {
   const lines: string[] = [
     '# Digital Electronics Virtual Lab: Misconception Catalog',
     '',
-    'This catalog details the student cognitive misconceptions diagnosed by the deterministic feedback engine.',
+    'This catalog details the student cognitive misconceptions diagnosed by the deterministic feedback engine across all laboratory modules. Each entry defines the underlying flawed mental model, the affected modules, an illustrative concrete example, and three progressive hint levels (Nudge, Pointed, and Worked Step).',
+    '',
+    '## Table of Contents',
     '',
   ];
 
   for (const entry of MISCONCEPTION_ENTRIES) {
-    lines.push(`## ${entry.title}`);
+    const slug = entry.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+    lines.push(`- [${entry.title} (\`${entry.tag}\`)](#${slug})`);
+  }
+
+  lines.push('');
+  lines.push('## Summary Table');
+  lines.push('');
+  lines.push('| Tag | Affected Modules | Emitting Validators | Emitting Distractors | Total Sources |');
+  lines.push('| :--- | :--- | :---: | :---: | :---: |');
+
+  for (const entry of MISCONCEPTION_ENTRIES) {
+    const counts = MISCONCEPTION_EMISSION_COUNTS[entry.tag] ?? { validators: 0, distractors: 0 };
+    const total = counts.validators + counts.distractors;
+    lines.push(
+      `| \`${entry.tag}\` | ${entry.affectedModules.map((m) => `\`${m}\``).join(', ')} | ${counts.validators} | ${counts.distractors} | ${total} |`
+    );
+  }
+
+  lines.push('');
+  lines.push('---');
+  lines.push('');
+  lines.push('## Cognitive Misconception Details');
+  lines.push('');
+
+  for (const entry of MISCONCEPTION_ENTRIES) {
+    lines.push(`### ${entry.title}`);
     lines.push('');
     lines.push(`- **Tag**: \`${entry.tag}\``);
     lines.push(`- **Affected Modules**: ${entry.affectedModules.map((m) => `\`${m}\``).join(', ')}`);
-    lines.push(`- **Example**: ${entry.example}`);
+    lines.push(`- **Concrete Example**: ${entry.example}`);
     lines.push('');
-    lines.push('### Cognitive Description');
+    lines.push('#### Cognitive Description (Underlying Mental Model)');
     lines.push(entry.description);
     lines.push('');
-    lines.push('### Hint Templates');
+    lines.push('#### Three-Tiered Progressive Hint Templates');
     const sampleCtx = { expected: '<EXPECTED_VALUE>', got: '<STUDENT_VALUE>' };
     lines.push(`1. **Level 1 (Nudge)**: ${entry.hints.level1(sampleCtx)}`);
     lines.push(`2. **Level 2 (Pointed)**: ${entry.hints.level2(sampleCtx)}`);
-    lines.push(`3. **Level 3 (Worked)**: ${entry.hints.level3(sampleCtx)}`);
+    lines.push(`3. **Level 3 (Worked Step)**: ${entry.hints.level3(sampleCtx)}`);
     lines.push('');
     lines.push('---');
     lines.push('');

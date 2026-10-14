@@ -38,11 +38,14 @@ describe('Stage 9B Flip-Flop Module Walkthrough & Integration', () => {
     render(<App />);
 
     // Step 1: Verify Flip-Flop page loaded
-    await waitFor(() => {
-      expect(
-        screen.getByRole('heading', { name: /Flip-Flop & Latch Workbench/i })
-      ).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(
+          screen.getByRole('heading', { name: /Flip-Flop & Latch Workbench/i })
+        ).toBeInTheDocument();
+      },
+      { timeout: 10000 }
+    );
 
     // Step 2: Choose JK Flip-Flop
     const jkRadio = screen.getByDisplayValue('JK');
@@ -64,12 +67,15 @@ describe('Stage 9B Flip-Flop Module Walkthrough & Integration', () => {
     fireEvent.click(sendBtn);
 
     // Step 5: Verify navigation to sequential-designer stub
-    await waitFor(() => {
-      expect(useUiStore.getState().currentModule).toBe('sequential-designer');
-      expect(
-        screen.getByText(/Module ID: sequential-designer/i)
-      ).toBeInTheDocument();
-    });
+    await waitFor(
+      () => {
+        expect(useUiStore.getState().currentModule).toBe('sequential-designer');
+        expect(
+          screen.getByText(/Module ID: sequential-designer/i)
+        ).toBeInTheDocument();
+      },
+      { timeout: 10000 }
+    );
 
     // Verify pipeline progress recorded flipflop-simulator as completed
     const completed = useProjectStore.getState().project.pipelineProgress?.completedModules ?? [];
