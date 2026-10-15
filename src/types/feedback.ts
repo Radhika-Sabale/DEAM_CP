@@ -20,7 +20,21 @@ export type StepSubmissionKind =
   | 'excitation-entry'
   | 'state-table-row'
   | 'boolean-step'
-  | 'number-conversion-step';
+  | 'number-conversion-step'
+  | 'alu-result'
+  | 'alu-flag'
+  | 'alu-chain-bit'
+  | 'alu-compare'
+  | 'cpu-register'
+  | 'cpu-flag'
+  | 'cpu-memory'
+  | 'cpu-stack'
+  | 'cpu-next-ip'
+  | 'int-frame'
+  | 'int-vector'
+  | 'int-flags'
+  | 'int-priority'
+  | 'int-trap-timing';
 
 /**
  * Student attempt to circle a prime implicant group on a Karnaugh map.
@@ -86,6 +100,304 @@ export interface NumberConversionStepAnswer {
 }
 
 /**
+ * Closed union of reasoning justification choices for ALU flag evaluations.
+ */
+export type AluFlagReasoningOption =
+  | 'carry-out'
+  | 'no-carry-out'
+  | 'borrow-needed'
+  | 'no-borrow-needed'
+  | 'overflow-rule'
+  | 'no-overflow'
+  | 'msb-of-result'
+  | 'msb-is-zero'
+  | 'all-bits-zero'
+  | 'nonzero-result'
+  | 'shift-count-greater-than-one'
+  | 'shifted-out-bit'
+  | 'inc-dec-preserves-carry'
+  | 'none';
+
+/**
+ * Student attempt to compute the numerical/binary result of an ALU operation.
+ */
+export interface AluResultAnswer {
+  readonly kind: 'alu-result';
+  readonly value: number;
+  readonly binaryString?: string;
+}
+
+/**
+ * Student attempt to evaluate one of the ALU status flags (Z, C, S, O).
+ */
+export interface AluFlagAnswer {
+  readonly kind: 'alu-flag';
+  readonly flag: 'Z' | 'C' | 'S' | 'O';
+  readonly value: 0 | 1 | 'undefined';
+  readonly reasoning?: AluFlagReasoningOption;
+}
+
+/**
+ * Student entry for an individual bit stage in the ripple-carry chain.
+ */
+export interface AluChainBitAnswer {
+  readonly kind: 'alu-chain-bit';
+  readonly bitIndex: number;
+  readonly carryIn: 0 | 1;
+  readonly sumBit: 0 | 1;
+  readonly carryOut: 0 | 1;
+}
+
+/**
+ * Student claim about a relational comparison (equal, less, greater) derived from ALU flags.
+ */
+export interface AluCompareAnswer {
+  readonly kind: 'alu-compare';
+  readonly relation:
+    | 'equal'
+    | 'unsigned-less'
+    | 'unsigned-greater'
+    | 'signed-less'
+    | 'signed-greater';
+  readonly answer: boolean;
+}
+
+/**
+ * 8086 CPU register names supported in student step predictions.
+ */
+export type CpuRegisterName =
+  | 'AX'
+  | 'BX'
+  | 'CX'
+  | 'DX'
+  | 'SI'
+  | 'DI'
+  | 'SP'
+  | 'IP'
+  | 'AH'
+  | 'AL'
+  | 'BH'
+  | 'BL'
+  | 'CH'
+  | 'CL'
+  | 'DH'
+  | 'DL';
+
+/**
+ * Common status flag names across ALU and 8086 modules.
+ */
+export type FlagName = 'Z' | 'C' | 'S' | 'O';
+
+/**
+ * Closed reasoning choices for CPU register predictions.
+ */
+export type CpuRegisterReasoningOption =
+  | 'mov-direction-dest-receives-src'
+  | 'partial-register-low-byte'
+  | 'partial-register-high-byte'
+  | 'cmp-discards-difference';
+
+/**
+ * Closed reasoning choices for CPU flag predictions.
+ */
+export type CpuFlagReasoningOption =
+  | 'mov-preserves-flags'
+  | 'inc-dec-preserves-carry'
+  | 'shift-overflow-undefined';
+
+/**
+ * Closed reasoning choices for CPU memory predictions.
+ */
+export type CpuMemoryReasoningOption =
+  | 'little-endian-low-byte-first'
+  | 'immediate-address-vs-value';
+
+/**
+ * Closed reasoning choices for CPU stack predictions.
+ */
+export type CpuStackReasoningOption =
+  | 'stack-decrement-before-write'
+  | 'stack-increment-after-read'
+  | 'call-pushes-next-instruction';
+
+/**
+ * Closed reasoning choices for CPU branch/jump target predictions.
+ */
+export type CpuNextIpReasoningOption =
+  | 'condition-met-jump'
+  | 'condition-not-met-fallthrough';
+
+/**
+ * Discriminated union of all CPU step reasoning choices.
+ */
+export type CpuReasoningOption =
+  | CpuRegisterReasoningOption
+  | CpuFlagReasoningOption
+  | CpuMemoryReasoningOption
+  | CpuStackReasoningOption
+  | CpuNextIpReasoningOption;
+
+/**
+ * Student prediction for an 8086 register value.
+ */
+export interface CpuRegisterAnswer {
+  readonly kind: 'cpu-register';
+  readonly register: CpuRegisterName;
+  readonly value: number;
+  readonly reasoning?: CpuRegisterReasoningOption;
+}
+
+/**
+ * Student prediction for an 8086 status flag value.
+ */
+export interface CpuFlagAnswer {
+  readonly kind: 'cpu-flag';
+  readonly flag: FlagName;
+  readonly value: 0 | 1 | 'undefined';
+  readonly reasoning?: CpuFlagReasoningOption;
+}
+
+/**
+ * Student prediction for an 8086 memory location.
+ */
+export interface CpuMemoryAnswer {
+  readonly kind: 'cpu-memory';
+  readonly address: number;
+  readonly width: 8 | 16;
+  readonly value: number;
+  readonly reasoning?: CpuMemoryReasoningOption;
+}
+
+/**
+ * Student prediction for an 8086 stack operation.
+ */
+export interface CpuStackAnswer {
+  readonly kind: 'cpu-stack';
+  readonly op: 'push' | 'pop';
+  readonly sp: number;
+  readonly address: number;
+  readonly value: number;
+  readonly reasoning?: CpuStackReasoningOption;
+}
+
+/**
+ * Student prediction for 8086 instruction pointer following instruction or branch.
+ */
+export interface CpuNextIpAnswer {
+  readonly kind: 'cpu-next-ip';
+  readonly nextIp: number;
+  readonly reasoning?: CpuNextIpReasoningOption;
+}
+
+/**
+ * Closed reasoning choices for interrupt stack frame predictions.
+ */
+export type IntFrameReasoningOption =
+  | 'flags-cs-ip-pushed-downward'
+  | 'ip-cs-flags-reversed'
+  | 'ret-pops-ip-only'
+  | 'none';
+
+/**
+ * Closed reasoning choices for interrupt vector address predictions.
+ */
+export type IntVectorReasoningOption =
+  | 'vector-times-four'
+  | 'vector-times-two'
+  | 'vector-plus-four'
+  | 'none';
+
+/**
+ * Closed reasoning choices for interrupt flag predictions.
+ */
+export type IntFlagsReasoningOption =
+  | 'hardware-clears-if-tf'
+  | 'iret-restores-flags'
+  | 'flags-unaffected'
+  | 'none';
+
+/**
+ * Closed reasoning choices for interrupt priority predictions.
+ */
+export type IntPriorityReasoningOption =
+  | 'nmi-higher-than-intr'
+  | 'intr-higher-than-nmi'
+  | 'software-preempts-hardware'
+  | 'none';
+
+/**
+ * Closed reasoning choices for single-step trap timing predictions.
+ */
+export type IntTrapTimingReasoningOption =
+  | 'trap-after-next-instruction'
+  | 'trap-immediately-on-popf'
+  | 'none';
+
+/**
+ * Discriminated union of all interrupt step reasoning choices.
+ */
+export type InterruptReasoningOption =
+  | IntFrameReasoningOption
+  | IntVectorReasoningOption
+  | IntFlagsReasoningOption
+  | IntPriorityReasoningOption
+  | IntTrapTimingReasoningOption;
+
+/**
+ * Student prediction for stack words and SP following interrupt entry or return.
+ */
+export interface IntFrameAnswer {
+  readonly kind: 'int-frame';
+  readonly phase: 'entry' | 'return';
+  readonly sp: number;
+  readonly words: readonly number[];
+  readonly reasoning?: IntFrameReasoningOption;
+}
+
+/**
+ * Student prediction for an interrupt vector table descriptor and handler target.
+ */
+export interface IntVectorAnswer {
+  readonly kind: 'int-vector';
+  readonly vector: number;
+  readonly vectorAddress: number;
+  readonly handlerIp: number;
+  readonly installed: boolean;
+  readonly reasoning?: IntVectorReasoningOption;
+}
+
+/**
+ * Student prediction for IF and TF flag values after interrupt entry or IRET.
+ */
+export interface IntFlagsAnswer {
+  readonly kind: 'int-flags';
+  readonly context: 'after-entry' | 'after-iret';
+  readonly ifValue: 0 | 1;
+  readonly tfValue: 0 | 1;
+  readonly reasoning?: IntFlagsReasoningOption;
+}
+
+/**
+ * Student prediction for servicing order among multiple pending interrupts.
+ */
+export interface IntPriorityAnswer {
+  readonly kind: 'int-priority';
+  readonly pendingKinds: readonly ('nmi' | 'intr' | 'software' | 'single-step')[];
+  readonly servicedOrder: readonly ('nmi' | 'intr' | 'software' | 'single-step')[];
+  readonly reasoning?: IntPriorityReasoningOption;
+}
+
+/**
+ * Student prediction for instruction boundary timing of single-step traps.
+ */
+export interface IntTrapTimingAnswer {
+  readonly kind: 'int-trap-timing';
+  readonly tfSetAtIp: number;
+  readonly trapFiresAfterIp: number;
+  readonly reasoning?: IntTrapTimingReasoningOption;
+}
+
+/**
  * Discriminated union of all student response payloads.
  */
 export type StudentAnswer =
@@ -94,7 +406,21 @@ export type StudentAnswer =
   | ExcitationEntryAnswer
   | StateTableRowAnswer
   | BooleanStepAnswer
-  | NumberConversionStepAnswer;
+  | NumberConversionStepAnswer
+  | AluResultAnswer
+  | AluFlagAnswer
+  | AluChainBitAnswer
+  | AluCompareAnswer
+  | CpuRegisterAnswer
+  | CpuFlagAnswer
+  | CpuMemoryAnswer
+  | CpuStackAnswer
+  | CpuNextIpAnswer
+  | IntFrameAnswer
+  | IntVectorAnswer
+  | IntFlagsAnswer
+  | IntPriorityAnswer
+  | IntTrapTimingAnswer;
 
 /**
  * Student step submission presented to the feedback evaluation engine.
@@ -157,6 +483,99 @@ export type ExpectedAnswer =
       readonly kind: 'number-conversion-step';
       readonly targetValue: string;
       readonly intermediateSteps: readonly string[];
+    }
+  | {
+      readonly kind: 'alu-result';
+      readonly expectedValue: number;
+    }
+  | {
+      readonly kind: 'alu-flag';
+      readonly flag: 'Z' | 'C' | 'S' | 'O';
+      readonly expectedValue: 0 | 1 | 'undefined';
+      readonly validReasonings?: readonly AluFlagReasoningOption[];
+    }
+  | {
+      readonly kind: 'alu-chain-bit';
+      readonly bitIndex: number;
+      readonly expectedCarryIn: 0 | 1;
+      readonly expectedSumBit: 0 | 1;
+      readonly expectedCarryOut: 0 | 1;
+    }
+  | {
+      readonly kind: 'alu-compare';
+      readonly relation:
+        | 'equal'
+        | 'unsigned-less'
+        | 'unsigned-greater'
+        | 'signed-less'
+        | 'signed-greater';
+      readonly expectedAnswer: boolean;
+    }
+  | {
+      readonly kind: 'cpu-register';
+      readonly register: CpuRegisterName;
+      readonly expectedValue: number;
+      readonly validReasonings?: readonly CpuRegisterReasoningOption[];
+    }
+  | {
+      readonly kind: 'cpu-flag';
+      readonly flag: FlagName;
+      readonly expectedValue: 0 | 1 | 'undefined';
+      readonly validReasonings?: readonly CpuFlagReasoningOption[];
+    }
+  | {
+      readonly kind: 'cpu-memory';
+      readonly address: number;
+      readonly width: 8 | 16;
+      readonly expectedValue: number;
+      readonly validReasonings?: readonly CpuMemoryReasoningOption[];
+    }
+  | {
+      readonly kind: 'cpu-stack';
+      readonly op: 'push' | 'pop';
+      readonly expectedSp: number;
+      readonly expectedAddress: number;
+      readonly expectedValue: number;
+      readonly validReasonings?: readonly CpuStackReasoningOption[];
+    }
+  | {
+      readonly kind: 'cpu-next-ip';
+      readonly expectedIp: number;
+      readonly validReasonings?: readonly CpuNextIpReasoningOption[];
+    }
+  | {
+      readonly kind: 'int-frame';
+      readonly phase: 'entry' | 'return';
+      readonly expectedSp: number;
+      readonly expectedWords: readonly number[];
+      readonly validReasonings?: readonly IntFrameReasoningOption[];
+    }
+  | {
+      readonly kind: 'int-vector';
+      readonly vector: number;
+      readonly expectedVectorAddress: number;
+      readonly expectedHandlerIp: number;
+      readonly expectedInstalled: boolean;
+      readonly validReasonings?: readonly IntVectorReasoningOption[];
+    }
+  | {
+      readonly kind: 'int-flags';
+      readonly context: 'after-entry' | 'after-iret';
+      readonly expectedIf: 0 | 1;
+      readonly expectedTf: 0 | 1;
+      readonly validReasonings?: readonly IntFlagsReasoningOption[];
+    }
+  | {
+      readonly kind: 'int-priority';
+      readonly pendingKinds: readonly ('nmi' | 'intr' | 'software' | 'single-step')[];
+      readonly expectedServicedOrder: readonly ('nmi' | 'intr' | 'software' | 'single-step')[];
+      readonly validReasonings?: readonly IntPriorityReasoningOption[];
+    }
+  | {
+      readonly kind: 'int-trap-timing';
+      readonly tfSetAtIp: number;
+      readonly expectedTrapFiresAfterIp: number;
+      readonly validReasonings?: readonly IntTrapTimingReasoningOption[];
     };
 
 /**
@@ -191,6 +610,99 @@ export type GotAnswer =
       readonly kind: 'number-conversion-step';
       readonly studentValue: string;
       readonly intermediateWork: readonly string[];
+    }
+  | {
+      readonly kind: 'alu-result';
+      readonly studentValue: number;
+    }
+  | {
+      readonly kind: 'alu-flag';
+      readonly flag: 'Z' | 'C' | 'S' | 'O';
+      readonly studentValue: 0 | 1 | 'undefined';
+      readonly studentReasoning?: AluFlagReasoningOption;
+    }
+  | {
+      readonly kind: 'alu-chain-bit';
+      readonly bitIndex: number;
+      readonly studentCarryIn: 0 | 1;
+      readonly studentSumBit: 0 | 1;
+      readonly studentCarryOut: 0 | 1;
+    }
+  | {
+      readonly kind: 'alu-compare';
+      readonly relation:
+        | 'equal'
+        | 'unsigned-less'
+        | 'unsigned-greater'
+        | 'signed-less'
+        | 'signed-greater';
+      readonly studentAnswer: boolean;
+    }
+  | {
+      readonly kind: 'cpu-register';
+      readonly register: CpuRegisterName;
+      readonly studentValue: number;
+      readonly studentReasoning?: CpuRegisterReasoningOption;
+    }
+  | {
+      readonly kind: 'cpu-flag';
+      readonly flag: FlagName;
+      readonly studentValue: 0 | 1 | 'undefined';
+      readonly studentReasoning?: CpuFlagReasoningOption;
+    }
+  | {
+      readonly kind: 'cpu-memory';
+      readonly address: number;
+      readonly width: 8 | 16;
+      readonly studentValue: number;
+      readonly studentReasoning?: CpuMemoryReasoningOption;
+    }
+  | {
+      readonly kind: 'cpu-stack';
+      readonly op: 'push' | 'pop';
+      readonly studentSp: number;
+      readonly studentAddress: number;
+      readonly studentValue: number;
+      readonly studentReasoning?: CpuStackReasoningOption;
+    }
+  | {
+      readonly kind: 'cpu-next-ip';
+      readonly studentNextIp: number;
+      readonly studentReasoning?: CpuNextIpReasoningOption;
+    }
+  | {
+      readonly kind: 'int-frame';
+      readonly phase: 'entry' | 'return';
+      readonly studentSp: number;
+      readonly studentWords: readonly number[];
+      readonly studentReasoning?: IntFrameReasoningOption;
+    }
+  | {
+      readonly kind: 'int-vector';
+      readonly vector: number;
+      readonly studentVectorAddress: number;
+      readonly studentHandlerIp: number;
+      readonly studentInstalled: boolean;
+      readonly studentReasoning?: IntVectorReasoningOption;
+    }
+  | {
+      readonly kind: 'int-flags';
+      readonly context: 'after-entry' | 'after-iret';
+      readonly studentIf: 0 | 1;
+      readonly studentTf: 0 | 1;
+      readonly studentReasoning?: IntFlagsReasoningOption;
+    }
+  | {
+      readonly kind: 'int-priority';
+      readonly pendingKinds: readonly ('nmi' | 'intr' | 'software' | 'single-step')[];
+      readonly studentServicedOrder: readonly ('nmi' | 'intr' | 'software' | 'single-step')[];
+      readonly studentReasoning?: IntPriorityReasoningOption;
+    }
+  | {
+      readonly kind: 'int-trap-timing';
+      readonly tfSetAtIp: number;
+      readonly studentTrapFiresAfterIp: number;
+      readonly studentReasoning?: IntTrapTimingReasoningOption;
     };
 
 /**
@@ -215,8 +727,37 @@ export type MisconceptionTag =
   | 'wrong-bit-order'
   | 'wrong-remainder-order'
   | 'wrong-overflow-rule'
+  | 'wrong-borrow-convention'
+  | 'forgot-invert-b-in-subtract'
+  | 'wrong-shift-carry-out'
+  | 'wrong-sign-flag'
+  | 'wrong-zero-flag'
+  | 'wrong-cmp-relation'
+  | 'inc-dec-changes-carry'
   | 'wrong-law-applied'
   | 'algebra-sign-error'
+  | 'wrong-jcc-condition'
+  | 'wrong-push-order'
+  | 'wrong-stack-direction'
+  | 'confused-mov-direction'
+  | 'cmp-stores-result'
+  | 'mov-affects-flags'
+  | 'wrong-call-return-address'
+  | 'wrong-byte-order'
+  | 'wrong-address-vs-value'
+  | 'wrong-partial-register'
+  | 'wrong-ip-after-jump'
+  | 'ret-instead-of-iret'
+  | 'wrong-ivt-address'
+  | 'wrong-int-frame-order'
+  | 'wrong-int-frame-size'
+  | 'if-tf-not-cleared-on-entry'
+  | 'nmi-treated-as-maskable'
+  | 'intr-ignores-if'
+  | 'forgot-sti-in-handler-for-nesting'
+  | 'wrong-interrupt-priority'
+  | 'tf-trap-timing'
+  | 'unset-vector-assumed-valid'
   | 'other';
 
 /**

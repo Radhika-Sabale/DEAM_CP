@@ -153,6 +153,57 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
     }
   };
 
+  const renderNavModule = (mod: (typeof MODULE_REGISTRY)[number]) => {
+    if (mod.isAvailable) {
+      const isActive = currentModule === mod.id;
+      return (
+        <li key={mod.id}>
+          <button
+            type="button"
+            onClick={() => {
+              setModule(mod.id);
+              if (window.innerWidth < 768) {
+                setSidebarOpen(false);
+              }
+            }}
+            aria-current={isActive ? 'page' : undefined}
+            className={`flex w-full flex-col rounded-lg px-3 py-2 text-left transition-colors focus-visible:outline-2 focus-visible:outline-blue-600 ${
+              isActive
+                ? 'bg-blue-50 font-semibold text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
+                : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
+            }`}
+          >
+            <span className="text-sm">{mod.title}</span>
+            <span className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-1">
+              {mod.description}
+            </span>
+          </button>
+        </li>
+      );
+    }
+
+    return (
+      <li key={mod.id}>
+        <div
+          aria-disabled="true"
+          className="flex w-full flex-col rounded-lg px-3 py-2 text-left opacity-60 cursor-not-allowed"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+              {mod.title}
+            </span>
+            <span className="rounded bg-gray-200 px-1.5 py-0.5 text-[10px] font-bold text-gray-600 dark:bg-gray-800 dark:text-gray-400">
+              {mod.phase === 2 ? 'Coming in Phase 2' : 'Coming Soon'}
+            </span>
+          </div>
+          <span className="text-[11px] text-gray-400 dark:text-gray-500">
+            {mod.description}
+          </span>
+        </div>
+      </li>
+    );
+  };
+
   return (
     <div className="flex min-h-screen flex-col bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
       {/* Accessible Skip Link */}
@@ -383,33 +434,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
                 Phase 1 Core Modules
               </div>
               <ul className="space-y-1">
-                {MODULE_REGISTRY.filter((m) => m.phase === 1).map((mod) => {
-                  const isActive = currentModule === mod.id;
-                  return (
-                    <li key={mod.id}>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setModule(mod.id);
-                          if (window.innerWidth < 768) {
-                            setSidebarOpen(false);
-                          }
-                        }}
-                        aria-current={isActive ? 'page' : undefined}
-                        className={`flex w-full flex-col rounded-lg px-3 py-2 text-left transition-colors focus-visible:outline-2 focus-visible:outline-blue-600 ${
-                          isActive
-                            ? 'bg-blue-50 font-semibold text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
-                            : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
-                        }`}
-                      >
-                        <span className="text-sm">{mod.title}</span>
-                        <span className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-1">
-                          {mod.description}
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
+                {MODULE_REGISTRY.filter((m) => m.phase === 1).map(renderNavModule)}
               </ul>
             </div>
 
@@ -418,26 +443,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
                 Phase 2 Modules
               </div>
               <ul className="space-y-1">
-                {MODULE_REGISTRY.filter((m) => m.phase === 2).map((mod) => (
-                  <li key={mod.id}>
-                    <div
-                      aria-disabled="true"
-                      className="flex w-full flex-col rounded-lg px-3 py-2 text-left opacity-60 cursor-not-allowed"
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-                          {mod.title}
-                        </span>
-                        <span className="rounded bg-gray-200 px-1.5 py-0.5 text-[10px] font-bold text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-                          Coming in Phase 2
-                        </span>
-                      </div>
-                      <span className="text-[11px] text-gray-400 dark:text-gray-500">
-                        {mod.description}
-                      </span>
-                    </div>
-                  </li>
-                ))}
+                {MODULE_REGISTRY.filter((m) => m.phase === 2).map(renderNavModule)}
               </ul>
             </div>
           </nav>

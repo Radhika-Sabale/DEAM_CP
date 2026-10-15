@@ -144,6 +144,78 @@ export interface LastHandoffMetadata {
 }
 
 /**
+ * Closed union of supported ALU operation identifiers.
+ */
+export type AluOpId =
+  | 'ADD'
+  | 'SUB'
+  | 'CMP'
+  | 'AND'
+  | 'OR'
+  | 'XOR'
+  | 'NOT'
+  | 'INC'
+  | 'DEC'
+  | 'SHL'
+  | 'SHR'
+  | 'SAR'
+  | 'ROL'
+  | 'ROR';
+
+/**
+ * Persisted state of the Arithmetic Logic Unit (ALU) exploration workbench.
+ */
+export interface AluState {
+  /** Active ALU operation */
+  readonly op: AluOpId;
+  /** Bit width (2..16, typically 4 or 8) */
+  readonly width: number;
+  /** Unsigned operand A value */
+  readonly a: number;
+  /** Unsigned operand B value */
+  readonly b: number;
+  /** Optional shift count (1..width) */
+  readonly shiftCount?: number;
+  /** Incoming carry value for INC/DEC */
+  readonly previousC?: 0 | 1;
+}
+
+/**
+ * 8086 CPU module persistent state within a DesignProject.
+ * Only the assembler source text and breakpoint line numbers are saved;
+ * CPU machine state is re-derived dynamically by assembling and executing.
+ */
+export interface Cpu8086ProjectState {
+  /** Assembly program source text */
+  readonly source: string;
+  /** 1-based source line numbers of set breakpoints */
+  readonly breakpoints: readonly number[];
+}
+
+/**
+ * Scheduled external interrupt event persisted within an interrupt scenario.
+ */
+export interface InterruptScenarioProjectEvent {
+  readonly atTick: number;
+  readonly kind: 'nmi' | 'intr';
+  readonly vector?: number;
+}
+
+/**
+ * Interrupt Controller module persistent state within a DesignProject.
+ * Only the assembler source, breakpoints, and scenario events are saved;
+ * machine state, IVT, and interrupt logs are rebuilt dynamically.
+ */
+export interface InterruptProjectState {
+  /** Assembly program source text */
+  readonly source: string;
+  /** 1-based source line numbers of set breakpoints */
+  readonly breakpoints: readonly number[];
+  /** Scheduled external interrupt scenario events */
+  readonly scenario: readonly InterruptScenarioProjectEvent[];
+}
+
+/**
  * Master project model shared across all modules.
  * Everything is strictly JSON-serializable (plain objects, arrays, strings, numbers, booleans).
  * Every field except identity and schemaVersion is optional/nullable to allow partial progress.
@@ -186,6 +258,12 @@ export interface DesignProject {
   nextStateEquations?: NextStateEquations | null;
   /** Clocked waveform simulation trace */
   simulationTrace?: SimulationTrace | null;
+  /** Arithmetic Logic Unit configuration, operands, and active operation */
+  alu?: AluState | null;
+  /** 8086 Microprocessor assembly source and breakpoint configuration */
+  cpu8086?: Cpu8086ProjectState | null;
+  /** Interrupt Controller assembly source, breakpoints, and scenario events */
+  interrupts?: InterruptProjectState | null;
   /** Stage and module completion tracking */
   pipelineProgress?: PipelineProgress;
   /** Most recent inter-module handoff transmission record */
@@ -231,6 +309,9 @@ export function createEmptyDesignProject(
     excitationTable: null,
     nextStateEquations: null,
     simulationTrace: null,
+    alu: null,
+    cpu8086: null,
+    interrupts: null,
     pipelineProgress: {
       completedModules: [],
     },

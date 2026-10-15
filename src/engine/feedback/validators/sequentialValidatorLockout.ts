@@ -43,7 +43,7 @@ export function validateSeqLockoutClaim(
   } else if ('claimedStates' in ans && Array.isArray((ans as { claimedStates: unknown }).claimedStates)) {
     claimedList = (ans as { claimedStates: number[] }).claimedStates;
   } else if ('value' in ans && Array.isArray((ans as { value: unknown }).value)) {
-    claimedList = (ans as { value: number[] }).value;
+    claimedList = (ans as unknown as { value: number[] }).value;
   }
 
   const trueLockout = Array.from(new Set([...analysis.lockedStates, ...analysis.indeterminateStates])).sort((a, b) => a - b);

@@ -25,6 +25,35 @@ This catalog details the student cognitive misconceptions diagnosed by the deter
 - [Mislabeled or Incorrect Boolean Law Justification (`wrong-law-applied`)](#mislabeled-or-incorrect-boolean-law-justification)
 - [Algebraic Dual or Sign Error in Boolean Manipulation (`algebra-sign-error`)](#algebraic-dual-or-sign-error-in-boolean-manipulation)
 - [General or Unclassified Step Discrepancy (`other`)](#general-or-unclassified-step-discrepancy)
+- [Reversed Subtraction Borrow/Carry Convention (8086 CF=1 on Borrow) (`wrong-borrow-convention`)](#reversed-subtraction-borrow-carry-convention-8086-cf-1-on-borrow)
+- [Omitted Operand Inversion in Two's Complement Subtraction (`forgot-invert-b-in-subtract`)](#omitted-operand-inversion-in-two-s-complement-subtraction)
+- [Incorrect Bit Shifted into Carry Flag (`wrong-shift-carry-out`)](#incorrect-bit-shifted-into-carry-flag)
+- [Incorrect Sign Flag Evaluation (`wrong-sign-flag`)](#incorrect-sign-flag-evaluation)
+- [Incorrect Zero Flag Evaluation (`wrong-zero-flag`)](#incorrect-zero-flag-evaluation)
+- [Mismatched Compare Condition Flags (Signed vs Unsigned) (`wrong-cmp-relation`)](#mismatched-compare-condition-flags-signed-vs-unsigned)
+- [Assumed INC/DEC Modifies the Carry Flag (`inc-dec-changes-carry`)](#assumed-inc-dec-modifies-the-carry-flag)
+- [Incorrect Conditional Branch Flag Condition (`wrong-jcc-condition`)](#incorrect-conditional-branch-flag-condition)
+- [Incorrect PUSH/POP Stack Pointer Operation Sequence (`wrong-push-order`)](#incorrect-push-pop-stack-pointer-operation-sequence)
+- [Inverted Stack Growth Direction (`wrong-stack-direction`)](#inverted-stack-growth-direction)
+- [Inverted MOV Operand Direction (Source vs Destination) (`confused-mov-direction`)](#inverted-mov-operand-direction-source-vs-destination)
+- [Assumed CMP Updates Destination Register (`cmp-stores-result`)](#assumed-cmp-updates-destination-register)
+- [Assumed MOV Alters Status Flags (`mov-affects-flags`)](#assumed-mov-alters-status-flags)
+- [Incorrect CALL Return Address on Stack (`wrong-call-return-address`)](#incorrect-call-return-address-on-stack)
+- [Big-Endian Byte Layout in Little-Endian Memory (`wrong-byte-order`)](#big-endian-byte-layout-in-little-endian-memory)
+- [Immediate Address vs Dereferenced Memory Value (`wrong-address-vs-value`)](#immediate-address-vs-dereferenced-memory-value)
+- [Ignored Partial Register Overlap (AL/AH and AX) (`wrong-partial-register`)](#ignored-partial-register-overlap-al-ah-and-ax)
+- [Incorrect Instruction Pointer Following Branch (`wrong-ip-after-jump`)](#incorrect-instruction-pointer-following-branch)
+- [Incorrect Interrupt Vector Table Address Calculation (`wrong-ivt-address`)](#incorrect-interrupt-vector-table-address-calculation)
+- [Uninstalled Interrupt Vector Assumed Valid (`unset-vector-assumed-valid`)](#uninstalled-interrupt-vector-assumed-valid)
+- [Incorrect Interrupt Stack Frame Byte Size (`wrong-int-frame-size`)](#incorrect-interrupt-stack-frame-byte-size)
+- [Incorrect Interrupt Stack Frame Word Ordering (`wrong-int-frame-order`)](#incorrect-interrupt-stack-frame-word-ordering)
+- [Used RET Instead of IRET to Exit Interrupt Handler (`ret-instead-of-iret`)](#used-ret-instead-of-iret-to-exit-interrupt-handler)
+- [Assumed IF and TF Retained Across Interrupt Entry (`if-tf-not-cleared-on-entry`)](#assumed-if-and-tf-retained-across-interrupt-entry)
+- [Treated Non-Maskable Interrupt (NMI) as Blocked by IF=0 (`nmi-treated-as-maskable`)](#treated-non-maskable-interrupt-nmi-as-blocked-by-if-0)
+- [Assumed INTR Serviced While Interrupt Flag (IF) is Cleared (`intr-ignores-if`)](#assumed-intr-serviced-while-interrupt-flag-if-is-cleared)
+- [Expected Interrupt Nesting Without STI in Handler (`forgot-sti-in-handler-for-nesting`)](#expected-interrupt-nesting-without-sti-in-handler)
+- [Incorrect Simultaneous Interrupt Servicing Priority (`wrong-interrupt-priority`)](#incorrect-simultaneous-interrupt-servicing-priority)
+- [Premature Single-Step Trap Timing on TF Set (`tf-trap-timing`)](#premature-single-step-trap-timing-on-tf-set)
 
 ## Summary Table
 
@@ -41,16 +70,45 @@ This catalog details the student cognitive misconceptions diagnosed by the deter
 | `wrong-excitation-table` | `sequential` | 1 | 14 | 15 |
 | `confused-q-and-qnext` | `sequential` | 4 | 23 | 27 |
 | `ignored-lockout-state` | `sequential` | 1 | 8 | 9 |
-| `wrong-complement` | `numberSystems` | 3 | 14 | 17 |
+| `wrong-complement` | `numberSystems`, `alu` | 3 | 14 | 17 |
 | `wrong-radix-weight` | `numberSystems` | 2 | 12 | 14 |
 | `demorgan-misapplied` | `boolean` | 1 | 11 | 12 |
-| `wrong-carry-propagation` | `numberSystems` | 1 | 3 | 4 |
+| `wrong-carry-propagation` | `numberSystems`, `alu` | 1 | 3 | 4 |
 | `wrong-bit-order` | `numberSystems` | 2 | 1 | 3 |
 | `wrong-remainder-order` | `numberSystems` | 1 | 1 | 2 |
-| `wrong-overflow-rule` | `numberSystems` | 1 | 8 | 9 |
+| `wrong-overflow-rule` | `numberSystems`, `alu`, `cpu8086` | 1 | 8 | 9 |
 | `wrong-law-applied` | `boolean` | 1 | 27 | 28 |
 | `algebra-sign-error` | `boolean` | 2 | 0 | 2 |
-| `other` | `kmap`, `sequential`, `numberSystems`, `boolean` | 15 | 130 | 145 |
+| `other` | `kmap`, `sequential`, `numberSystems`, `boolean`, `alu`, `cpu8086` | 16 | 130 | 146 |
+| `wrong-borrow-convention` | `alu`, `numberSystems`, `cpu8086` | 1 | 0 | 1 |
+| `forgot-invert-b-in-subtract` | `alu` | 1 | 0 | 1 |
+| `wrong-shift-carry-out` | `alu`, `cpu8086` | 1 | 0 | 1 |
+| `wrong-sign-flag` | `alu`, `cpu8086` | 1 | 0 | 1 |
+| `wrong-zero-flag` | `alu`, `cpu8086` | 1 | 0 | 1 |
+| `wrong-cmp-relation` | `alu`, `cpu8086` | 1 | 0 | 1 |
+| `inc-dec-changes-carry` | `alu`, `cpu8086` | 1 | 0 | 1 |
+| `wrong-jcc-condition` | `cpu8086` | 1 | 0 | 1 |
+| `wrong-push-order` | `cpu8086`, `interrupt-controller` | 2 | 0 | 2 |
+| `wrong-stack-direction` | `cpu8086`, `interrupt-controller` | 2 | 0 | 2 |
+| `confused-mov-direction` | `cpu8086` | 1 | 0 | 1 |
+| `cmp-stores-result` | `cpu8086` | 1 | 0 | 1 |
+| `mov-affects-flags` | `cpu8086` | 1 | 0 | 1 |
+| `wrong-call-return-address` | `cpu8086`, `interrupt-controller` | 2 | 0 | 2 |
+| `wrong-byte-order` | `cpu8086`, `interrupt-controller` | 2 | 0 | 2 |
+| `wrong-address-vs-value` | `cpu8086` | 1 | 0 | 1 |
+| `wrong-partial-register` | `cpu8086` | 1 | 0 | 1 |
+| `wrong-ip-after-jump` | `cpu8086` | 1 | 0 | 1 |
+| `wrong-ivt-address` | `interrupt-controller` | 1 | 0 | 1 |
+| `unset-vector-assumed-valid` | `interrupt-controller` | 1 | 0 | 1 |
+| `wrong-int-frame-size` | `interrupt-controller` | 1 | 0 | 1 |
+| `wrong-int-frame-order` | `interrupt-controller` | 1 | 0 | 1 |
+| `ret-instead-of-iret` | `interrupt-controller` | 1 | 0 | 1 |
+| `if-tf-not-cleared-on-entry` | `interrupt-controller` | 1 | 0 | 1 |
+| `nmi-treated-as-maskable` | `interrupt-controller` | 1 | 0 | 1 |
+| `intr-ignores-if` | `interrupt-controller` | 1 | 0 | 1 |
+| `forgot-sti-in-handler-for-nesting` | `interrupt-controller` | 1 | 0 | 1 |
+| `wrong-interrupt-priority` | `interrupt-controller` | 1 | 0 | 1 |
+| `tf-trap-timing` | `interrupt-controller` | 1 | 0 | 1 |
 
 ---
 
@@ -235,7 +293,7 @@ The student assumes unused states in an incomplete state counter will naturally 
 ### Flawed Two's or Radix Complement Calculation
 
 - **Tag**: `wrong-complement`
-- **Affected Modules**: `numberSystems`
+- **Affected Modules**: `numberSystems`, `alu`
 - **Concrete Example**: Computing 2's complement of 0101 as 1010 instead of 1011 (forgot to add 1).
 
 #### Cognitive Description (Underlying Mental Model)
@@ -283,7 +341,7 @@ The student splits a complement bar across terms but forgets to interchange AND 
 ### Dropped or Erroneous Addition Carry Bit
 
 - **Tag**: `wrong-carry-propagation`
-- **Affected Modules**: `numberSystems`
+- **Affected Modules**: `numberSystems`, `alu`
 - **Concrete Example**: Computing 1 + 1 = 0 but failing to carry 1 to the next column, leaving sum 0 instead of 10.
 
 #### Cognitive Description (Underlying Mental Model)
@@ -331,7 +389,7 @@ The student reads successive division remainders from top to bottom instead of b
 ### Confused Signed Overflow with Unsigned Carry
 
 - **Tag**: `wrong-overflow-rule`
-- **Affected Modules**: `numberSystems`
+- **Affected Modules**: `numberSystems`, `alu`, `cpu8086`
 - **Concrete Example**: Claiming overflow occurred in 7 + 1 = 8 (unsigned) when interpreting as signed 4-bit numbers.
 
 #### Cognitive Description (Underlying Mental Model)
@@ -379,7 +437,7 @@ The student incorrectly distributes an operator over an identical operator or dr
 ### General or Unclassified Step Discrepancy
 
 - **Tag**: `other`
-- **Affected Modules**: `kmap`, `sequential`, `numberSystems`, `boolean`
+- **Affected Modules**: `kmap`, `sequential`, `numberSystems`, `boolean`, `alu`, `cpu8086`
 - **Concrete Example**: Submitting an arbitrary incorrect expression or calculation that fails logical equivalence.
 
 #### Cognitive Description (Underlying Mental Model)
@@ -389,5 +447,469 @@ The student's step does not match any known common misconception pattern in the 
 1. **Level 1 (Nudge)**: Your current step does not match the expected state for this transformation.
 2. **Level 2 (Pointed)**: Compare your result against a truth table or step calculation to identify where it deviates.
 3. **Level 3 (Worked Step)**: The correct value for this step is: <EXPECTED_VALUE>.
+
+---
+
+### Reversed Subtraction Borrow/Carry Convention (8086 CF=1 on Borrow)
+
+- **Tag**: `wrong-borrow-convention`
+- **Affected Modules**: `alu`, `numberSystems`, `cpu8086`
+- **Concrete Example**: Computing 5 - 7 with 4-bit operands yields borrow; student predicts CF = 0 instead of CF = 1.
+
+#### Cognitive Description (Underlying Mental Model)
+The student misinterprets the Carry Flag during subtraction or comparison. In x86/8086 microprocessors, CF = 1 indicates that an unsigned borrow occurred (A < B). Students frequently assume CF = 1 indicates "no borrow" (as in 6502/ARM inverted carry conventions) or fail to realize that subtraction inverts the adder carry-out.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: In 8086 architecture, the Carry Flag (CF) acts as an active-high borrow indicator during subtraction.
+2. **Level 2 (Pointed)**: Check whether operand A is strictly less than operand B (unsigned). If A < B, a borrow occurs and CF must be 1.
+3. **Level 3 (Worked Step)**: Since A < B unsigned, a borrow is required, setting the Carry Flag: <EXPECTED_VALUE>.
+
+---
+
+### Omitted Operand Inversion in Two's Complement Subtraction
+
+- **Tag**: `forgot-invert-b-in-subtract`
+- **Affected Modules**: `alu`
+- **Concrete Example**: Computing 7 - 3 = 4; student calculates 7 + 3 = 10 (binary 1010) instead of 7 + (~3) + 1.
+
+#### Cognitive Description (Underlying Mental Model)
+The student attempts subtraction (A - B) by computing A + B or A + B + 1 directly, omitting the bitwise inversion (~B) step required by two's complement hardware. An adder performs subtraction as A + ~B + 1.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Binary subtraction in hardware is performed by adding the two's complement of the subtrahend: A + NOT(B) + 1.
+2. **Level 2 (Pointed)**: Make sure you invert all bits of operand B before feeding it into the adder with carry-in set to 1.
+3. **Level 3 (Worked Step)**: Inverting B and adding 1 produces the correct subtraction result: <EXPECTED_VALUE>.
+
+---
+
+### Incorrect Bit Shifted into Carry Flag
+
+- **Tag**: `wrong-shift-carry-out`
+- **Affected Modules**: `alu`, `cpu8086`
+- **Concrete Example**: Executing SHR 1100_2 by 1; student sets CF = 1 (copying the MSB) instead of CF = 0 (the bit shifted out of bit 0).
+
+#### Cognitive Description (Underlying Mental Model)
+The student misidentifies which bit is shifted into the Carry Flag during a shift or rotate operation. For SHL/ROL, the bit pushed out from the MSB enters CF; for SHR/SAR/ROR, the bit pushed out from the LSB enters CF.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: The Carry Flag receives the last bit shifted completely out of the operand register.
+2. **Level 2 (Pointed)**: For left shifts/rotates, CF receives the former MSB; for right shifts/rotates, CF receives the former LSB.
+3. **Level 3 (Worked Step)**: The bit shifted out of the boundary into CF is: <EXPECTED_VALUE>.
+
+---
+
+### Incorrect Sign Flag Evaluation
+
+- **Tag**: `wrong-sign-flag`
+- **Affected Modules**: `alu`, `cpu8086`
+- **Concrete Example**: Computing 7 + 2 = 9 (1001_2 in 4-bit); student reports SF = 0 because inputs were positive, ignoring that MSB is 1.
+
+#### Cognitive Description (Underlying Mental Model)
+The student misdetermines the Sign Flag (SF) of the ALU result. In two's complement representation, SF must strictly mirror the Most Significant Bit (MSB) of the truncated result width, regardless of whether unsigned interpretation was intended.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: The Sign Flag (SF) is always equal to the Most Significant Bit (MSB) of the result.
+2. **Level 2 (Pointed)**: Inspect the leftmost bit of your result; if MSB is 1, SF is 1, and if MSB is 0, SF is 0.
+3. **Level 3 (Worked Step)**: The MSB of the result determines the Sign Flag: <EXPECTED_VALUE>.
+
+---
+
+### Incorrect Zero Flag Evaluation
+
+- **Tag**: `wrong-zero-flag`
+- **Affected Modules**: `alu`, `cpu8086`
+- **Concrete Example**: Computing 5 - 5 = 0; student reports ZF = 0 believing "no error" means 0.
+
+#### Cognitive Description (Underlying Mental Model)
+The student sets ZF = 1 when the ALU output is non-zero, or leaves ZF = 0 when the output bits are all zero. The Zero Flag asserts if and only if all bits of the result slice are 0.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: The Zero Flag (ZF) indicates whether the entire result slice equals zero.
+2. **Level 2 (Pointed)**: Check if all bits in the output are zero: if result == 0, ZF = 1, otherwise ZF = 0.
+3. **Level 3 (Worked Step)**: Since the output is nonzero, the Zero Flag must be: <EXPECTED_VALUE>.
+
+---
+
+### Mismatched Compare Condition Flags (Signed vs Unsigned)
+
+- **Tag**: `wrong-cmp-relation`
+- **Affected Modules**: `alu`, `cpu8086`
+- **Concrete Example**: Comparing signed numbers 7 and -2 using unsigned CF, concluding 7 < -2 because 7 - 0xFE generated a borrow.
+
+#### Cognitive Description (Underlying Mental Model)
+The student misinterprets condition codes following a CMP operation or in conditional jumps (Jcc), confusing unsigned conditions (based on CF and ZF) with signed conditions (based on SF, OF, and ZF). For example, evaluating signed JL using unsigned CF instead of checking whether SF != OF, or evaluating unsigned JA using signed flags.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Unsigned comparisons evaluate CF and ZF; signed comparisons evaluate whether SF matches OF.
+2. **Level 2 (Pointed)**: For signed less-than (JL/LSS), test SF != OF; for unsigned below (JB/LO), test CF == 1.
+3. **Level 3 (Worked Step)**: Evaluating the correct relational flag condition gives: <EXPECTED_VALUE>.
+
+---
+
+### Assumed INC/DEC Modifies the Carry Flag
+
+- **Tag**: `inc-dec-changes-carry`
+- **Affected Modules**: `alu`, `cpu8086`
+- **Concrete Example**: Executing INC 0xFF (8-bit); student sets CF = 1 due to wraparound to 0x00, but CF is actually preserved.
+
+#### Cognitive Description (Underlying Mental Model)
+The student assumes INC or DEC modifies the Carry Flag (CF). In x86/8086 architectures, INC and DEC update ZF, SF, OF, AF, and PF, but deliberately preserve the existing CF to allow loop index updates without corrupting multi-precision arithmetic carry chains.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: In 8086 architecture, the INC and DEC instructions do NOT modify the Carry Flag.
+2. **Level 2 (Pointed)**: INC and DEC affect ZF, SF, and OF, but preserve the previous state of CF untouched.
+3. **Level 3 (Worked Step)**: Because INC/DEC preserves CF, the Carry Flag remains: <EXPECTED_VALUE>.
+
+---
+
+### Incorrect Conditional Branch Flag Condition
+
+- **Tag**: `wrong-jcc-condition`
+- **Affected Modules**: `cpu8086`
+- **Concrete Example**: Executing JZ target when ZF = 0; student predicts branch taken believing JZ means "Jump if Zero flag is Clear".
+
+#### Cognitive Description (Underlying Mental Model)
+The student misidentifies the flag condition for a conditional jump mnemonic (excluding signed versus unsigned relationship mix-ups, which are classified under wrong-cmp-relation). Examples include inverting the Zero Flag (treating JZ as JNZ or JE as JNE), confusing strict versus non-strict inequality boundaries (treating JA as JAE or JG as JGE), or reading JNE as JE.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Review the flag condition associated with this jump mnemonic.
+2. **Level 2 (Pointed)**: Inspect the Zero Flag (ZF) or boundary flag condition for this mnemonic; verify whether it tests for equality or inequality.
+3. **Level 3 (Worked Step)**: Evaluating the correct branch condition produces next IP: <EXPECTED_VALUE>.
+
+---
+
+### Incorrect PUSH/POP Stack Pointer Operation Sequence
+
+- **Tag**: `wrong-push-order`
+- **Affected Modules**: `cpu8086`, `interrupt-controller`
+- **Concrete Example**: Executing PUSH AX with SP = 0xFFFE; student predicts data is written to 0xFFFE instead of 0xFFFC.
+
+#### Cognitive Description (Underlying Mental Model)
+The student assumes memory write occurs at the old SP before decrementing (or forgets to decrement SP entirely on PUSH). For POP, assumes SP is incremented before reading the stack top.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Remember the exact order of stack pointer adjustment and memory access in 8086 architecture.
+2. **Level 2 (Pointed)**: On PUSH, 8086 decrements SP first, then writes to the new address. On POP, it reads first, then increments SP.
+3. **Level 3 (Worked Step)**: Following the proper stack sequence yields: <EXPECTED_VALUE>.
+
+---
+
+### Inverted Stack Growth Direction
+
+- **Tag**: `wrong-stack-direction`
+- **Affected Modules**: `cpu8086`, `interrupt-controller`
+- **Concrete Example**: Executing PUSH with SP = 0x1000; student predicts SP becomes 0x1002 instead of 0x0FFE.
+
+#### Cognitive Description (Underlying Mental Model)
+The student assumes the stack grows upward toward higher memory addresses (incrementing SP on PUSH, decrementing on POP) rather than downward toward lower addresses.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Consider the direction in which the x86/8086 call and data stack grows in memory.
+2. **Level 2 (Pointed)**: In 8086 architecture, the stack grows downward toward address 0x0000, so PUSH subtracts from SP.
+3. **Level 3 (Worked Step)**: Stack grows downward; adjusting SP toward lower memory yields: <EXPECTED_VALUE>.
+
+---
+
+### Inverted MOV Operand Direction (Source vs Destination)
+
+- **Tag**: `confused-mov-direction`
+- **Affected Modules**: `cpu8086`
+- **Concrete Example**: Executing MOV AX, BX; student assumes BX receives AX's value instead of AX receiving BX.
+
+#### Cognitive Description (Underlying Mental Model)
+The student confuses the Intel 8086 destination-first operand ordering (MOV dest, src) with AT&T syntax or natural reading order, assigning the destination value to the source register. This misconception is detected when predicting the post-instruction value of the source register.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Check the direction of data flow in standard Intel syntax: destination comes first.
+2. **Level 2 (Pointed)**: In MOV dest, src, the second operand (src) is read and copied into the first operand (dest).
+3. **Level 3 (Worked Step)**: Copying source to destination gives: <EXPECTED_VALUE>.
+
+---
+
+### Assumed CMP Updates Destination Register
+
+- **Tag**: `cmp-stores-result`
+- **Affected Modules**: `cpu8086`
+- **Concrete Example**: Executing CMP AX, BX with AX=5, BX=3; student predicts AX becomes 2 instead of retaining 5.
+
+#### Cognitive Description (Underlying Mental Model)
+The student expects the CMP instruction to store the arithmetic difference (A - B) into the destination register, failing to recognize that CMP strictly modifies status flags while leaving both operands unchanged.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Remember the primary functional difference between SUB and CMP instructions.
+2. **Level 2 (Pointed)**: CMP performs subtraction internally to update flags, but discards the result without writing back to the destination.
+3. **Level 3 (Worked Step)**: Since CMP preserves its operands, the register value remains: <EXPECTED_VALUE>.
+
+---
+
+### Assumed MOV Alters Status Flags
+
+- **Tag**: `mov-affects-flags`
+- **Affected Modules**: `cpu8086`
+- **Concrete Example**: Executing MOV AX, 0; student sets ZF = 1 assuming transferring zero sets the Zero Flag.
+
+#### Cognitive Description (Underlying Mental Model)
+The student expects data movement instructions (MOV, PUSH, POP) to update arithmetic and logic status flags (ZF, SF, CF, OF). This error is diagnosed when an unchanged flag is predicted to take on the value that a result-based flag update would produce.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Review which instruction classes update the status flags in 8086 architecture.
+2. **Level 2 (Pointed)**: Data movement instructions (MOV, PUSH, POP) do not alter ZF, SF, CF, or OF; only arithmetic/logic operations update them.
+3. **Level 3 (Worked Step)**: Flags remain untouched across data movement; flag value is: <EXPECTED_VALUE>.
+
+---
+
+### Incorrect CALL Return Address on Stack
+
+- **Tag**: `wrong-call-return-address`
+- **Affected Modules**: `cpu8086`, `interrupt-controller`
+- **Concrete Example**: Executing CALL at IP=2 targeting IP=10; student predicts return address 10 or 2 pushed instead of 3.
+
+#### Cognitive Description (Underlying Mental Model)
+The student expects CALL to push the target routine address, the current instruction pointer, or zero onto the stack instead of the address of the immediately following sequential instruction.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Consider what instruction execution must resume at when a subroutine completes with RET.
+2. **Level 2 (Pointed)**: CALL must save the address of the next instruction (IP + 1) onto the stack so RET can resume caller execution.
+3. **Level 3 (Worked Step)**: The address pushed to the stack is the next sequential instruction: <EXPECTED_VALUE>.
+
+---
+
+### Big-Endian Byte Layout in Little-Endian Memory
+
+- **Tag**: `wrong-byte-order`
+- **Affected Modules**: `cpu8086`, `interrupt-controller`
+- **Concrete Example**: Writing 0x1234 to memory; student expects byte 0x12 at base address and 0x34 at base+1.
+
+#### Cognitive Description (Underlying Mental Model)
+The student places the high-order byte at the lower memory address or reads memory words using big-endian ordering rather than 8086 little-endian byte ordering (least significant byte at the lower address).
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Remember the byte ordering convention used by 8086 memory architecture.
+2. **Level 2 (Pointed)**: 8086 is strictly little-endian: the least significant byte (low byte) is stored at the lowest address.
+3. **Level 3 (Worked Step)**: Applying little-endian byte ordering yields: <EXPECTED_VALUE>.
+
+---
+
+### Immediate Address vs Dereferenced Memory Value
+
+- **Tag**: `wrong-address-vs-value`
+- **Affected Modules**: `cpu8086`
+- **Concrete Example**: Executing MOV AX, table; student loads memory contents stored at table instead of table's offset address.
+
+#### Cognitive Description (Underlying Mental Model)
+The student confuses an immediate address literal (e.g. MOV AX, label) with the dereferenced memory content stored at that address (e.g. MOV AX, [label]), or vice versa.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Check whether the instruction uses square brackets around the operand.
+2. **Level 2 (Pointed)**: Square brackets [label] indicate memory dereferencing; bare label indicates the immediate offset address.
+3. **Level 3 (Worked Step)**: Evaluating the correct addressing mode yields: <EXPECTED_VALUE>.
+
+---
+
+### Ignored Partial Register Overlap (AL/AH and AX)
+
+- **Tag**: `wrong-partial-register`
+- **Affected Modules**: `cpu8086`
+- **Concrete Example**: AX holds 0x1234; executing MOV AL, 0x56; student assumes AX becomes 0x0056 instead of 0x1256.
+
+#### Cognitive Description (Underlying Mental Model)
+The student fails to account for 8-bit sub-registers (AL or AH) modifying the corresponding low or high byte of their enclosing 16-bit register (AX), assuming zero-extension or independent storage.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Recall how 8-bit registers map into their 16-bit parent registers in 8086 architecture.
+2. **Level 2 (Pointed)**: AL occupies the low byte (bits 0..7) and AH occupies the high byte (bits 8..15); the opposite byte is preserved.
+3. **Level 3 (Worked Step)**: Combining the modified byte with the preserved byte yields: <EXPECTED_VALUE>.
+
+---
+
+### Incorrect Instruction Pointer Following Branch
+
+- **Tag**: `wrong-ip-after-jump`
+- **Affected Modules**: `cpu8086`
+- **Concrete Example**: Condition is met for JMP or Jcc; student predicts fallthrough to IP+1 instead of jumping to the target label.
+
+#### Cognitive Description (Underlying Mental Model)
+The student predicts that execution advances sequentially when a branch condition is satisfied, or jumps to the target address when the condition evaluates to false, without a specific condition code error.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Check whether the jump condition evaluated to true or false.
+2. **Level 2 (Pointed)**: If the branch condition is met, IP updates to the target address; if false, execution falls through to IP + 1.
+3. **Level 3 (Worked Step)**: Following the branch decision sets next IP to: <EXPECTED_VALUE>.
+
+---
+
+### Incorrect Interrupt Vector Table Address Calculation
+
+- **Tag**: `wrong-ivt-address`
+- **Affected Modules**: `interrupt-controller`
+- **Concrete Example**: For vector 0x20 (32 decimal), student predicts IVT address 0x40 (32*2) or 0x24 (32+4) instead of 0x80 (32*4).
+
+#### Cognitive Description (Underlying Mental Model)
+The student calculates the IVT offset address incorrectly (such as n*2, n+4, n, or (n-1)*4 instead of n*4). Each 8086 IVT entry occupies 4 bytes (2 bytes for IP offset and 2 bytes for CS segment).
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Review the layout and sizing of each descriptor entry in the 8086 Interrupt Vector Table.
+2. **Level 2 (Pointed)**: Each interrupt vector descriptor occupies 4 bytes in memory (2 bytes IP, 2 bytes CS), so vector n resides at byte address n * 4.
+3. **Level 3 (Worked Step)**: Multiplying the vector number by 4 gives the correct IVT entry address: <EXPECTED_VALUE>.
+
+---
+
+### Uninstalled Interrupt Vector Assumed Valid
+
+- **Tag**: `unset-vector-assumed-valid`
+- **Affected Modules**: `interrupt-controller`
+- **Concrete Example**: Executing INT 0x80 when vector 0x80 holds 0x0000:0x0000; student assumes handler execution begins rather than a fault/halt.
+
+#### Cognitive Description (Underlying Mental Model)
+The student assumes an interrupt vector table slot is valid and ready to service interrupts even though it contains all zeros (0x0000:0x0000) or has not been initialized with a valid handler pointer.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Check whether the operating system or program initialized the vector table entry before triggering the interrupt.
+2. **Level 2 (Pointed)**: In 8086 systems, uninitialized IVT slots hold 0x0000:0x0000; triggering an unset vector will jump to unmapped memory or trigger a CPU fault.
+3. **Level 3 (Worked Step)**: Since the IVT entry is not installed, the CPU cannot service it normally: <EXPECTED_VALUE>.
+
+---
+
+### Incorrect Interrupt Stack Frame Byte Size
+
+- **Tag**: `wrong-int-frame-size`
+- **Affected Modules**: `interrupt-controller`
+- **Concrete Example**: Interrupt entry occurs; student predicts SP decreases by 2 or 4 instead of 6 bytes.
+
+#### Cognitive Description (Underlying Mental Model)
+The student predicts an interrupt stack frame pushes only 2 bytes (like a NEAR CALL with IP only) or 4 bytes (like a FAR CALL with CS and IP), omitting the 2-byte FLAGS register.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Consider all registers that 8086 hardware must preserve on the stack during an interrupt entry.
+2. **Level 2 (Pointed)**: An 8086 hardware interrupt frame always pushes 3 words (6 bytes total): FLAGS, then CS, then IP.
+3. **Level 3 (Worked Step)**: Accounting for all 6 bytes (3 words) of the interrupt frame yields: <EXPECTED_VALUE>.
+
+---
+
+### Incorrect Interrupt Stack Frame Word Ordering
+
+- **Tag**: `wrong-int-frame-order`
+- **Affected Modules**: `interrupt-controller`
+- **Concrete Example**: On interrupt entry, student places FLAGS at TOS (SP) and IP at SP+4 instead of IP at TOS (SP) and FLAGS at SP+4.
+
+#### Cognitive Description (Underlying Mental Model)
+The student pushes the 3 words of the interrupt frame in the wrong sequence (for example, pushing IP first, CS second, and FLAGS third, or placing FLAGS at the top of the stack).
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Recall the chronological hardware micro-sequence when 8086 enters an interrupt.
+2. **Level 2 (Pointed)**: 8086 hardware pushes FLAGS first (highest address), then CS, and finally IP (lowest address / top of stack).
+3. **Level 3 (Worked Step)**: Ordering stack words from top of stack (SP) upward produces: <EXPECTED_VALUE>.
+
+---
+
+### Used RET Instead of IRET to Exit Interrupt Handler
+
+- **Tag**: `ret-instead-of-iret`
+- **Affected Modules**: `interrupt-controller`
+- **Concrete Example**: Returning from ISR with RET; student expects SP restored to initial SP, but 4 bytes (CS and FLAGS) remain on stack.
+
+#### Cognitive Description (Underlying Mental Model)
+The student expects returning from an interrupt service routine using normal RET, which pops only IP (2 bytes), leaving the saved CS and FLAGS on the stack and failing to restore status flags.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Check which instruction is designed specifically to return from an interrupt handler versus a regular subroutine.
+2. **Level 2 (Pointed)**: Standard RET only pops IP (2 bytes). Interrupt handlers require IRET to pop IP, CS, and the saved FLAGS register (6 bytes total).
+3. **Level 3 (Worked Step)**: Using IRET rather than RET correctly restores flags and stack pointer: <EXPECTED_VALUE>.
+
+---
+
+### Assumed IF and TF Retained Across Interrupt Entry
+
+- **Tag**: `if-tf-not-cleared-on-entry`
+- **Affected Modules**: `interrupt-controller`
+- **Concrete Example**: When IF = 1 and an interrupt occurs, student expects IF = 1 inside the handler, allowing uncontrolled nested interrupts.
+
+#### Cognitive Description (Underlying Mental Model)
+The student expects IF or TF to remain set after entering an interrupt service routine, failing to recognize that 8086 hardware automatically clears both IF and TF upon interrupt entry.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Consider what the CPU hardware does to interrupt control flags to prevent re-entrant interrupt cascades.
+2. **Level 2 (Pointed)**: Upon acknowledging any interrupt, 8086 hardware automatically clears IF (disabling maskable INTR) and TF (disabling single-stepping).
+3. **Level 3 (Worked Step)**: Both IF and TF are cleared to 0 by hardware upon entry: <EXPECTED_VALUE>.
+
+---
+
+### Treated Non-Maskable Interrupt (NMI) as Blocked by IF=0
+
+- **Tag**: `nmi-treated-as-maskable`
+- **Affected Modules**: `interrupt-controller`
+- **Concrete Example**: NMI occurs while IF = 0; student predicts the CPU ignores the NMI until STI executes.
+
+#### Cognitive Description (Underlying Mental Model)
+The student assumes that clearing the Interrupt Flag (CLI / IF = 0) blocks Non-Maskable Interrupts (NMI), confusing maskable INTR with non-maskable NMI.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Review the distinction between maskable (INTR) and non-maskable (NMI) interrupt pins on 8086.
+2. **Level 2 (Pointed)**: The Interrupt Flag (IF) controls only the INTR input. Non-Maskable Interrupts (NMI) are never blocked by IF = 0.
+3. **Level 3 (Worked Step)**: Because NMI cannot be masked by IF, the interrupt is recognized: <EXPECTED_VALUE>.
+
+---
+
+### Assumed INTR Serviced While Interrupt Flag (IF) is Cleared
+
+- **Tag**: `intr-ignores-if`
+- **Affected Modules**: `interrupt-controller`
+- **Concrete Example**: INTR arrives with IF = 0; student predicts immediate jump to the vector handler instead of remaining pending.
+
+#### Cognitive Description (Underlying Mental Model)
+The student predicts that a maskable hardware interrupt (INTR) is serviced immediately even though the Interrupt Flag is cleared (IF = 0).
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Check the state of the 8086 Interrupt Flag (IF) before determining whether INTR can be serviced.
+2. **Level 2 (Pointed)**: When IF = 0, maskable interrupts on the INTR line are ignored and remain pending until IF is set to 1 by STI or IRET.
+3. **Level 3 (Worked Step)**: Since IF = 0, INTR cannot be serviced at this time: <EXPECTED_VALUE>.
+
+---
+
+### Expected Interrupt Nesting Without STI in Handler
+
+- **Tag**: `forgot-sti-in-handler-for-nesting`
+- **Affected Modules**: `interrupt-controller`
+- **Concrete Example**: Inside an ISR with no STI; another INTR arrives; student expects the CPU to preempt the current handler immediately.
+
+#### Cognitive Description (Underlying Mental Model)
+The student expects higher or equal priority maskable interrupts to nest inside an active ISR without an explicit STI instruction, forgetting that entry automatically cleared IF.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Remember that interrupt entry automatically clears IF; how can an ISR allow nested interrupts?
+2. **Level 2 (Pointed)**: To allow nested interrupts inside a handler, the programmer must explicitly execute STI to re-enable INTR.
+3. **Level 3 (Worked Step)**: Without an explicit STI inside the handler, nested INTR interrupts remain blocked: <EXPECTED_VALUE>.
+
+---
+
+### Incorrect Simultaneous Interrupt Servicing Priority
+
+- **Tag**: `wrong-interrupt-priority`
+- **Affected Modules**: `interrupt-controller`
+- **Concrete Example**: NMI and INTR are asserted simultaneously; student services INTR first instead of NMI.
+
+#### Cognitive Description (Underlying Mental Model)
+The student prioritizes pending interrupts in the wrong architectural order when multiple interrupts occur at the same tick (such as prioritizing INTR over NMI).
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Review 8086 hardware priority arbitration between external pins and internal traps.
+2. **Level 2 (Pointed)**: 8086 priority order prioritizes internal faults and single-step trap, then software INT, then NMI, and finally INTR.
+3. **Level 3 (Worked Step)**: Following 8086 hardware priority arbitration rules yields: <EXPECTED_VALUE>.
+
+---
+
+### Premature Single-Step Trap Timing on TF Set
+
+- **Tag**: `tf-trap-timing`
+- **Affected Modules**: `interrupt-controller`
+- **Concrete Example**: POPF sets TF = 1; student predicts Type 1 trap fires before executing the next instruction.
+
+#### Cognitive Description (Underlying Mental Model)
+The student predicts that the single-step trap (vector 1) fires immediately on the instruction that sets TF (such as POPF), rather than after the following instruction completes.
+
+#### Three-Tiered Progressive Hint Templates
+1. **Level 1 (Nudge)**: Check the exact instruction cycle boundary where the 8086 CPU samples and executes the Trap Flag (TF).
+2. **Level 2 (Pointed)**: When TF is set by POPF, the trap does not trigger on POPF itself; it fires after the instruction following POPF has finished.
+3. **Level 3 (Worked Step)**: The single-step trap occurs after completing the next instruction: <EXPECTED_VALUE>.
 
 ---

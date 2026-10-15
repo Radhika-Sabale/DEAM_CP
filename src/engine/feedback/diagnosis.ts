@@ -127,6 +127,26 @@ export function stringifyExpected(expected: ExpectedAnswer): string {
       return JSON.stringify(expected.inputValues);
     case 'state-table-row':
       return expected.nextState;
+    case 'alu-result':
+      return String(expected.expectedValue);
+    case 'alu-flag':
+      return `${expected.flag} = ${expected.expectedValue}`;
+    case 'alu-chain-bit':
+      return `bit ${expected.bitIndex}: Cin=${expected.expectedCarryIn}, S=${expected.expectedSumBit}, Cout=${expected.expectedCarryOut}`;
+    case 'alu-compare':
+      return `${expected.relation}: ${expected.expectedAnswer}`;
+    case 'cpu-register':
+      return `${expected.register} = 0x${expected.expectedValue.toString(16).toUpperCase()}`;
+    case 'cpu-flag':
+      return `${expected.flag} = ${expected.expectedValue}`;
+    case 'cpu-memory':
+      return `[0x${expected.address.toString(16).toUpperCase().padStart(4, '0')}] = 0x${expected.expectedValue.toString(16).toUpperCase()}`;
+    case 'cpu-stack':
+      return `SP=0x${expected.expectedSp.toString(16).toUpperCase().padStart(4, '0')}, addr=0x${expected.expectedAddress.toString(16).toUpperCase().padStart(4, '0')}, val=0x${expected.expectedValue.toString(16).toUpperCase()}`;
+    case 'cpu-next-ip':
+      return `IP = 0x${expected.expectedIp.toString(16).toUpperCase().padStart(4, '0')}`;
+    default:
+      return '';
   }
 }
 
@@ -150,5 +170,25 @@ export function stringifyGot(got: GotAnswer): string {
       return JSON.stringify(got.inputValues);
     case 'state-table-row':
       return got.nextState;
+    case 'alu-result':
+      return String(got.studentValue);
+    case 'alu-flag':
+      return `${got.flag} = ${got.studentValue}`;
+    case 'alu-chain-bit':
+      return `bit ${got.bitIndex}: Cin=${got.studentCarryIn}, S=${got.studentSumBit}, Cout=${got.studentCarryOut}`;
+    case 'alu-compare':
+      return `${got.relation}: ${got.studentAnswer}`;
+    case 'cpu-register':
+      return `${got.register} = 0x${got.studentValue.toString(16).toUpperCase()}`;
+    case 'cpu-flag':
+      return `${got.flag} = ${got.studentValue}`;
+    case 'cpu-memory':
+      return `[0x${got.address.toString(16).toUpperCase().padStart(4, '0')}] = 0x${got.studentValue.toString(16).toUpperCase()}`;
+    case 'cpu-stack':
+      return `SP=0x${got.studentSp.toString(16).toUpperCase().padStart(4, '0')}, addr=0x${got.studentAddress.toString(16).toUpperCase().padStart(4, '0')}, val=0x${got.studentValue.toString(16).toUpperCase()}`;
+    case 'cpu-next-ip':
+      return `IP = 0x${got.studentNextIp.toString(16).toUpperCase().padStart(4, '0')}`;
+    default:
+      return '';
   }
 }

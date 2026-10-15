@@ -13,6 +13,12 @@ import {
   signMagnitudeAdd,
   subtractBinary,
 } from '../../engine/numberSystems';
+import { BinaryCarryTable } from './BinaryCarryTable';
+import { BinaryFlagsCard } from './BinaryFlagsCard';
+import { NonTwosComplementResultView } from './NonTwosComplementResultView';
+import { executeAluHandoff } from './binaryArithmeticHandoff';
+import { Button } from '../../components/ui/Button';
+import { ArrowRightIcon } from '../../components/ui/Icons';
 
 export type ArithmeticOp = 'add' | 'subtract' | 'ones-add' | 'sign-mag-add';
 
@@ -30,10 +36,7 @@ export interface BinaryArithmeticPanelProps {
 export function formatBitsWithEnds(bits: string): string {
   const parts: string[] = [];
   let rem = bits;
-  while (rem.length > 4) {
-    parts.unshift(rem.slice(-4));
-    rem = rem.slice(0, -4);
-  }
+  while (rem.length > 4) { parts.unshift(rem.slice(-4)); rem = rem.slice(0, -4); }
   if (rem.length > 0) parts.unshift(rem);
   return `(MSB) ${parts.join(' ')} (LSB)`;
 }
@@ -59,14 +62,9 @@ export const BinaryArithmeticPanel: FC<BinaryArithmeticPanelProps> = ({
 
   function parseOperandInput(val: string, targetWidth: number): string | number {
     const clean = val.trim();
-    if (/^[01]+$/.test(clean) && clean.length === targetWidth) {
-      return clean;
-    }
+    if (/^[01]+$/.test(clean) && clean.length === targetWidth) return clean;
     const parsed = parseInt(clean, 10);
-    if (!Number.isNaN(parsed)) {
-      return parsed;
-    }
-    return clean;
+    return Number.isNaN(parsed) ? clean : parsed;
   }
 
   const opA = parseOperandInput(operandA, width);
@@ -103,9 +101,8 @@ export const BinaryArithmeticPanel: FC<BinaryArithmeticPanelProps> = ({
             type="text"
             value={operandA}
             onChange={(e) => {
-              const val = e.target.value;
-              setOperandA(val);
-              notifyChange(val, operandB, width, mode, operation);
+              setOperandA(e.target.value);
+              notifyChange(e.target.value, operandB, width, mode, operation);
             }}
             className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 font-mono text-sm text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:outline-none"
           />
@@ -120,9 +117,8 @@ export const BinaryArithmeticPanel: FC<BinaryArithmeticPanelProps> = ({
             type="text"
             value={operandB}
             onChange={(e) => {
-              const val = e.target.value;
-              setOperandB(val);
-              notifyChange(operandA, val, width, mode, operation);
+              setOperandB(e.target.value);
+              notifyChange(operandA, e.target.value, width, mode, operation);
             }}
             className="mt-1 block w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 px-3 py-1.5 font-mono text-sm text-gray-900 dark:text-gray-100 focus:border-blue-500 focus:outline-none"
           />
@@ -204,6 +200,38 @@ export const BinaryArithmeticPanel: FC<BinaryArithmeticPanelProps> = ({
         </fieldset>
       )}
 
+      {/* ALU Inter-Module Handoff Button */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 rounded-xl border border-blue-200 dark:border-blue-900 bg-blue-50/50 dark:bg-blue-950/20 p-4">
+        <div>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-blue-900 dark:text-blue-200">
+            Hardware Datapath Exploration
+          </h4>
+          <p className="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+            Step through the ripple-carry adder circuit and gate traces in the ALU module.
+          </p>
+          {operation !== 'add' && operation !== 'subtract' && (
+            <p className="text-xs font-medium text-amber-700 dark:text-amber-400 mt-1">
+              The ALU executes two&apos;s complement arithmetic and does not support one&apos;s complement or sign-magnitude modes.
+            </p>
+          )}
+        </div>
+        <div>
+          <Button
+            variant="primary"
+            size="sm"
+            disabled={operation !== 'add' && operation !== 'subtract'}
+            onClick={() => {
+              if (operation === 'add' || operation === 'subtract') {
+                executeAluHandoff(operation, opA, opB, width);
+              }
+            }}
+            rightIcon={<ArrowRightIcon className="h-4 w-4" />}
+          >
+            Try this in the ALU
+          </Button>
+        </div>
+      </div>
+
       {/* Computation Result View */}
       {!computeResult.ok ? (
         <div role="alert" className="rounded-lg border border-red-200 dark:border-red-900 bg-red-50 dark:bg-red-950/40 p-4 text-sm text-red-700 dark:text-red-300">
@@ -212,37 +240,10 @@ export const BinaryArithmeticPanel: FC<BinaryArithmeticPanelProps> = ({
       ) : computeResult.binaryRes ? (
         <div className="space-y-4">
           {/* Status Flags Panel */}
-          <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-xs">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2">Condition Flags</h4>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-5 text-sm font-mono">
-              <div className={`p-2.5 rounded-lg border ${computeResult.binaryRes.flags.C === 1 ? 'border-amber-400 bg-amber-50 dark:bg-amber-950/40' : 'border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/40'}`}>
-                <div className="text-xs font-sans text-gray-500 dark:text-gray-400">C (carry)</div>
-                <div className="text-base font-bold text-gray-900 dark:text-gray-100">C: {computeResult.binaryRes.flags.C}</div>
-              </div>
-              <div className={`p-2.5 rounded-lg border ${computeResult.binaryRes.flags.borrow === 1 ? 'border-amber-400 bg-amber-50 dark:bg-amber-950/40' : 'border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/40'}`}>
-                <div className="text-xs font-sans text-gray-500 dark:text-gray-400">Borrow (8086 convention)</div>
-                <div className="text-base font-bold text-gray-900 dark:text-gray-100">Borrow: {computeResult.binaryRes.flags.borrow}</div>
-              </div>
-              <div className={`p-2.5 rounded-lg border ${computeResult.binaryRes.flags.N === 1 ? 'border-blue-400 bg-blue-50 dark:bg-blue-950/40' : 'border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/40'}`}>
-                <div className="text-xs font-sans text-gray-500 dark:text-gray-400">N (negative)</div>
-                <div className="text-base font-bold text-gray-900 dark:text-gray-100">N: {computeResult.binaryRes.flags.N}</div>
-              </div>
-              <div className={`p-2.5 rounded-lg border ${computeResult.binaryRes.flags.Z === 1 ? 'border-blue-400 bg-blue-50 dark:bg-blue-950/40' : 'border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/40'}`}>
-                <div className="text-xs font-sans text-gray-500 dark:text-gray-400">Z (zero)</div>
-                <div className="text-base font-bold text-gray-900 dark:text-gray-100">Z: {computeResult.binaryRes.flags.Z}</div>
-              </div>
-              <div className={`p-2.5 rounded-lg border ${computeResult.binaryRes.flags.V === 1 ? 'border-red-400 bg-red-50 dark:bg-red-950/40 text-red-900 dark:text-red-200' : 'border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/40'}`}>
-                <div className="text-xs font-sans text-gray-500 dark:text-gray-400">V (overflow)</div>
-                <div className="text-base font-bold">V (overflow): {computeResult.binaryRes.flags.V}</div>
-              </div>
-            </div>
-
-            {computeResult.binaryRes.overflowExplanation && (
-              <div role="status" className="mt-3 rounded-md bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 p-2.5 text-xs text-amber-800 dark:text-amber-200">
-                <span className="font-bold">Explanation:</span> {computeResult.binaryRes.overflowExplanation}
-              </div>
-            )}
-          </div>
+          <BinaryFlagsCard
+            flags={computeResult.binaryRes.flags}
+            overflowExplanation={computeResult.binaryRes.overflowExplanation}
+          />
 
           {/* Results Summary */}
           <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-xs">
@@ -256,74 +257,13 @@ export const BinaryArithmeticPanel: FC<BinaryArithmeticPanelProps> = ({
           </div>
 
           {/* Carry Chain Grid (MSB Left) */}
-          <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-xs overflow-x-auto">
-            <table className="w-full text-center text-sm font-mono border-collapse" aria-label="Binary carry chain">
-              <caption className="sr-only">Binary arithmetic carry chain with bit-by-bit stages</caption>
-              <thead>
-                <tr className="border-b border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/50 text-xs font-semibold uppercase text-gray-500 dark:text-gray-400">
-                  <th scope="row" className="px-3 py-2 text-left">Bit Position</th>
-                  {computeResult.binaryRes.carryChain.slice().reverse().map((step) => (
-                    <th key={step.position} scope="col" className="px-2 py-2">
-                      Bit {step.position} {step.position === width - 1 ? '(MSB)' : step.position === 0 ? '(LSB)' : ''}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
-                <tr>
-                  <th scope="row" className="px-3 py-1.5 text-left font-sans text-xs text-gray-500">Carry In</th>
-                  {computeResult.binaryRes.carryChain.slice().reverse().map((s) => (
-                    <td key={s.position} className="px-2 py-1.5 text-gray-500">{s.carryIn}</td>
-                  ))}
-                </tr>
-                <tr>
-                  <th scope="row" className="px-3 py-1.5 text-left font-sans text-xs text-gray-700 dark:text-gray-300 font-semibold">A</th>
-                  {computeResult.binaryRes.carryChain.slice().reverse().map((s) => (
-                    <td key={s.position} className="px-2 py-1.5 font-bold text-gray-900 dark:text-gray-100">{s.a}</td>
-                  ))}
-                </tr>
-                <tr>
-                  <th scope="row" className="px-3 py-1.5 text-left font-sans text-xs text-gray-700 dark:text-gray-300 font-semibold">B</th>
-                  {computeResult.binaryRes.carryChain.slice().reverse().map((s) => (
-                    <td key={s.position} className="px-2 py-1.5 font-bold text-gray-900 dark:text-gray-100">{s.b}</td>
-                  ))}
-                </tr>
-                <tr className="bg-blue-50/50 dark:bg-blue-900/20 font-bold">
-                  <th scope="row" className="px-3 py-1.5 text-left font-sans text-xs text-blue-800 dark:text-blue-300">Sum (S)</th>
-                  {computeResult.binaryRes.carryChain.slice().reverse().map((s) => (
-                    <td key={s.position} className="px-2 py-1.5 text-blue-600 dark:text-blue-400 font-bold">{s.sum}</td>
-                  ))}
-                </tr>
-                <tr>
-                  <th scope="row" className="px-3 py-1.5 text-left font-sans text-xs text-gray-500">Carry Out</th>
-                  {computeResult.binaryRes.carryChain.slice().reverse().map((s) => (
-                    <td key={s.position} className="px-2 py-1.5 text-gray-500">{s.carryOut}</td>
-                  ))}
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      ) : computeResult.onesRes ? (
-        <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-xs space-y-2">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">One&apos;s Complement Addition Result</h4>
-          <p className="font-mono text-base font-bold text-blue-600 dark:text-blue-400">
-            {formatBitsWithEnds((computeResult.onesRes as { finalBits: string }).finalBits)}
-          </p>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            Initial Sum: <span className="font-mono">{(computeResult.onesRes as { initialSumBits: string }).initialSumBits}</span> | End-around carry: <span className="font-mono">{(computeResult.onesRes as { endAroundCarry: number }).endAroundCarry}</span> | Value: <span className="font-mono">{(computeResult.onesRes as { finalValue: number }).finalValue}</span>
-          </p>
+          <BinaryCarryTable carryChain={computeResult.binaryRes.carryChain} width={width} />
         </div>
       ) : (
-        <div className="rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-xs space-y-2">
-          <h4 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Sign-Magnitude Addition Result</h4>
-          <p className="font-mono text-base font-bold text-blue-600 dark:text-blue-400">
-            {formatBitsWithEnds((computeResult.smRes as { resultBits: string }).resultBits)}
-          </p>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            Sign: <span className="font-mono">{(computeResult.smRes as { resultSign: number }).resultSign}</span> | Magnitude: <span className="font-mono">{(computeResult.smRes as { resultMag: number }).resultMag}</span> | Overflow: <span className="font-mono">{String((computeResult.smRes as { overflow: boolean }).overflow)}</span>
-          </p>
-        </div>
+        <NonTwosComplementResultView
+          onesRes={computeResult.onesRes}
+          smRes={computeResult.smRes}
+        />
       )}
     </div>
   );

@@ -87,4 +87,39 @@ describe('BinaryArithmeticPanel', () => {
     expect(screen.getByLabelText(/Operand A/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Operand B/i)).toBeInTheDocument();
   });
+
+  it('enables "Try this in the ALU" for ADD and SUB', () => {
+    render(
+      <BinaryArithmeticPanel
+        initialWidth={4}
+        initialMode="signed"
+        initialOp="add"
+        initialA="3"
+        initialB="4"
+      />
+    );
+
+    const button = screen.getByRole('button', { name: /try this in the alu/i });
+    expect(button).toBeInTheDocument();
+    expect(button).not.toBeDisabled();
+  });
+
+  it('disables "Try this in the ALU" and shows explanation text for ones-add', () => {
+    render(
+      <BinaryArithmeticPanel
+        initialWidth={4}
+        initialMode="signed"
+        initialOp="ones-add"
+        initialA="3"
+        initialB="4"
+      />
+    );
+
+    const button = screen.getByRole('button', { name: /try this in the alu/i });
+    expect(button).toBeInTheDocument();
+    expect(button).toBeDisabled();
+    expect(
+      screen.getByText(/does not support one's complement or sign-magnitude modes/i)
+    ).toBeInTheDocument();
+  });
 });

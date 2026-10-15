@@ -91,6 +91,38 @@ export interface StepContext {
   readonly claimedLaw?: string;
   readonly detail?: string;
   readonly kmap?: KMapStepContext;
+  readonly alu?: {
+    readonly op: import('../../types/designProject').AluOpId;
+    readonly width: number;
+    readonly a: number;
+    readonly b: number;
+    readonly shiftCount?: number;
+    readonly previousC?: 0 | 1;
+  };
+  readonly cpu8086?: {
+    readonly state: import('../cpu8086/cpuTypes').CpuState;
+    readonly program: import('../cpu8086/types').Program;
+    readonly stepResult?: import('../cpu8086/cpuTypes').StepResult;
+    readonly sourceSymbolAddress?: number;
+  };
+  readonly interrupts?: {
+    readonly cpuState: import('../cpu8086/cpuTypes').CpuState;
+    readonly program?: import('../cpu8086/types').Program;
+    readonly record?: import('../interrupts/types').InterruptRecord;
+    readonly iretRecord?: import('../interrupts/types').IretRecord;
+    readonly pendingState?: import('../interrupts/types').PendingInterruptState;
+    readonly scenario?: import('../interrupts/types').InterruptScenario;
+    readonly vector?: number;
+    readonly vectorAddress?: number;
+    readonly handlerIp?: number;
+    readonly installed?: boolean;
+    readonly nestingDepth?: number;
+    readonly expectedSp?: number;
+    readonly expectedWords?: readonly number[];
+    readonly tfSetAtIp?: number;
+    readonly trapFiresAfterIp?: number;
+    readonly initialSp?: number;
+  };
 }
 
 /**

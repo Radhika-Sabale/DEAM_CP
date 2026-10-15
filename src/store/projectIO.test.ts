@@ -120,4 +120,226 @@ describe('projectIO', () => {
       expect(parsed.value.sequentialSpec).toBeNull();
     }
   });
+
+  it('accepts projects with no alu field or alu: null without bumping schema version', () => {
+    const legacyNoAlu = JSON.stringify({
+      schemaVersion: 2,
+      id: 'legacy-no-alu',
+      name: 'Old Export',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    });
+    const parsed1 = parseProjectJson(legacyNoAlu);
+    expect(parsed1.ok).toBe(true);
+
+    const legacyNullAlu = JSON.stringify({
+      schemaVersion: 2,
+      id: 'legacy-null-alu',
+      name: 'Null Alu Export',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      alu: null,
+    });
+    const parsed2 = parseProjectJson(legacyNullAlu);
+    expect(parsed2.ok).toBe(true);
+  });
+
+  it('preserves valid alu state across export and import round-trip', () => {
+    const project = createEmptyDesignProject('alu-proj-1', 'ALU Workbench');
+    project.alu = {
+      op: 'SUB',
+      width: 8,
+      a: 128,
+      b: 1,
+      shiftCount: 1,
+      previousC: 0,
+    };
+
+    const exported = exportProjectToJson(project);
+    const imported = importProject(exported);
+    expect(imported.ok).toBe(true);
+    if (imported.ok) {
+      expect(imported.value.alu).toEqual(project.alu);
+    }
+  });
+
+  it('rejects malformed alu with readable field-specific diagnostics', () => {
+    const badAluJson = JSON.stringify({
+      schemaVersion: 2,
+      id: 'bad-alu-proj',
+      name: 'Bad Alu',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      alu: {
+        op: 'INVALID_OP',
+        width: 32, // out of range 2..16
+        a: -5, // negative
+        b: 'not-a-number',
+      },
+    });
+
+    const res = parseProjectJson(badAluJson);
+    expect(res.ok).toBe(false);
+    if (!res.ok) {
+      expect(res.error.code).toBe('VALIDATION_FAILED');
+      const fields = res.error.fieldErrors?.map((e) => e.field) ?? [];
+      expect(fields).toContain('alu.op');
+      expect(fields).toContain('alu.width');
+      expect(fields).toContain('alu.a');
+      expect(fields).toContain('alu.b');
+    }
+  });
+
+  it('performs export and import round trip with cpu8086 state', () => {
+    const project = createEmptyDesignProject('cpu8086-proj-1', '8086 CPU Lab');
+    project.cpu8086 = {
+      source: 'MOV AX, 10\nADD AX, 20\nHLT',
+      breakpoints: [1, 2],
+    };
+
+    const exported = exportProjectToJson(project);
+    const imported = importProject(exported);
+    expect(imported.ok).toBe(true);
+    if (imported.ok) {
+      expect(imported.value.cpu8086).toEqual(project.cpu8086);
+    }
+  });
+
+  it('accepts projects without cpu8086 or with null cpu8086 (backward compatibility)', () => {
+    const oldProjectJson = JSON.stringify({
+      schemaVersion: 2,
+      id: 'legacy-project',
+      name: 'Legacy Project',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      // cpu8086 is omitted
+    });
+
+    const parsed = parseProjectJson(oldProjectJson);
+    expect(parsed.ok).toBe(true);
+    if (parsed.ok) {
+      expect(parsed.value.cpu8086).toBeUndefined();
+    }
+
+    const nullCpuJson = JSON.stringify({
+      schemaVersion: 2,
+      id: 'null-cpu-project',
+      name: 'Null CPU Project',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      cpu8086: null,
+    });
+
+    const parsedNull = parseProjectJson(nullCpuJson);
+    expect(parsedNull.ok).toBe(true);
+    if (parsedNull.ok) {
+      expect(parsedNull.value.cpu8086).toBeNull();
+    }
+  });
+
+  it('rejects malformed cpu8086 with field-specific diagnostics', () => {
+    const badCpuJson = JSON.stringify({
+      schemaVersion: 2,
+      id: 'bad-cpu-proj',
+      name: 'Bad CPU',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      cpu8086: {
+        source: 12345, // not a string
+        breakpoints: [0, -1, 'line3'], // must be positive integers
+      },
+    });
+
+    const res = parseProjectJson(badCpuJson);
+    expect(res.ok).toBe(false);
+    if (!res.ok) {
+      expect(res.error.code).toBe('VALIDATION_FAILED');
+      const fields = res.error.fieldErrors?.map((e) => e.field) ?? [];
+      expect(fields).toContain('cpu8086.source');
+      expect(fields).toContain('cpu8086.breakpoints');
+    }
+  });
+
+  it('preserves interrupts slice in export/import round trip', () => {
+    const project = createEmptyDesignProject('intr-proj-1', 'Interrupt Project');
+    project.interrupts = {
+      source: 'STI\nINT 32\nIRET',
+      breakpoints: [2],
+      scenario: [
+        { atTick: 5, kind: 'nmi' },
+        { atTick: 12, kind: 'intr', vector: 64 },
+      ],
+    };
+
+    const exported = exportProjectToJson(project);
+    const imported = importProject(exported);
+    expect(imported.ok).toBe(true);
+    if (imported.ok) {
+      expect(imported.value.interrupts).toEqual(project.interrupts);
+    }
+  });
+
+  it('accepts projects without interrupts or with null interrupts (backward compatibility)', () => {
+    const oldProjectJson = JSON.stringify({
+      schemaVersion: 2,
+      id: 'legacy-project-no-intr',
+      name: 'Legacy Project',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      // interrupts omitted
+    });
+
+    const parsed = parseProjectJson(oldProjectJson);
+    expect(parsed.ok).toBe(true);
+    if (parsed.ok) {
+      expect(parsed.value.interrupts).toBeUndefined();
+    }
+
+    const nullIntrJson = JSON.stringify({
+      schemaVersion: 2,
+      id: 'null-intr-project',
+      name: 'Null Interrupt Project',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      interrupts: null,
+    });
+
+    const parsedNull = parseProjectJson(nullIntrJson);
+    expect(parsedNull.ok).toBe(true);
+    if (parsedNull.ok) {
+      expect(parsedNull.value.interrupts).toBeNull();
+    }
+  });
+
+  it('rejects malformed interrupts with field-specific diagnostics', () => {
+    const badIntrJson = JSON.stringify({
+      schemaVersion: 2,
+      id: 'bad-intr-proj',
+      name: 'Bad Interrupts',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      interrupts: {
+        source: 99999, // not a string
+        breakpoints: [-5], // not positive
+        scenario: [
+          { atTick: -1, kind: 'invalid-kind' }, // negative tick, wrong kind
+          { atTick: 10, kind: 'intr', vector: 999 }, // vector out of range
+        ],
+      },
+    });
+
+    const res = parseProjectJson(badIntrJson);
+    expect(res.ok).toBe(false);
+    if (!res.ok) {
+      expect(res.error.code).toBe('VALIDATION_FAILED');
+      const fields = res.error.fieldErrors?.map((e) => e.field) ?? [];
+      expect(fields).toContain('interrupts.source');
+      expect(fields).toContain('interrupts.breakpoints');
+      expect(fields).toContain('interrupts.scenario[0].atTick');
+      expect(fields).toContain('interrupts.scenario[0].kind');
+      expect(fields).toContain('interrupts.scenario[1].vector');
+    }
+  });
 });
+
+

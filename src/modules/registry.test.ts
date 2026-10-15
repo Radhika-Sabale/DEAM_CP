@@ -40,6 +40,9 @@ describe('module registry', () => {
       'simulationTrace',
       'pipelineProgress',
       'lastHandoff',
+      'alu',
+      'cpu8086',
+      'interrupts',
     ]);
 
     // Verify sample project keys are known
@@ -156,5 +159,89 @@ describe('module registry', () => {
     const mod = getModule('boolean-tool');
     expect(mod).toBeDefined();
     expect(mod?.title).toBe('Boolean Expression Analysis');
+
+    const alu = getModule('alu');
+    expect(alu).toBeDefined();
+    expect(alu?.isAvailable).toBe(true);
+    expect(alu?.reads).toEqual(['alu']);
+    expect(alu?.writes).toEqual(['alu', 'circuit']);
+    expect(alu?.nextModules).toEqual(['circuit-simulator', '8086-cpu']);
+
+    const cpu8086 = getModule('8086-cpu');
+    expect(cpu8086).toBeDefined();
+    expect(cpu8086?.isAvailable).toBe(true);
+    expect(cpu8086?.reads).toEqual(['alu', 'cpu8086']);
+    expect(cpu8086?.writes).toEqual(['cpu8086']);
+    expect(cpu8086?.nextModules).toEqual(['interrupt-controller']);
+
+    const interrupts = getModule('interrupt-controller');
+    expect(interrupts).toBeDefined();
+    expect(interrupts?.isAvailable).toBe(true);
+    expect(interrupts?.reads).toEqual(['cpu8086', 'interrupts']);
+    expect(interrupts?.writes).toEqual(['interrupts']);
+    expect(interrupts?.nextModules).toEqual(['8086-cpu']);
+  });
+
+  it('validates alu to circuit-simulator handoff readiness', () => {
+    const empty = createEmptyDesignProject();
+    const readiness = checkHandoffReadiness(empty, 'alu', 'circuit-simulator');
+    expect(readiness.length).toBeGreaterThan(0);
+    expect(readiness[0]).toContain('adder circuit in the ALU');
+
+    const withCircuit: DesignProject = {
+      ...empty,
+      circuit: {
+        nodes: [{ id: 'in_a', kind: 'input', label: 'A', value: 0, x: 0, y: 0 }],
+        wires: [],
+      },
+    };
+    expect(checkHandoffReadiness(withCircuit, 'alu', 'circuit-simulator')).toEqual([]);
+  });
+
+  it('validates alu to 8086-cpu handoff readiness with engine-derived error messages', () => {
+    const empty = createEmptyDesignProject();
+
+    // 1. Null / unconfigured ALU state
+    const nullCheck = checkHandoffReadiness(empty, 'alu', '8086-cpu');
+    expect(nullCheck.length).toBe(1);
+    expect(nullCheck[0]).toBe(
+      'Please configure an ALU operation before exporting it as an 8086 assembly program.'
+    );
+
+    // 2. Unsupported ALU operation (e.g. SAR) surfaces plain-language reason directly from engine
+    const withSar: DesignProject = {
+      ...empty,
+      alu: { op: 'SAR', width: 4, a: 8, b: 1 },
+    };
+    const sarCheck = checkHandoffReadiness(withSar, 'alu', '8086-cpu');
+    expect(sarCheck.length).toBe(1);
+    expect(sarCheck[0]).toBe(
+      'Arithmetic right shift (SAR) is not included in the educational 8086 subset.'
+    );
+
+    // 3. Supported ALU operation (e.g. ADD) passes without errors
+    const withAdd: DesignProject = {
+      ...empty,
+      alu: { op: 'ADD', width: 8, a: 0x12, b: 0x34 },
+    };
+    const addCheck = checkHandoffReadiness(withAdd, 'alu', '8086-cpu');
+    expect(addCheck).toEqual([]);
+  });
+
+  it('validates 8086-cpu to interrupt-controller handoff readiness', () => {
+    const empty = createEmptyDesignProject();
+
+    // 1. Empty source
+    const emptyCheck = checkHandoffReadiness(empty, '8086-cpu', 'interrupt-controller');
+    expect(emptyCheck.length).toBe(1);
+    expect(emptyCheck[0]).toContain('enter or assemble an 8086 assembly program');
+
+    // 2. Program with source present
+    const withCpu: DesignProject = {
+      ...empty,
+      cpu8086: { source: 'MOV AX, 1\nHLT', breakpoints: [] },
+    };
+    const validCheck = checkHandoffReadiness(withCpu, '8086-cpu', 'interrupt-controller');
+    expect(validCheck).toEqual([]);
   });
 });

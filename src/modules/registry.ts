@@ -6,7 +6,6 @@
 
 import {
   type ComponentType,
-  createElement,
   lazy,
   type LazyExoticComponent,
 } from 'react';
@@ -16,6 +15,7 @@ import {
   SEQUENTIAL_PIPELINE_ORDER,
 } from '../types/designProject';
 import type { ModuleDefinition } from '../types/moduleInterface';
+import { programFromAluOperation } from '../engine/cpu8086/aluProgram';
 
 /**
  * Enhanced module catalog entry combining architectural definition with React component slot.
@@ -26,134 +26,6 @@ export interface ModuleEntry extends ModuleDefinition {
   readonly component: LazyExoticComponent<ComponentType>;
 }
 
-/**
- * Creates a lightweight placeholder component for registered modules before real pages arrive.
- * Uses React.createElement so this remains a pure .ts file without JSX compiler extensions.
- */
-function createModulePlaceholder(entry: {
-  id: ModuleId;
-  title: string;
-  description: string;
-  reads: readonly (keyof DesignProject)[];
-  writes: readonly (keyof DesignProject)[];
-}): ComponentType {
-  const Placeholder: ComponentType = () => {
-    return createElement(
-      'div',
-      {
-        className:
-          'rounded-xl border border-gray-200 bg-white p-8 shadow-xs dark:border-gray-800 dark:bg-gray-900',
-      },
-      createElement(
-        'div',
-        { className: 'mb-6' },
-        createElement(
-          'span',
-          {
-            className:
-              'inline-block rounded-md bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-800 dark:bg-blue-900/60 dark:text-blue-300',
-          },
-          `Module ID: ${entry.id}`
-        ),
-        createElement(
-          'h2',
-          {
-            className:
-              'mt-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100',
-          },
-          entry.title
-        ),
-        createElement(
-          'p',
-          { className: 'mt-1 text-sm text-gray-600 dark:text-gray-400' },
-          entry.description
-        )
-      ),
-      createElement(
-        'div',
-        { className: 'grid grid-cols-1 gap-6 sm:grid-cols-2' },
-        createElement(
-          'div',
-          {
-            className:
-              'rounded-lg border border-gray-100 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950/50',
-          },
-          createElement(
-            'h3',
-            {
-              className:
-                'text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400',
-            },
-            'Reads from DesignProject'
-          ),
-          entry.reads.length > 0
-            ? createElement(
-                'ul',
-                {
-                  className:
-                    'mt-2 list-disc list-inside space-y-1 text-sm text-gray-700 dark:text-gray-300',
-                },
-                entry.reads.map((k) =>
-                  createElement('li', { key: k, className: 'font-mono text-xs' }, k)
-                )
-              )
-            : createElement(
-                'p',
-                { className: 'mt-2 text-sm italic text-gray-500' },
-                'None (standalone inputs)'
-              )
-        ),
-        createElement(
-          'div',
-          {
-            className:
-              'rounded-lg border border-gray-100 bg-gray-50 p-4 dark:border-gray-800 dark:bg-gray-950/50',
-          },
-          createElement(
-            'h3',
-            {
-              className:
-                'text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400',
-            },
-            'Writes to DesignProject'
-          ),
-          entry.writes.length > 0
-            ? createElement(
-                'ul',
-                {
-                  className:
-                    'mt-2 list-disc list-inside space-y-1 text-sm text-gray-700 dark:text-gray-300',
-                },
-                entry.writes.map((k) =>
-                  createElement('li', { key: k, className: 'font-mono text-xs' }, k)
-                )
-              )
-            : createElement(
-                'p',
-                { className: 'mt-2 text-sm italic text-gray-500' },
-                'None (read-only exploration)'
-              )
-        )
-      )
-    );
-  };
-  Placeholder.displayName = `Placeholder_${entry.id}`;
-  return Placeholder;
-}
-
-/**
- * Lazy helper for static placeholders.
- */
-function lazyPlaceholder(entry: {
-  id: ModuleId;
-  title: string;
-  description: string;
-  reads: readonly (keyof DesignProject)[];
-  writes: readonly (keyof DesignProject)[];
-}): LazyExoticComponent<ComponentType> {
-  const Component = createModulePlaceholder(entry);
-  return lazy(() => Promise.resolve({ default: Component }));
-}
 
 const flipflopPagePromise = import('./flipflop').then((m) => ({
   default: m.FlipFlopPage,
@@ -351,18 +223,14 @@ export const MODULE_REGISTRY: readonly ModuleEntry[] = [
     description:
       'Modular 4-bit and 8-bit multi-function arithmetic and logic processor slice.',
     icon: 'layers',
-    reads: ['circuit'],
-    writes: ['circuit', 'simulationTrace'],
-    nextModules: ['8086-cpu'],
+    reads: ['alu'],
+    writes: ['alu', 'circuit'],
+    nextModules: ['circuit-simulator', '8086-cpu'],
     phase: 2,
-    isAvailable: false,
-    component: lazyPlaceholder({
-      id: 'alu',
-      title: 'Arithmetic Logic Unit (ALU)',
-      description: 'Phase 2 Architecture Module.',
-      reads: ['circuit'],
-      writes: ['circuit', 'simulationTrace'],
-    }),
+    isAvailable: true,
+    component: lazy(() =>
+      import('./alu/AluPage').then((m) => ({ default: m.AluPage }))
+    ),
   },
   {
     id: '8086-cpu',
@@ -370,37 +238,29 @@ export const MODULE_REGISTRY: readonly ModuleEntry[] = [
     description:
       'Internal register files, EU/BIU pipelines, and 16-bit segmented memory simulation.',
     icon: 'box',
-    reads: [],
-    writes: [],
+    reads: ['alu', 'cpu8086'],
+    writes: ['cpu8086'],
     nextModules: ['interrupt-controller'],
     phase: 2,
-    isAvailable: false,
-    component: lazyPlaceholder({
-      id: '8086-cpu',
-      title: 'Intel 8086 Microprocessor Architecture',
-      description: 'Phase 2 Architecture Module.',
-      reads: [],
-      writes: [],
-    }),
+    isAvailable: true,
+    component: lazy(() =>
+      import('./cpu8086').then((m) => ({ default: m.Cpu8086Page }))
+    ),
   },
   {
     id: 'interrupt-controller',
-    title: 'Programmable Interrupt Controller (8259A)',
+    title: 'Interrupt Controller & Subsystem (8086 / 8259A)',
     description:
-      'Priority resolver, interrupt request mask registers, and vector vectoring sequences.',
+      'IVT vector table, NMI & INTR lines, STI delay shadow, 5-step hardware sequence, and labeled stack frames.',
     icon: 'activity',
-    reads: [],
-    writes: [],
-    nextModules: [],
+    reads: ['cpu8086', 'interrupts'],
+    writes: ['interrupts'],
+    nextModules: ['8086-cpu'],
     phase: 2,
-    isAvailable: false,
-    component: lazyPlaceholder({
-      id: 'interrupt-controller',
-      title: 'Programmable Interrupt Controller (8259A)',
-      description: 'Phase 2 Architecture Module.',
-      reads: [],
-      writes: [],
-    }),
+    isAvailable: true,
+    component: lazy(() =>
+      import('./interrupts').then((m) => ({ default: m.InterruptPage }))
+    ),
   },
 ];
 
@@ -500,6 +360,29 @@ export function checkHandoffReadiness(
     if (!hasEquations) {
       errors.push(
         'Please derive the next-state input equations before synthesizing the synchronous circuit schematic.'
+      );
+    }
+  }
+
+  if (fromId === 'alu' && toId === 'circuit-simulator') {
+    if (!project.circuit || project.circuit.nodes.length === 0) {
+      errors.push(
+        'Please generate or synthesize an adder circuit in the ALU before exploring it in the Circuit Simulator.'
+      );
+    }
+  }
+
+  if (fromId === 'alu' && toId === '8086-cpu') {
+    const res = programFromAluOperation(project.alu);
+    if (!res.available) {
+      errors.push(res.reason);
+    }
+  }
+
+  if (fromId === '8086-cpu' && toId === 'interrupt-controller') {
+    if (!project.cpu8086?.source || project.cpu8086.source.trim().length === 0) {
+      errors.push(
+        'Please enter or assemble an 8086 assembly program before transferring it to the Interrupt Simulator.'
       );
     }
   }
