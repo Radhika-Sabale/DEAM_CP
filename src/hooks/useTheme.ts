@@ -1,7 +1,7 @@
 /**
  * @file useTheme.ts
  * Hook for managing application light/dark theme, synchronizing with the OS preference,
- * and applying the Tailwind "dark" class to document.documentElement.
+ * and applying the active theme to document.documentElement.
  */
 
 import { useEffect, useState } from 'react';
@@ -23,11 +23,12 @@ function getSystemPrefersDark(): boolean {
 }
 
 /**
- * Synchronously applies the 'dark' CSS class to <html> element.
+ * Applies the theme data attribute and the legacy utility class to <html>.
  */
 function applyThemeClass(isDark: boolean): void {
   if (typeof document === 'undefined') return;
   const root = document.documentElement;
+  root.dataset.theme = isDark ? 'dark' : 'light';
   if (isDark) {
     root.classList.add('dark');
   } else {
