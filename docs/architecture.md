@@ -9,7 +9,7 @@ The Digital Electronics Virtual Lab is an integrated, browser-based pedagogical 
 2. **Step-Level Cognitive Feedback (Gap 2)**: Replacing coarse end-of-task binary verification with continuous, deterministic step-level diagnostics that classify errors against a 21-tag misconception catalog, scaffold recovery through 3-tier progressive hints (Nudge, Pointed, Worked Step), and suppress cognitive thrashing via answer-trap detection.
 3. **Deterministic Core vs. Bounded Generative AI (Gap 3)**: Providing mathematically rigorous, oracle-verified automated grading while confining Large Language Models (LLMs) to an optional, strictly display-only role for empathetic pedagogical phrasing that cannot override or corrupt deterministic verification verdicts.
 
-*Note on Phase 2 Modules*: Phase 2 modules (ALU, 8086 CPU, and 8259A Interrupt Controller) are not built in this delivery: they are reserved architectural slots listed as future work.
+The application includes an Arithmetic Logic Unit (ALU), an 8086 CPU emulator, and an 8259A interrupt controller alongside the digital logic design modules.
 
 ---
 
@@ -32,7 +32,7 @@ graph TD
     end
 
     subgraph Layer 4: Interactive Modules
-        Modules[src/modules/ - Page Controllers: Boolean, K-Map, Circuit, Sequential, Research]
+        Modules[src/modules/ - 14 workbenches across logic design, research, ALU, 8086, and interrupts]
     end
 
     subgraph Layer 5: UI Primitives & Application Shell
@@ -54,7 +54,7 @@ graph TD
 1. `src/types/`: Contains only TypeScript type definitions, interfaces, and immutable constants. Zero runtime code (with the single exception of `createEmptyDesignProject` factory). Imports nothing from other layers.
 2. `src/engine/`: Pure mathematical algorithms, parsers, minimization solvers, discrete-event simulators, and diagnostic validators. Zero React dependencies, zero DOM access, zero Zustand store imports.
 3. `src/store/`: Zustand state management for reactive project editing (`projectStore`), persistent telemetry collection (`logStore`), UI preferences (`uiStore`), study consent (`studyStore`), and multi-step validation sessions (`feedbackStore`).
-4. `src/modules/`: Domain workbench interfaces (`boolean`, `kmap`, `circuit`, `flipflop`, `sequential`, `practice`, `quiz`, `research`). Connects state stores to domain algorithms.
+4. `src/modules/`: Fourteen workbenches (`numberSystems`, `boolean`, `kmap`, `circuit`, `flipflop`, `sequential`, `practice`, `quiz`, `research`, `alu`, `cpu8086`, `interrupts`). Connects state stores to domain algorithms.
 5. `src/components/`: Reusable presentation primitives (`Button`, `Modal`, `Tabs`, `Table`), application framing (`AppShell`, `PipelineStepper`), and global feedback cards (`DiagnosisCard`, `HintLadder`, `AnswerTrapBanner`).
 
 ---
@@ -205,7 +205,7 @@ The `DesignProject` interface (`src/types/designProject.ts`) represents the unif
 2. **Data Locality**: All project states, student attempts, and telemetry logs reside in the user's browser `localStorage` and memory.
 3. **Telemetry Export Hygiene**: Exported CSV files contain only operational telemetry fields (timestamp, participant ID, module ID, event type, correctness, misconception tag, score). Free-text answers, student names, and browser fingerprints are never recorded.
 4. **API Key Security**: If the optional AI explanation feature is enabled, the user's API key is stored exclusively in ephemeral memory or browser session storage. The key is never logged, never included in telemetry CSV exports, and never transmitted to any third party other than direct HTTPS requests to `generativelanguage.googleapis.com`.
-5. **Single External Network Call**: When offline, the app performs zero network requests. The only external call permitted in the entire codebase is the optional user-initiated POST request to Google Gemini API for natural-language feedback rephrasing.
+5. **Single External Network Call**: When offline, the app performs zero network requests. The only external call is the optional user-initiated POST request to the Anthropic Messages API for natural-language feedback rephrasing.
 
 ---
 

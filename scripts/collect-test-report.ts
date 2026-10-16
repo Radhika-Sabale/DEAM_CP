@@ -152,9 +152,9 @@ export function collectTestReport(): TestSummaryReport {
       circuitEventQueueEvents: 10000,
       practiceProblemGeneratorSeedsPerModule: 100,
       practiceKMapOracleProblemsChecked: 300,
-      e2eTestsTotal: 32,
-      e2eTestsPassed: 32,
-      e2eBrowsers: ['Desktop Chromium', 'Mobile Chromium (Pixel 5)'],
+      e2eTestsTotal: 0,
+      e2eTestsPassed: 0,
+      e2eBrowsers: [],
     },
   };
 
@@ -172,5 +172,5 @@ if (process.argv.some((arg) => arg.includes('collect-test-report')) || !process.
   console.log(`[collect-test-report] Successfully generated ${path.relative(rootDir, outputPath)}`);
   console.log(`Total Test Files: ${summary.suiteSummary.totalTestFiles}`);
   console.log(`Total Unit/Integration Tests: ${summary.suiteSummary.totalTests} (Passed: ${summary.suiteSummary.passedTests}, Failed: ${summary.suiteSummary.failedTests})`);
-  console.log(`Total E2E Playwright Tests: ${summary.verifiedCorrectnessClaims.e2eTestsTotal} (Passed: ${summary.verifiedCorrectnessClaims.e2eTestsPassed})`);
+  console.log(`E2E Playwright tests recorded: ${summary.verifiedCorrectnessClaims.e2eTestsTotal} (no successful browser run recorded)`);
 }

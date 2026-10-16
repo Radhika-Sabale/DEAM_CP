@@ -27,9 +27,6 @@ export const PipelineStepper: FC = () => {
     >
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-3 dark:border-gray-800">
         <div>
-          <span className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">
-            Pipeline Progression
-          </span>
           <h2 className="text-sm font-semibold text-gray-900 dark:text-gray-100">
             {activeFlow === 'combinational'
               ? 'Combinational Logic Flow'

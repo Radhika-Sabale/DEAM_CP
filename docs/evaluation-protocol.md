@@ -124,7 +124,7 @@ Collected research logs will be stored securely on encrypted institutional stora
 
 6. Optional AI Explanation Feature (Ethics Notice)
 [MANDATORY NOTICE: If the optional AI explanation feature is enabled in this study, the following paragraph MUST be included. If disabled, keep the feature turned OFF in laboratory settings.]
-"The application includes an optional natural-language explanation feature powered by Google Gemini. If you explicitly choose to provide an API key and click 'Explain with AI', the text of your pedagogical diagnosis will be transmitted over secure HTTPS to Google servers for rephrasing. No personal names, student IDs, or institutional data are sent. If your ethics clearance does not cover third-party cloud processing, this feature MUST remain disabled."
+"The application includes an optional natural-language explanation feature powered by the Anthropic Messages API. If you explicitly enable it and provide an API key, diagnostic feedback is sent over HTTPS to Anthropic for rephrasing. Do not include identifying or confidential information. If your ethics clearance does not cover third-party cloud processing, this feature MUST remain disabled."
 
 7. Contact for Inquiries and Ethics Complaints
 If you have questions about the research, please contact [PRINCIPAL INVESTIGATOR NAME AND CONTACT - to be completed by the researcher].

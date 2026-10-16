@@ -3,7 +3,7 @@
  * @file check-links.ts
  * Standalone link and reference checker (zero third-party dependencies).
  * Scans README.md and all docs/*.md files to verify that every relative link,
- * file:/// link, and referenced filesystem path exists.
+ * local link resolves and non-portable file:/// links are rejected.
  *
  * Executed via vite-node:
  *   npx vite-node scripts/check-links.ts
@@ -71,27 +71,9 @@ export function checkAllLinks(): { totalChecked: number; broken: BrokenLink[] } 
 
       totalChecked++;
 
-      // Handle file:/// absolute links
-      if (rawTarget.startsWith('file:///')) {
-        const urlStr = rawTarget.split('#')[0];
-        try {
-          const parsedPath = fileURLToPath(urlStr);
-          if (!fs.existsSync(parsedPath)) {
-            broken.push({
-              sourceFile: relSource,
-              linkText,
-              target: rawTarget,
-              reason: `Path does not exist: ${parsedPath}`,
-            });
-          }
-        } catch (err: unknown) {
-          broken.push({
-            sourceFile: relSource,
-            linkText,
-            target: rawTarget,
-            reason: `Invalid file URL: ${(err as Error).message}`,
-          });
-        }
+      // Local file URLs are machine-specific and must never appear in docs.
+      if (rawTarget.startsWith('file://')) {
+        broken.push({ sourceFile: relSource, linkText, target: rawTarget, reason: 'Non-portable file URL; use a relative link.' });
         continue;
       }
 
@@ -118,23 +100,17 @@ export function checkAllLinks(): { totalChecked: number; broken: BrokenLink[] } 
   return { totalChecked, broken };
 }
 
-const isDirectlyExecuted =
-  process.argv.some((arg) => arg.includes('check-links')) ||
-  !process.env.VITEST;
+console.log('[check-links] Scanning markdown links in README.md and docs/*.md...');
+const result = checkAllLinks();
+console.log(`[check-links] Checked ${result.totalChecked} local links and file references.`);
 
-if (isDirectlyExecuted) {
-  console.log('[check-links] Scanning markdown links in README.md and docs/*.md...');
-  const result = checkAllLinks();
-  console.log(`[check-links] Checked ${result.totalChecked} local links and file references.`);
-
-  if (result.broken.length > 0) {
-    console.error(`[check-links] Found ${result.broken.length} broken links:`);
-    for (const b of result.broken) {
-      console.error(`  - In ${b.sourceFile}: [${b.linkText}](${b.target}) -> ${b.reason}`);
-    }
-    process.exit(1);
-  } else {
-    console.log('[check-links] All links and file references are valid!');
-    process.exit(0);
+if (result.broken.length > 0) {
+  console.error(`[check-links] Found ${result.broken.length} broken links:`);
+  for (const b of result.broken) {
+    console.error(`  - In ${b.sourceFile}: [${b.linkText}](${b.target}) -> ${b.reason}`);
   }
+  process.exit(1);
+} else {
+  console.log('[check-links] All links and file references are valid!');
+  process.exit(0);
 }

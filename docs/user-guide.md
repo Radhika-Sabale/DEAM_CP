@@ -24,8 +24,6 @@
 9. Inspect the **Pre/Post Gains** tab to examine normalized Hake learning gains ($\langle g \rangle$), paired $t$-statistics, and effect sizes (Cohen's $d$).
 10. Click **Export Summaries CSV** or **Export Full Model JSON** to export merged cohort data for analysis in R, Python, or SPSS.
 
-*Note on Phase 2 Modules*: Phase 2 modules (Arithmetic Logic Unit (ALU), Intel 8086 Microprocessor, and 8259A Interrupt Controller) are not built in this delivery: they are reserved architectural slots listed as future work.
-
 ---
 
 ## Global Application Controls
@@ -360,10 +358,7 @@ Offline multi-student telemetry analysis suite allowing educators and researcher
 
 ---
 
-## Phase 2 Architecture Modules (Future Work)
+## Processor Modules
 
-The following modules are registered in `MODULE_REGISTRY` as Phase 2 architectural slots and are explicitly not built in the current Phase 1 delivery:
-- **Arithmetic Logic Unit (ALU)** (`alu`): Multi-function 4-bit and 8-bit arithmetic and logic processor slice.
-- **Intel 8086 Microprocessor Architecture** (`8086-cpu`): Internal registers, EU/BIU pipelines, and 16-bit segmented memory simulation.
-- **Programmable Interrupt Controller (8259A)** (`interrupt-controller`): Priority resolver, interrupt request mask registers, and vectoring sequences.
+The lab includes an **Arithmetic Logic Unit (ALU)** (`alu`), an **Intel 8086 emulator** (`8086-cpu`), and an **interrupt controller** (`interrupt-controller`). Open these modules from the sidebar to explore arithmetic flags, instruction execution, and interrupt handling.
 

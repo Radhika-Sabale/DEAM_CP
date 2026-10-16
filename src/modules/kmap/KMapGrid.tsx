@@ -292,6 +292,8 @@ export const KMapGrid: FC<KMapGridProps> = ({
                       key={`cell-${m}`}
                       role="gridcell"
                       tabIndex={0}
+                      aria-selected={isSelected}
+                      data-value={String(val)}
                       aria-label={getCellAriaLabel(m)}
                       onClick={() => handleCellClick(m)}
                       onMouseDown={() => handleMouseDown(m)}
@@ -306,7 +308,7 @@ export const KMapGrid: FC<KMapGridProps> = ({
                           onChangeValue?.(m, directVal);
                         }
                       }}
-                      className={`relative flex h-14 sm:h-16 w-14 sm:w-16 shrink-0 cursor-pointer flex-col items-center justify-center border-b border-r border-gray-200 transition-colors focus:z-10 focus:outline-hidden focus:ring-2 focus:ring-blue-500 dark:border-gray-800 ${
+                      className={`kmap-cell relative flex h-14 sm:h-16 w-14 sm:w-16 shrink-0 cursor-pointer flex-col items-center justify-center border-b border-r border-gray-200 transition-colors focus:z-10 focus:outline-hidden focus:ring-2 focus:ring-blue-500 dark:border-gray-800 ${
                         isSelected
                           ? 'bg-blue-100 ring-2 ring-inset ring-blue-600 dark:bg-blue-950/70 dark:ring-blue-400'
                           : isHighlighted

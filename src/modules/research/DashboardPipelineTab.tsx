@@ -33,7 +33,7 @@ export const DashboardPipelineTab: React.FC<DashboardPipelineTabProps> = ({
       </div>
 
       <div className="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm dark:border-gray-800 dark:bg-gray-900">
-        <table className="w-full text-left text-xs" aria-label="Pipeline Progression Analysis">
+        <table className="w-full text-left text-xs" aria-label="Design Flow Analysis">
           <caption className="sr-only">Table of module transitions showing completed handoffs, dropouts, and retention</caption>
           <thead className="border-b border-gray-200 bg-gray-50 text-gray-700 dark:border-gray-800 dark:bg-gray-800/50 dark:text-gray-300">
             <tr>
