@@ -82,7 +82,7 @@ export const ParticipantSetup: FC = () => {
           type="checkbox"
           checked={studyModeActive}
           onChange={(e) => setStudyModeActive(e.target.checked)}
-          className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          className="tog focus:ring-blue-500"
         />
       </div>
 

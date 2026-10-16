@@ -68,7 +68,7 @@ export const InterruptLines: FC<InterruptLinesProps> = ({
       </div>
 
       {/* Hardware Pins & Internal Flags Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 p-3 border-b border-gray-100 dark:border-gray-800 text-xs">
+      <div className="interrupt-hardware-grid grid grid-cols-2 sm:grid-cols-5 gap-2 p-3 border-b border-gray-100 dark:border-gray-800 text-xs">
         {/* NMI Pin */}
         <div
           className={`rounded-lg border p-2.5 transition-colors ${
@@ -206,7 +206,7 @@ export const InterruptLines: FC<InterruptLinesProps> = ({
             {pendingList.map((item) => (
               <div
                 key={`${item.source}-${item.vector}`}
-                className={`flex items-center justify-between rounded-lg border px-3 py-2 text-xs font-mono ${
+                className={`interrupt-pending-item flex items-center justify-between rounded-lg border px-3 py-2 text-xs font-mono ${
                   item.blocked
                     ? 'border-amber-200 bg-amber-50/60 dark:border-amber-900 dark:bg-amber-950/20'
                     : 'border-emerald-200 bg-emerald-50/60 dark:border-emerald-900 dark:bg-emerald-950/20'

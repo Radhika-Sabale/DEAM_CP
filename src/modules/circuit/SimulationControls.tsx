@@ -162,7 +162,7 @@ export const SimulationControls: FC<SimulationControlsProps> = ({
               type="checkbox"
               checked={allowFeedback}
               onChange={(e) => onSetAllowFeedback(e.target.checked)}
-              className="rounded-sm text-blue-600 focus:ring-blue-500"
+              className="tog focus:ring-blue-500"
             />
             <span>Allow Feedback (Latches)</span>
           </label>

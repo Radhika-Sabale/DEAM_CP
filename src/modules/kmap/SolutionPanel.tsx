@@ -131,7 +131,7 @@ export const SolutionPanel: FC<SolutionPanelProps> = ({
       )}
 
       {/* Minimal Expressions Display */}
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+      <div className="kmap-expression-pair grid grid-cols-1 gap-4 md:grid-cols-2">
         {/* Minimal SOP Card */}
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-2xs dark:border-gray-800 dark:bg-gray-900">
           <div className="flex items-center justify-between">

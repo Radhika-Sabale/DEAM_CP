@@ -157,22 +157,12 @@ export const InterruptPage: FC = () => {
           />
         ),
       },
-      {
-        id: 'timeline',
-        label: `Timeline (${session.interruptLog.length})`,
-        content: (
-          <InterruptTimeline
-            interruptLog={session.interruptLog}
-            currentTick={session.currentTick}
-          />
-        ),
-      },
     ],
     [session]
   );
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-5">
+    <div className="interrupt-page workflow-stack">
       {/* Page Header */}
       <div className="border-b border-gray-200 pb-4 dark:border-gray-800 flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -279,8 +269,22 @@ export const InterruptPage: FC = () => {
 
       {/* Main Mode Content */}
       {activeMainTab === 'simulate' ? (
-        <div className="space-y-5">
-          {/* Top Run Controls */}
+        <div className="interrupt-simulation-flow workflow-stack">
+          <section className="interrupt-program-card">
+            <div className="workflow-step-heading"><span>01</span><h2>Program</h2></div>
+            <CodeEditor
+              source={session.source}
+              onSourceChange={session.setSource}
+              currentLine={session.currentLine}
+              breakpoints={session.breakpoints}
+              onToggleBreakpoint={session.toggleBreakpoint}
+              errors={session.assemblerResult && !session.assemblerResult.ok ? session.assemblerResult.errors : undefined}
+            />
+          </section>
+
+          {/* Sticky simulation controls remain between program and scenario. */}
+          <div className="run-control-bar">
+          <div className="workflow-step-heading"><span>02</span><h2>Run Controls</h2></div>
           <RunControls
             status={session.status}
             stopReason={session.stopReason}
@@ -308,20 +312,11 @@ export const InterruptPage: FC = () => {
             onStepBack={session.historyStepBack}
             onStepForward={session.historyStepForward}
           />
+          </div>
 
-          {/* Workbench Grid: Left (Code & Scenario), Middle (Lines, Entry, Frames), Right (IVT, State, Timeline) */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-            {/* Left Column: Code Editor & External Scenario */}
-            <div className="lg:col-span-4 space-y-5">
-              <CodeEditor
-                source={session.source}
-                onSourceChange={session.setSource}
-                currentLine={session.currentLine}
-                breakpoints={session.breakpoints}
-                onToggleBreakpoint={session.toggleBreakpoint}
-                errors={session.assemblerResult && !session.assemblerResult.ok ? session.assemblerResult.errors : undefined}
-              />
-
+          <section className="workflow-card">
+            <header className="workflow-card-header"><div className="workflow-step-heading"><span>03</span><h2>Scenario</h2></div></header>
+            <div className="workflow-card-body">
               <ScenarioEditor
                 scenario={session.scenario}
                 currentTick={session.currentTick}
@@ -332,9 +327,11 @@ export const InterruptPage: FC = () => {
                 onExportJson={session.exportScenarioJson}
               />
             </div>
+          </section>
 
-            {/* Middle Column: Hardware Lines, Entry Stepper, Labeled Stack */}
-            <div className="lg:col-span-4 space-y-5">
+          <section className="workflow-card">
+            <header className="workflow-card-header"><div className="workflow-step-heading"><span>04</span><h2>Interrupt Lines &amp; Priority Queue</h2></div></header>
+            <div className="workflow-card-body interrupt-lines-card">
               <InterruptLines
                 currentTick={session.currentTick}
                 pendingLines={session.pendingLines}
@@ -342,7 +339,12 @@ export const InterruptPage: FC = () => {
                 hasInterruptWatchpoint={session.hasInterruptWatchpoint}
                 onToggleInterruptWatchpoint={session.toggleInterruptWatchpoint}
               />
+            </div>
+          </section>
 
+          <section className="workflow-card">
+            <header className="workflow-card-header"><div className="workflow-step-heading"><span>05</span><h2>Entry Sequence</h2></div></header>
+            <div className="workflow-card-body">
               <EntrySequenceView
                 lastInterruptRecord={session.lastInterruptRecord}
                 microStepIndex={session.microStepIndex}
@@ -351,7 +353,29 @@ export const InterruptPage: FC = () => {
                 onShowAllMicroSteps={session.showAllMicroSteps}
                 onResetMicroSteps={session.resetMicroSteps}
               />
+            </div>
+          </section>
 
+          <section className="workflow-card interrupt-state-card">
+            <header className="workflow-card-header"><div className="workflow-step-heading"><span>06</span><h2>CPU State</h2></div></header>
+            <div className="workflow-card-body">
+              <Tabs tabs={rightTabs} defaultValue="ivt" />
+            </div>
+          </section>
+
+          <section className="workflow-card">
+            <header className="workflow-card-header"><div className="workflow-step-heading"><span>07</span><h2>Interrupt Timeline</h2></div></header>
+            <div className="workflow-card-body">
+              <details className="interrupt-timeline-details">
+                <summary>Timeline ({session.interruptLog.length})</summary>
+                <InterruptTimeline interruptLog={session.interruptLog} currentTick={session.currentTick} />
+              </details>
+            </div>
+          </section>
+
+          <section className="workflow-card">
+            <header className="workflow-card-header"><div className="workflow-step-heading"><span>08</span><h2>Interrupt Stack</h2></div></header>
+            <div className="workflow-card-body">
               <FrameStackView
                 cpuState={session.cpuState}
                 interruptLog={session.interruptLog}
@@ -359,12 +383,7 @@ export const InterruptPage: FC = () => {
                 lastStackChange={session.lastRecord?.stackChange}
               />
             </div>
-
-            {/* Right Column: IVT Table, Registers, Flags, Memory, Timeline */}
-            <div className="lg:col-span-4 space-y-5">
-              <Tabs tabs={rightTabs} defaultValue="ivt" />
-            </div>
-          </div>
+          </section>
         </div>
       ) : (
         <InterruptPractice session={session} />

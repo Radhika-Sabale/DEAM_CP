@@ -97,7 +97,7 @@ export const Tabs: FC<TabsProps> = ({
       <div
         role="tablist"
         aria-orientation="horizontal"
-        className="inline-flex max-w-full space-x-1 overflow-x-auto rounded-full border border-gray-200 bg-white/70 p-1 dark:border-gray-800 dark:bg-gray-900/70"
+        className="seg inline-flex max-w-full space-x-1 overflow-x-auto rounded-full border border-gray-200 bg-white/70 p-1 dark:border-gray-800 dark:bg-gray-900/70"
       >
         {tabs.map((tab, idx) => {
           const isSelected = tab.id === activeTabId;

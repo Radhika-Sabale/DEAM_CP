@@ -101,7 +101,7 @@ export const TruthTableView: FC<TruthTableViewProps> = ({
             type="checkbox"
             checked={showDontCares}
             onChange={(e) => setShowDontCares(e.target.checked)}
-            className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+            className="tog focus:ring-blue-500"
           />
           <label htmlFor={filterId} className="font-medium text-gray-800 dark:text-gray-200">
             Show and allow Don't-Cares (X)

@@ -172,7 +172,7 @@ export const Cpu8086Page: FC = () => {
   );
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-5">
+    <div className="cpu-page workflow-stack">
       {/* Page Header */}
       <div className="border-b border-gray-200 pb-4 dark:border-gray-800 flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -273,9 +273,21 @@ export const Cpu8086Page: FC = () => {
 
       {/* Main Tab Views */}
       {activeMainTab === 'simulate' ? (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column: Code Editor & Controls */}
-          <div className="lg:col-span-6 space-y-4">
+        <div className="cpu-simulation-flow workflow-stack">
+          <section className="cpu-program-card">
+            <div className="workflow-step-heading"><span>01</span><h2>Program</h2></div>
+            <CodeEditor
+              source={session.source}
+              onSourceChange={session.setSource}
+              currentLine={session.currentLine}
+              breakpoints={session.breakpoints}
+              onToggleBreakpoint={session.toggleBreakpoint}
+              errors={session.assemblerResult?.ok === false ? session.assemblerResult.errors : []}
+            />
+          </section>
+
+          <div className="run-control-bar">
+            <div className="workflow-step-heading"><span>02</span><h2>Run Controls</h2></div>
             <RunControls
               status={session.status}
               stopReason={session.stopReason}
@@ -304,21 +316,15 @@ export const Cpu8086Page: FC = () => {
               onStepForward={session.historyStepForward}
             />
 
-            <CodeEditor
-              source={session.source}
-              onSourceChange={session.setSource}
-              currentLine={session.currentLine}
-              breakpoints={session.breakpoints}
-              onToggleBreakpoint={session.toggleBreakpoint}
-              errors={session.assemblerResult?.ok === false ? session.assemblerResult.errors : []}
-            />
           </div>
 
-          {/* Right Column: Architectural Inspector Tabs */}
-          <div className="lg:col-span-6">
+          <section className="workflow-card cpu-state-card">
+            <header className="workflow-card-header"><div className="workflow-step-heading"><span>03</span><h2>CPU State</h2></div></header>
+            <div className="workflow-card-body">
             <Tabs tabs={panelTabs} defaultValue="registers" />
+            </div>
+          </section>
           </div>
-        </div>
       ) : (
         <CpuPractice session={session} />
       )}

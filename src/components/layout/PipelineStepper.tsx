@@ -23,7 +23,7 @@ export const PipelineStepper: FC = () => {
   return (
     <nav
       aria-label="Design synthesis pipeline stages"
-      className="mb-6 rounded-xl border border-gray-200 bg-white p-4 shadow-xs dark:border-gray-800 dark:bg-gray-900"
+      className="pipeline-stepper mb-6 rounded-xl border border-gray-200 bg-white p-4 shadow-xs dark:border-gray-800 dark:bg-gray-900"
     >
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-3 dark:border-gray-800">
         <div>
@@ -67,7 +67,7 @@ export const PipelineStepper: FC = () => {
         </div>
       </div>
 
-      <ol className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4 overflow-x-auto py-1">
+      <ol className="pipeline-step-list flex flex-col gap-2 py-1">
         {pipeline.map((stepId: ModuleId, index: number) => {
           const def = getModule(stepId);
           if (!def) return null;
@@ -82,7 +82,7 @@ export const PipelineStepper: FC = () => {
             : 'Upcoming';
 
           return (
-            <li key={stepId} className="flex-1 min-w-[180px]">
+            <li key={stepId} className="min-w-0">
               <button
                 type="button"
                 onClick={() => setModule(stepId)}

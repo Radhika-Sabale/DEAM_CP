@@ -146,7 +146,7 @@ export const ConfigPanel: FC<ConfigPanelProps> = ({
                   asyncControls: e.target.checked,
                 })
               }
-              className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-900"
+              className="tog focus:ring-blue-500"
             />
             <label
               htmlFor={asyncCheckId}
