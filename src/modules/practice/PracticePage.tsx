@@ -161,9 +161,6 @@ export const PracticePage: FC = () => {
         <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
           Step-by-Step Practice Workbench
         </h2>
-        <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Reinforce conceptual skills with automated diagnostic feedback and hints.
-        </p>
       </div>
 
       {/* Control Bar */}

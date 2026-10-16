@@ -118,7 +118,7 @@ describe('AppShell Navigation', () => {
     expect(disabledPlaceholder).toHaveAttribute('aria-disabled', 'true');
 
     // Should display the badge
-    expect(screen.getByText('Coming in Phase 2')).toBeInTheDocument();
+    expect(screen.getByText('Coming soon')).toBeInTheDocument();
 
     vi.restoreAllMocks();
   });

@@ -107,9 +107,6 @@ export const FlipFlopPage: FC = () => {
           <h1 className="mt-1 text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
             Flip-Flop &amp; Latch Workbench
           </h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400">
-            Explore clock edge triggering, transparent latches, characteristic tables, excitation mappings, and race-around hazards.
-          </p>
         </div>
 
         <div>

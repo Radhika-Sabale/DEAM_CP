@@ -202,15 +202,9 @@ export const AluPage: FC = () => {
     <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6">
       <div className="border-b border-gray-200 pb-4 dark:border-gray-800 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <span className="inline-block rounded-md bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800 dark:bg-blue-900/60 dark:text-blue-300">
-            Stage 13B Architecture Module
-          </span>
           <h1 className="mt-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
             Arithmetic Logic Unit (ALU)
           </h1>
-          <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">
-            Explore multi-function arithmetic, logic, and bit shift/rotate slices with Intel 8086 flag conventions.
-          </p>
         </div>
 
         <div className="flex flex-col items-end gap-1">

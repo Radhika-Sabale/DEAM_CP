@@ -120,9 +120,6 @@ export const BooleanPage: FC<BooleanPageProps> = ({ onStepEvent }) => {
     [applyPatch, project.variables]
   );
 
-  const variables = project.variables ?? truthTable?.variables ?? [];
-  const rowCount = truthTable?.rows.length ?? 0;
-
   const tabs = [
     {
       id: 'expr-table',
@@ -200,17 +197,11 @@ export const BooleanPage: FC<BooleanPageProps> = ({ onStepEvent }) => {
           <h2 className="text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
             Boolean Expression Analysis
           </h2>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            Symbolic AST evaluation, step-by-step algebraic laws, truth tables, and universal gate synthesis.
-          </p>
         </div>
 
         {/* Send to Next Module with Handoff Summary */}
         <div className="flex flex-col items-end gap-1">
           <SendToNextButton />
-          <span className="text-[11px] text-gray-500 dark:text-gray-400">
-            Carried over to K-Map: Variables ({variables.join(', ') || 'none'}) and Truth Table ({rowCount} rows).
-          </span>
         </div>
       </div>
 

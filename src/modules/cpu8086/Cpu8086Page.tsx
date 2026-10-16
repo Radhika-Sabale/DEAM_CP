@@ -182,9 +182,6 @@ export const Cpu8086Page: FC = () => {
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
             Intel 8086 Microprocessor Simulator
           </h1>
-          <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-            Interactive 16-bit register files, memory segmentation, flag conventions, and run controls.
-          </p>
         </div>
 
         {/* Main Mode Navigation (Simulate vs Practice) & Interrupt Handoff */}

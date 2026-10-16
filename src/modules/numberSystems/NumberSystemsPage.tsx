@@ -209,9 +209,6 @@ export const NumberSystemsPage: React.FC<NumberSystemsPageProps> = ({
     <div className={`max-w-6xl mx-auto px-4 py-6 space-y-6 ${className}`}>
       <header className="space-y-1">
         <h1 className="text-2xl font-bold tracking-tight text-foreground">Number Systems</h1>
-        <p className="text-sm text-muted-foreground">
-          Explore multi-radix conversions, integer representations (unsigned, 1&apos;s/2&apos;s complement), binary codes (BCD, Gray), and fixed-width binary arithmetic.
-        </p>
       </header>
 
       <Tabs

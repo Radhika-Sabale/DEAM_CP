@@ -94,9 +94,6 @@ export const SequentialPage: FC<SequentialPageProps> = ({ className = '' }) => {
             <h2 className="mt-1 text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
               Synchronous Sequential Circuit Designer
             </h2>
-            <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
-              Synthesize synchronous state machines, transition diagrams, excitation tables, and eliminate lockouts.
-            </p>
             <div role="status" aria-live="polite" className="sr-only">
               Current active design step: {currentStep}
             </div>

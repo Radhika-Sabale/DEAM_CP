@@ -176,15 +176,9 @@ export const InterruptPage: FC = () => {
       {/* Page Header */}
       <div className="border-b border-gray-200 pb-4 dark:border-gray-800 flex flex-wrap items-center justify-between gap-4">
         <div>
-          <span className="inline-block rounded-md bg-purple-100 px-2.5 py-0.5 text-xs font-semibold text-purple-800 dark:bg-purple-900/60 dark:text-purple-300">
-            Stage 15B Architecture Module
-          </span>
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
             8086 Interrupt Controller & Subsystem
           </h1>
-          <p className="mt-0.5 text-xs text-gray-500 dark:text-gray-400">
-            Interactive simulation of 256-vector IVT, NMI & INTR lines, STI shadow delay, 5-step entry sequence, and labeled stack frames.
-          </p>
         </div>
 
         {/* Sample Program Picker & Main Mode Toggle */}

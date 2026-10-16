@@ -174,9 +174,6 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
             }`}
           >
             <span className="text-sm">{mod.title}</span>
-            <span className="text-[11px] text-gray-500 dark:text-gray-400 line-clamp-1">
-              {mod.description}
-            </span>
           </button>
         </li>
       );
@@ -193,19 +190,27 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
               {mod.title}
             </span>
             <span className="rounded bg-gray-200 px-1.5 py-0.5 text-[10px] font-bold text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-              {mod.phase === 2 ? 'Coming in Phase 2' : 'Coming Soon'}
+              Coming soon
             </span>
           </div>
-          <span className="text-[11px] text-gray-400 dark:text-gray-500">
-            {mod.description}
-          </span>
         </div>
       </li>
     );
   };
 
+  const navigationGroups = [
+    { title: 'Foundations', ids: ['number-systems', 'boolean-tool'] },
+    { title: 'Combinational design', ids: ['kmap-solver', 'circuit-simulator'] },
+    { title: 'Sequential design', ids: ['flipflop-simulator', 'sequential-designer'] },
+    { title: 'Practice and research', ids: ['practice', 'quiz', 'prepost-test', 'sus-survey', 'teacher-dashboard'] },
+    { title: 'Processor systems', ids: ['alu', '8086-cpu', 'interrupt-controller'] },
+  ];
+  const knownModuleIds = navigationGroups.flatMap((group) => group.ids);
+  const otherModules = MODULE_REGISTRY.filter((mod) => !knownModuleIds.includes(mod.id));
+  if (otherModules.length) navigationGroups.push({ title: 'Other', ids: otherModules.map((mod) => mod.id) });
+
   return (
-    <div className="flex min-h-screen flex-col bg-gray-50 text-gray-900 dark:bg-gray-950 dark:text-gray-100">
+    <div className="app-shell flex min-h-screen flex-col">
       {/* Accessible Skip Link */}
       <a
         href="#main"
@@ -231,7 +236,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
       )}
 
       {/* Top Application Header */}
-      <header className="sticky top-0 z-30 flex h-14 items-center justify-between border-b border-gray-200 bg-white/95 px-3 sm:px-6 backdrop-blur-sm dark:border-gray-800 dark:bg-gray-900/95">
+      <header className="app-header sticky top-0 z-30 flex h-[66px] items-center justify-between border-b border-gray-200 bg-white/80 px-3 backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/80 sm:px-6">
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             type="button"
@@ -243,6 +248,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
           </button>
 
           <div className="flex items-center gap-2 min-w-0">
+            <span aria-hidden="true" className="brand-mark hidden shrink-0 sm:inline-block" />
             <h1 className="text-sm sm:text-base font-bold tracking-tight text-blue-600 dark:text-blue-400 sm:text-lg truncate">
               Digital Electronics Virtual Lab
             </h1>
@@ -428,29 +434,19 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
             </button>
           </div>
 
-          <nav className="flex-1 overflow-y-auto p-4 space-y-6">
-            <div>
-              <div className="mb-2 px-2 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-                Phase 1 Core Modules
+          <nav className="flex-1 overflow-y-auto p-4 space-y-5">
+            {navigationGroups.map((group) => (
+              <div key={group.title}>
+                <div className="mb-2 px-2 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+                  {group.title}
+                </div>
+                <ul className="space-y-1">
+                  {MODULE_REGISTRY.filter((mod) => group.ids.includes(mod.id)).map(renderNavModule)}
+                </ul>
               </div>
-              <ul className="space-y-1">
-                {MODULE_REGISTRY.filter((m) => m.phase === 1).map(renderNavModule)}
-              </ul>
-            </div>
-
-            <div>
-              <div className="mb-2 px-2 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
-                Phase 2 Modules
-              </div>
-              <ul className="space-y-1">
-                {MODULE_REGISTRY.filter((m) => m.phase === 2).map(renderNavModule)}
-              </ul>
-            </div>
+            ))}
           </nav>
 
-          <div className="border-t border-gray-100 p-3 text-center text-xs text-gray-400 dark:border-gray-800 dark:text-gray-500">
-            Digital Electronics Virtual Lab v0.1
-          </div>
         </aside>
 
         {/* Main Content Area */}

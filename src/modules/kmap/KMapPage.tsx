@@ -214,9 +214,6 @@ export const KMapPage: FC = () => {
           <h2 className="text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
             Karnaugh Map Minimizer
           </h2>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            2 to 5 variable prime implicant grouping, Quine-McCluskey tabular reduction, and minimal SOP/POS generation.
-          </p>
         </div>
 
         {/* Explore vs Student Mode Toggle */}

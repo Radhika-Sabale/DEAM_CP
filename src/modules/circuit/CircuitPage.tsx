@@ -194,9 +194,6 @@ export const CircuitPage: FC = () => {
           <h2 className="text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
             Digital Circuit Schematic Simulator
           </h2>
-          <p className="text-xs text-gray-600 dark:text-gray-400">
-            Interactive gate schematic canvas, discrete-event delta simulation, waveform timing, and truth table verification.
-          </p>
         </div>
 
         <div className="flex items-center gap-2">
