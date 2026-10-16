@@ -35,7 +35,6 @@ export default defineConfig({
       name: 'chromium',
       use: {
         ...devices['Desktop Chrome'],
-        channel: 'chrome',
       },
     },
     {
@@ -43,7 +42,6 @@ export default defineConfig({
       use: {
         ...devices['Pixel 5'],
         viewport: { width: 390, height: 844 },
-        channel: 'chrome',
       },
     },
     ...(process.env.ENABLE_ALL_BROWSERS

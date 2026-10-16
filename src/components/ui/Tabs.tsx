@@ -97,7 +97,7 @@ export const Tabs: FC<TabsProps> = ({
       <div
         role="tablist"
         aria-orientation="horizontal"
-        className="flex space-x-1 border-b border-gray-200 dark:border-gray-800 overflow-x-auto"
+        className="inline-flex max-w-full space-x-1 overflow-x-auto rounded-full border border-gray-200 bg-white/70 p-1 dark:border-gray-800 dark:bg-gray-900/70"
       >
         {tabs.map((tab, idx) => {
           const isSelected = tab.id === activeTabId;
@@ -125,7 +125,7 @@ export const Tabs: FC<TabsProps> = ({
               onKeyDown={(e) => handleKeyDown(e, idx)}
               className={`relative px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-40 disabled:cursor-not-allowed ${
                 isSelected
-                  ? 'text-blue-600 dark:text-blue-400 font-semibold border-b-2 border-blue-600 dark:border-blue-400 -mb-px'
+                  ? 'text-blue-600 dark:text-blue-400 font-semibold'
                   : 'text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200'
               }`}
             >

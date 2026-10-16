@@ -8,6 +8,8 @@ import {
   type FC,
   Suspense,
   useEffect,
+  useRef,
+  useState,
 } from 'react';
 import { AppShell } from './components/layout/AppShell';
 import { SendToNextButton } from './components/layout/SendToNextButton';
@@ -24,6 +26,10 @@ export const App: FC = () => {
 
   const currentModuleId = useUiStore(selectCurrentModule);
   const setModule = useUiStore((state) => state.setModule);
+  const [routeNotFound, setRouteNotFound] = useState(false);
+  const previousModule = useRef(currentModuleId);
+  const currentModuleRef = useRef(currentModuleId);
+  currentModuleRef.current = currentModuleId;
 
   // We use client-side window.location.hash for routing so the app remains fully static and offline-capable without a server or router package.
   useEffect(() => {
@@ -50,26 +56,33 @@ export const App: FC = () => {
         '8086-cpu': '8086-cpu',
         'interrupt-controller': 'interrupt-controller',
       };
-      const resolved =
-        aliasMap[raw] ||
-        (MODULE_REGISTRY.some((m) => m.id === raw) ? (raw as ModuleId) : undefined);
+      const resolved = aliasMap[raw] || (MODULE_REGISTRY.some((m) => m.id === raw) ? (raw as ModuleId) : undefined);
       if (resolved) {
         setModule(resolved);
+        setRouteNotFound(false);
+        if (window.location.hash !== `#/${resolved}`) window.history.replaceState(null, '', `#/${resolved}`);
+      } else if (raw) {
+        setRouteNotFound(true);
+      } else {
+        setRouteNotFound(false);
+        window.history.replaceState(null, '', `#/${currentModuleRef.current}`);
       }
     };
 
-    // Sync on initial load
-    if (window.location.hash) {
-      handleHashSync();
-    } else {
-      window.location.hash = `#${currentModuleId}`;
-    }
-
+    handleHashSync();
     window.addEventListener('hashchange', handleHashSync);
     return () => {
       window.removeEventListener('hashchange', handleHashSync);
     };
-  }, [currentModuleId, setModule]);
+  }, [setModule]);
+
+  useEffect(() => {
+    if (previousModule.current !== currentModuleId) {
+      previousModule.current = currentModuleId;
+      window.history.replaceState(null, '', `#/${currentModuleId}`);
+      setRouteNotFound(false);
+    }
+  }, [currentModuleId]);
 
   // Wire debounced background autosave to persist changes safely without interrupting UI typing
   useEffect(() => {
@@ -96,7 +109,13 @@ export const App: FC = () => {
   return (
     <AppShell>
       <div className="space-y-6">
-        <Suspense
+        {routeNotFound ? (
+          <section className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm dark:border-gray-800 dark:bg-gray-900">
+            <h1 className="mb-2 text-2xl font-bold">Page not found</h1>
+            <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">This route does not match a module.</p>
+            <a className="inline-flex rounded-full bg-blue-700 px-4 py-2 text-sm font-semibold text-white" href="#/boolean-tool">Go to Boolean</a>
+          </section>
+        ) : <Suspense
           fallback={
             <div
               role="status"
@@ -114,7 +133,7 @@ export const App: FC = () => {
               Module "{currentModuleId}" not found.
             </div>
           )}
-        </Suspense>
+        </Suspense>}
 
         {/* Transition Handoff Button */}
         <div className="flex justify-end border-t border-gray-200 pt-4 dark:border-gray-800">

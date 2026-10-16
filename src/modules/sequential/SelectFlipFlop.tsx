@@ -58,7 +58,7 @@ export const SelectFlipFlop: FC<SelectFlipFlopProps> = ({
               No flip-flop selected yet. Choose a flip-flop type to begin.
             </p>
             <a
-              href="#flipflop-simulator"
+              href="#/flipflop-simulator"
               className="inline-flex items-center text-xs font-semibold text-blue-600 underline hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
             >
               Explore in Flip-Flop Module &rarr;
