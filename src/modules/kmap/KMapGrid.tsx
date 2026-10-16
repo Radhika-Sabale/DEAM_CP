@@ -22,6 +22,7 @@ import {
   rowHeaderLabels,
 } from '../../engine/kmap/layout';
 import { KMapLayer5Var } from './KMapLayer5Var';
+import { GroupOverlay, type VisualGroup } from './GroupOverlay';
 
 export interface KMapGridProps {
   readonly variableCount: number;
@@ -36,7 +37,8 @@ export interface KMapGridProps {
   readonly readOnly?: boolean;
   readonly selectedCells?: readonly number[];
   readonly onToggleCellSelect?: (minterm: number) => void;
-  readonly overlay?: ReactNode;
+  readonly overlayGroups?: readonly VisualGroup[];
+  readonly setupActions?: ReactNode;
   readonly highlightedCells?: readonly number[];
   readonly highlightLabel?: string;
 }
@@ -60,7 +62,8 @@ export const KMapGrid: FC<KMapGridProps> = ({
   readOnly = false,
   selectedCells = [],
   onToggleCellSelect,
-  overlay,
+  overlayGroups = [],
+  setupActions,
   highlightedCells = [],
   highlightLabel,
 }) => {
@@ -139,7 +142,13 @@ export const KMapGrid: FC<KMapGridProps> = ({
   }, [isPainting]);
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="workflow-stack">
+      <section className="workflow-card">
+      <header className="workflow-card-header">
+        <div className="workflow-step-heading"><span>01</span><h3>Setup</h3></div>
+        {setupActions}
+      </header>
+      <div className="workflow-card-body">
       {/* Grid Toolbar & Config */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-3 dark:border-gray-800">
         <div className="flex items-center gap-2">
@@ -216,7 +225,12 @@ export const KMapGrid: FC<KMapGridProps> = ({
           )}
         </div>
       </div>
+      </div>
+      </section>
 
+      <section className="workflow-card kmap-map-card">
+        <header className="workflow-card-header"><div className="workflow-step-heading"><span>02</span><h3>Map</h3></div></header>
+        <div className="workflow-card-body">
       {/* 5-variable dual layer layout */}
       {variableCount === 5 ? (
         <KMapLayer5Var
@@ -229,7 +243,7 @@ export const KMapGrid: FC<KMapGridProps> = ({
           onMouseDown={handleMouseDown}
           onMouseEnter={handleMouseEnter}
           getCellAriaLabel={getCellAriaLabel}
-          overlay={overlay}
+          overlayGroups={overlayGroups}
         />
       ) : (
         /* Standard 2, 3, or 4 variable grid */
@@ -286,6 +300,7 @@ export const KMapGrid: FC<KMapGridProps> = ({
                   const val = values[m] ?? 0;
                   const isSelected = selectedCells.includes(m);
                   const isHighlighted = highlightedCells.includes(m);
+                  const isDimmed = highlightedCells.length > 0 && !isHighlighted;
 
                   return (
                     <div
@@ -293,6 +308,7 @@ export const KMapGrid: FC<KMapGridProps> = ({
                       role="gridcell"
                       tabIndex={0}
                       aria-selected={isSelected}
+                      data-dimmed={isDimmed || undefined}
                       data-value={String(val)}
                       aria-label={getCellAriaLabel(m)}
                       onClick={() => handleCellClick(m)}
@@ -317,13 +333,14 @@ export const KMapGrid: FC<KMapGridProps> = ({
                       }`}
                     >
                       {/* Minterm Subscript Badge */}
-                      <span className="absolute top-1 left-1.5 text-[9px] font-mono text-gray-400 dark:text-gray-500">
+                      <span className="absolute top-1 left-1.5 z-[3] text-[9px] font-mono text-gray-400 dark:text-gray-500">
                         {m}
                       </span>
+                      <GroupOverlay groups={overlayGroups} variableCount={variableCount} cellIndex={m} />
 
                       {/* Explicit Text Symbol */}
                       <span
-                        className={`text-lg font-bold font-mono ${
+                        className={`relative z-[3] text-lg font-bold font-mono ${
                           val === 1
                             ? 'text-blue-700 dark:text-blue-300'
                             : val === 'X'
@@ -346,15 +363,11 @@ export const KMapGrid: FC<KMapGridProps> = ({
               </div>
             ))}
 
-            {/* Visual Implicant Overlay Layer */}
-            {overlay && (
-              <div className="pointer-events-none absolute top-12 left-16 right-0 bottom-0 z-20">
-                {overlay}
-              </div>
-            )}
           </div>
         </div>
       )}
+        </div>
+      </section>
     </div>
   );
 };

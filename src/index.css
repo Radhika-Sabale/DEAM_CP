@@ -105,6 +105,30 @@
 .app-main { background: transparent; padding: 48px 32px 112px; }
 .page-column { width: min(100%, 920px); }
 .app-shell main > div > * + * { margin-top: 32px; }
+.workflow-stack { display: flex; min-width: 0; flex-direction: column; gap: 32px; }
+.workflow-card { min-width: 0; overflow: visible; border: 1px solid var(--line); border-radius: 20px; background: var(--card); box-shadow: var(--shadow); }
+.workflow-card-header { display: flex; min-height: 56px; align-items: center; gap: 12px; border-bottom: 1px solid var(--line); border-radius: 20px 20px 0 0; background: var(--header); padding: 12px 20px; }
+.workflow-card-header::before { content: ''; width: 34px; height: 10px; flex: 0 0 34px; background: radial-gradient(circle at 5px 5px,#e08a95 4px,transparent 4.5px),radial-gradient(circle at 17px 5px,#d5ad74 4px,transparent 4.5px),radial-gradient(circle at 29px 5px,#6fc2a8 4px,transparent 4.5px); }
+.workflow-step-heading { display: flex; min-width: 0; align-items: baseline; gap: 10px; }
+.workflow-step-heading > span { color: var(--teal); font: 500 12px 'JetBrains Mono',monospace; }
+.workflow-step-heading h3 { margin: 0; color: var(--ink); font: 600 16px/1.3 'Space Grotesk',sans-serif; }
+.workflow-card-body { min-width: 0; padding: 28px 24px; }
+.kmap-setup-map { display: flex; min-width: 0; flex-direction: column; gap: 32px; }
+.kmap-legend { padding: 0 24px 24px; }
+.group-overlay-fragment { position: absolute; display: block; pointer-events: none; }
+.group-legend { border-top: 1px solid var(--line); padding-top: 16px; }
+.group-legend h4 { margin: 0 0 10px; font: 600 13px 'Space Grotesk',sans-serif; }
+.group-legend-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.group-legend-item { display: flex; min-width: 0; align-items: center; gap: 8px; border: 1px solid var(--line); border-radius: 12px !important; background: var(--soft); padding: 8px 10px; text-align: left; }
+.group-legend-swatch { display: grid; width: 30px; height: 24px; flex: 0 0 30px; place-items: center; border: 2px solid var(--group-color); border-radius: 7px; background: var(--group-fill); color: var(--ink); font: 500 10px 'JetBrains Mono',monospace; }
+.group-legend-details { display: grid; min-width: 0; gap: 2px; }
+.group-legend-term { color: var(--ink); font: 500 12px 'JetBrains Mono',monospace; }
+.group-legend-cells { color: var(--muted); font-size: 10px; }
+.group-essential { border-radius: 999px; background: var(--header); padding: 3px 7px; color: var(--muted); font-size: 10px; white-space: nowrap; }
+.kmap-cell[data-dimmed="true"] { opacity: .25; }
+.kmap-expression { margin-top: 8px; color: var(--ink); font: 600 16px/1.7 'JetBrains Mono',monospace; overflow-wrap: anywhere; }
+.expression-term { border: 0; border-radius: 8px !important; background: transparent; padding: 0 2px; color: inherit; font: inherit; }
+.expression-term:hover,.expression-term:focus-visible { background: color-mix(in srgb,var(--teal) 13%,transparent); }
 button { border-radius: 999px !important; }
 [role="tablist"] { display: inline-flex !important; width: max-content; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
 [role="tablist"]::-webkit-scrollbar { display: none; }
@@ -127,9 +151,14 @@ button[aria-pressed="true"] { background: var(--ink) !important; color: #fff !im
   .app-sidebar .nav-item { justify-content: center; padding-inline: 0; }
   .app-sidebar .nav-group + .nav-group { border-color: var(--line); margin-top: 12px; padding-top: 12px; }
   .app-main { padding: 32px 24px 80px; }
+  .kmap-layer-pair { flex-direction: column; }
 }
+@media (min-width: 820px) { .kmap-layer-pair { flex-direction: row; } }
 @media (max-width: 480px) {
   .app-main { padding: 24px 16px 64px; }
+  .workflow-card-body { padding: 22px 16px; }
+  .workflow-card-header { padding-inline: 14px; }
+  .group-legend-item { flex: 1 1 100%; }
   .app-header { padding-inline: 8px; }
   .app-header > div:first-child { gap: 4px; }
 }

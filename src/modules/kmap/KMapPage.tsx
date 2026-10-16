@@ -13,7 +13,7 @@ import { solvePOS, solveSOP } from '../../engine/kmap/solver';
 import { useProjectStore } from '../../store/projectStore';
 import { SendToNextButton } from '../../components/layout/SendToNextButton';
 import { KMapGrid } from './KMapGrid';
-import { GroupOverlay, type VisualGroup } from './GroupOverlay';
+import { GroupOverlay, groupsWithCareCells, type VisualGroup } from './GroupOverlay';
 import { SolutionPanel } from './SolutionPanel';
 import { QmTablePanel } from './QmTablePanel';
 import { StudentModePanel } from './StudentModePanel';
@@ -188,75 +188,37 @@ export const KMapPage: FC = () => {
           termString: g.termString,
         }));
       }
-      return studentGroups.map((sg, i) => ({
+      return groupsWithCareCells(studentGroups.map((sg, i) => ({
         id: `sg-${i + 1}`,
         cellIndices: sg,
         termString: `G${i + 1}`,
-      }));
+      })), cells, targetForm === 'SOP' ? 1 : 0);
     }
 
     if (!activeSolution) return [];
     const cover = activeSolution.allMinimalCovers[selectedCoverIdx] ?? activeSolution.primarySolution;
-    return cover.primeImplicants.map((pi) => ({
+    return groupsWithCareCells(cover.primeImplicants.map((pi) => ({
       id: pi.id,
       cube: pi.cube,
       cellIndices: pi.minterms,
       termString: pi.termString,
       isEssential: activeSolution.essentialPrimeImplicants.some((e) => e.id === pi.id),
-    }));
-  }, [activeTab, revealedSolution, activeSolution, studentGroups, selectedCoverIdx]);
+    })), cells, targetForm === 'SOP' ? 1 : 0);
+  }, [activeTab, revealedSolution, activeSolution, studentGroups, selectedCoverIdx, cells, targetForm]);
 
   return (
-    <div className="space-y-6">
+    <div className="workflow-stack">
       {/* Header and Module Tabs */}
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 pb-4 dark:border-gray-800">
+      <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h2 className="text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
             Karnaugh Map Minimizer
           </h2>
         </div>
-
-        {/* Explore vs Student Mode Toggle */}
-        <div className="inline-flex rounded-lg border border-gray-300 p-1 dark:border-gray-700 dark:bg-gray-900">
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab('explore');
-              setSelectedCells([]);
-              setHighlightedCells([]);
-              setRevealedSolution(false);
-            }}
-            className={`rounded-md px-3 py-1.5 text-xs font-semibold ${
-              activeTab === 'explore'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
-            }`}
-          >
-            Explore & Solve
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab('student');
-              setSelectedCells([]);
-              setHighlightedCells([]);
-            }}
-            className={`rounded-md px-3 py-1.5 text-xs font-semibold ${
-              activeTab === 'student'
-                ? 'bg-blue-600 text-white shadow-xs'
-                : 'text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white'
-            }`}
-          >
-            Student Practice Mode
-          </button>
-        </div>
       </div>
 
-      {/* Main Grid & Panels Layout */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Left Column: Interactive Map Grid */}
-        <div className="lg:col-span-7 xl:col-span-6 space-y-4">
-          <div className="rounded-xl border border-gray-200 bg-white p-5 shadow-xs dark:border-gray-800 dark:bg-gray-900">
+      {/* Setup and Map cards */}
+      <div className="kmap-setup-map">
             <KMapGrid
               variableCount={varCount}
               variableNames={varNames}
@@ -277,28 +239,28 @@ export const KMapPage: FC = () => {
               onToggleCellSelect={activeTab === 'student' ? handleToggleCellSelect : undefined}
               highlightedCells={highlightedCells}
               highlightLabel={highlightLabel}
-              overlay={
-                <GroupOverlay
-                  groups={overlayGroups}
-                  variableCount={varCount}
-                  showLegend={false}
-                />
+              overlayGroups={overlayGroups}
+              setupActions={
+                <div className="seg" role="group" aria-label="Karnaugh map mode">
+                  <button type="button" aria-pressed={activeTab === 'explore'} onClick={() => { setActiveTab('explore'); setSelectedCells([]); setHighlightedCells([]); setRevealedSolution(false); }}>Explore &amp; Solve</button>
+                  <button type="button" aria-pressed={activeTab === 'student'} onClick={() => { setActiveTab('student'); setSelectedCells([]); setHighlightedCells([]); }}>Student Practice Mode</button>
+                </div>
               }
             />
 
             {/* Implicants Legend */}
-            <div className="mt-4 border-t border-gray-100 pt-3 dark:border-gray-800">
+            <div className="kmap-legend">
               <GroupOverlay
                 groups={overlayGroups}
                 variableCount={varCount}
                 showLegend={true}
+                onGroupHover={(indices) => setHighlightedCells(indices ? [...indices] : [])}
               />
             </div>
-          </div>
-        </div>
+      </div>
 
-        {/* Right Column: Mode-Specific Control Panels */}
-        <div className="lg:col-span-5 xl:col-span-6 space-y-4">
+        {/* Solver and details follow the map in workflow order */}
+        <div className="workflow-stack">
           {activeTab === 'explore' ? (
             <>
               <SolutionPanel
@@ -309,6 +271,7 @@ export const KMapPage: FC = () => {
                 selectedCoverIndex={selectedCoverIdx}
                 onSelectCoverIndex={setSelectedCoverIdx}
                 onSolve={executeSolve}
+                onHighlightGroup={(indices) => setHighlightedCells(indices ? [...indices] : [])}
               />
               {activeSolution && (
                 <QmTablePanel
@@ -342,7 +305,7 @@ export const KMapPage: FC = () => {
           )}
 
           {/* Pipeline Handoff Footer Line */}
-          <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-2xs dark:border-gray-800 dark:bg-gray-900">
+          <div className="workflow-card kmap-handoff-card">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="text-xs text-gray-600 dark:text-gray-400">
                 <span className="font-semibold text-gray-900 dark:text-gray-100">
@@ -359,7 +322,6 @@ export const KMapPage: FC = () => {
             </div>
           </div>
         </div>
-      </div>
     </div>
   );
 };

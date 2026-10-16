@@ -16,6 +16,7 @@ export interface SolutionPanelProps {
   readonly selectedCoverIndex: number;
   readonly onSelectCoverIndex: (index: number) => void;
   readonly onSolve: () => void;
+  readonly onHighlightGroup?: (cellIndices: readonly number[] | null) => void;
   readonly isSolving?: boolean;
 }
 
@@ -27,6 +28,7 @@ export const SolutionPanel: FC<SolutionPanelProps> = ({
   selectedCoverIndex,
   onSelectCoverIndex,
   onSolve,
+  onHighlightGroup,
   isSolving = false,
 }) => {
   const [copiedForm, setCopiedForm] = useState<'SOP' | 'POS' | null>(null);
@@ -49,6 +51,8 @@ export const SolutionPanel: FC<SolutionPanelProps> = ({
 
   const allCovers = activeSolution?.allMinimalCovers ?? [];
   const currentCover = allCovers[selectedCoverIndex] ?? activeSolution?.primarySolution;
+  const sopCover = sopSolution?.allMinimalCovers[selectedCoverIndex] ?? sopSolution?.primarySolution;
+  const posCover = posSolution?.allMinimalCovers[selectedCoverIndex] ?? posSolution?.primarySolution;
 
   return (
     <div className="space-y-4">
@@ -144,8 +148,15 @@ export const SolutionPanel: FC<SolutionPanelProps> = ({
               </button>
             )}
           </div>
-          <div className="mt-2 font-mono text-base font-bold text-gray-900 dark:text-gray-100">
-            {sopSolution ? sopSolution.expressionString : 'Not solved yet'}
+          <div className="kmap-expression" aria-label={sopSolution ? `Minimal SOP expression: ${sopSolution.expressionString}` : undefined}>
+            {sopSolution && sopCover?.primeImplicants.length ? sopCover.primeImplicants.map((pi, index) => (
+              <span key={`sop-term-${pi.id}`}>
+                {index > 0 && <span aria-hidden="true"> + </span>}
+                <button type="button" className="expression-term" onMouseEnter={() => onHighlightGroup?.(pi.minterms)} onMouseLeave={() => onHighlightGroup?.(null)} onFocus={() => onHighlightGroup?.(pi.minterms)} onBlur={() => onHighlightGroup?.(null)} aria-label={`Highlight term ${pi.termString}, minterms ${pi.minterms.join(', ')}`}>
+                  {pi.termString}
+                </button>
+              </span>
+            )) : sopSolution ? sopSolution.expressionString : 'Not solved yet'}
           </div>
           {sopSolution && (
             <div className="mt-2 text-[11px] text-gray-500 dark:text-gray-400">
@@ -170,8 +181,15 @@ export const SolutionPanel: FC<SolutionPanelProps> = ({
               </button>
             )}
           </div>
-          <div className="mt-2 font-mono text-base font-bold text-gray-900 dark:text-gray-100">
-            {posSolution ? posSolution.expressionString : 'Not solved yet'}
+          <div className="kmap-expression" aria-label={posSolution ? `Minimal POS expression: ${posSolution.expressionString}` : undefined}>
+            {posSolution && posCover?.primeImplicants.length ? posCover.primeImplicants.map((pi, index) => (
+              <span key={`pos-term-${pi.id}`}>
+                {index > 0 && <span aria-hidden="true"> · </span>}
+                <button type="button" className="expression-term" onMouseEnter={() => onHighlightGroup?.(pi.minterms)} onMouseLeave={() => onHighlightGroup?.(null)} onFocus={() => onHighlightGroup?.(pi.minterms)} onBlur={() => onHighlightGroup?.(null)} aria-label={`Highlight term ${pi.termString}, minterms ${pi.minterms.join(', ')}`}>
+                  ({pi.termString})
+                </button>
+              </span>
+            )) : posSolution ? posSolution.expressionString : 'Not solved yet'}
           </div>
           {posSolution && (
             <div className="mt-2 text-[11px] text-gray-500 dark:text-gray-400">

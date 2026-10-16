@@ -5,7 +5,7 @@
  * adjacency explanations, keyboard navigation, and overlay slots.
  */
 
-import { type FC, type KeyboardEvent, type ReactNode } from 'react';
+import { type FC, type KeyboardEvent } from 'react';
 import type { LogicValue } from '../../types/ast';
 import {
   axisVariables,
@@ -13,6 +13,7 @@ import {
   colHeaderLabels,
   rowHeaderLabels,
 } from '../../engine/kmap/layout';
+import { GroupOverlay, type VisualGroup } from './GroupOverlay';
 
 export interface KMapLayer5VarProps {
   readonly variableNames: readonly string[];
@@ -24,7 +25,7 @@ export interface KMapLayer5VarProps {
   readonly onMouseDown: (minterm: number) => void;
   readonly onMouseEnter: (minterm: number) => void;
   readonly getCellAriaLabel: (minterm: number) => string;
-  readonly overlay?: ReactNode;
+  readonly overlayGroups?: readonly VisualGroup[];
 }
 
 export const KMapLayer5Var: FC<KMapLayer5VarProps> = ({
@@ -37,7 +38,7 @@ export const KMapLayer5Var: FC<KMapLayer5VarProps> = ({
   onMouseDown,
   onMouseEnter,
   getCellAriaLabel,
-  overlay,
+  overlayGroups = [],
 }) => {
   const rowLabels = rowHeaderLabels(5);
   const colLabels = colHeaderLabels(5);
@@ -106,12 +107,14 @@ export const KMapLayer5Var: FC<KMapLayer5VarProps> = ({
                   const val = values[m] ?? 0;
                   const isSelected = selectedCells.includes(m);
                   const isHighlighted = highlightedCells.includes(m);
+                  const isDimmed = highlightedCells.length > 0 && !isHighlighted;
 
                   return (
                     <div
                       key={`cell-${m}`}
                       role="gridcell"
                       tabIndex={0}
+                      data-dimmed={isDimmed || undefined}
                       aria-label={getCellAriaLabel(m)}
                       onClick={() => onCellClick(m)}
                       onMouseDown={() => onMouseDown(m)}
@@ -130,11 +133,12 @@ export const KMapLayer5Var: FC<KMapLayer5VarProps> = ({
                           : 'bg-white hover:bg-gray-50 dark:bg-gray-950 dark:hover:bg-gray-900'
                       }`}
                     >
-                      <span className="absolute top-1 left-1.5 text-[8px] font-mono text-gray-400 dark:text-gray-500">
+                      <span className="absolute top-1 left-1.5 z-[3] text-[8px] font-mono text-gray-400 dark:text-gray-500">
                         {m}
                       </span>
+                      <GroupOverlay groups={overlayGroups} variableCount={5} cellIndex={m} layerFilter={layerIndex} />
                       <span
-                        className={`text-base font-bold font-mono ${
+                        className={`relative z-[3] text-base font-bold font-mono ${
                           val === 1
                             ? 'text-blue-700 dark:text-blue-300'
                             : val === 'X'
@@ -155,15 +159,6 @@ export const KMapLayer5Var: FC<KMapLayer5VarProps> = ({
               </div>
             ))}
 
-            {/* Implicant Overlays for this layer */}
-            {overlay && (
-              <div
-                data-layer={layerIndex}
-                className="pointer-events-none absolute top-12 left-14 right-0 bottom-0 z-20"
-              >
-                {overlay}
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -173,7 +168,7 @@ export const KMapLayer5Var: FC<KMapLayer5VarProps> = ({
   return (
     <div className="flex flex-col gap-3">
       {/* Side-by-Side Layers */}
-      <div className="flex flex-col items-center justify-center gap-6 lg:flex-row lg:items-start">
+      <div className="kmap-layer-pair flex flex-col items-center justify-center gap-6 lg:items-start">
         {renderSingleLayer(0)}
         {renderSingleLayer(1)}
       </div>
