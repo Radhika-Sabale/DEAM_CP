@@ -32,21 +32,21 @@ describe('AppShell Navigation', () => {
 
     // ALU Module
     const aluButton = screen.getByRole('button', {
-      name: /Arithmetic Logic Unit \(ALU\)/i,
+      name: 'ALU',
     });
     expect(aluButton).toBeInTheDocument();
     expect(aluButton).toBeEnabled();
 
     // 8086 CPU Module
     const cpuButton = screen.getByRole('button', {
-      name: /Intel 8086 Microprocessor Architecture/i,
+      name: '8086 CPU',
     });
     expect(cpuButton).toBeInTheDocument();
     expect(cpuButton).toBeEnabled();
 
     // Interrupt Controller Module
     const interruptButton = screen.getByRole('button', {
-      name: /Interrupt Controller & Subsystem/i,
+      name: 'Interrupts',
     });
     expect(interruptButton).toBeInTheDocument();
     expect(interruptButton).toBeEnabled();
@@ -63,7 +63,7 @@ describe('AppShell Navigation', () => {
     );
 
     const aluButton = screen.getByRole('button', {
-      name: /Arithmetic Logic Unit \(ALU\)/i,
+      name: 'ALU',
     });
     fireEvent.click(aluButton);
 
@@ -71,7 +71,7 @@ describe('AppShell Navigation', () => {
     expect(aluButton).toHaveAttribute('aria-current', 'page');
 
     const cpuButton = screen.getByRole('button', {
-      name: /Intel 8086 Microprocessor Architecture/i,
+      name: '8086 CPU',
     });
     fireEvent.click(cpuButton);
 

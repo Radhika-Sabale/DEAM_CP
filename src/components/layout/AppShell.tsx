@@ -153,7 +153,24 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
     }
   };
 
+  const shortNames: Record<string, string> = {
+    'number-systems': 'Number Systems', 'boolean-tool': 'Boolean Algebra',
+    'kmap-solver': 'Karnaugh Map', 'circuit-simulator': 'Circuit Simulator',
+    'flipflop-simulator': 'Flip-Flops & Latches', 'sequential-designer': 'Sequential Designer',
+    practice: 'Practice', quiz: 'Quizzes', 'prepost-test': 'Pre/Post Test',
+    'sus-survey': 'SUS', 'teacher-dashboard': 'Teacher Dashboard', alu: 'ALU',
+    '8086-cpu': '8086 CPU', 'interrupt-controller': 'Interrupts',
+  };
+  const iconTiles: Record<string, string> = {
+    'number-systems': '01', 'boolean-tool': 'ƒ', 'kmap-solver': 'K',
+    'circuit-simulator': '∿', 'flipflop-simulator': 'D', 'sequential-designer': 'FSM',
+    practice: 'P', quiz: 'Q', 'prepost-test': 'T', 'sus-survey': 'S',
+    'teacher-dashboard': '▤', alu: 'ALU', '8086-cpu': '86', 'interrupt-controller': 'IRQ',
+  };
+
   const renderNavModule = (mod: (typeof MODULE_REGISTRY)[number]) => {
+    const title = shortNames[mod.id] ?? mod.title;
+    const icon = iconTiles[mod.id] ?? mod.icon.slice(0, 2).toUpperCase();
     if (mod.isAvailable) {
       const isActive = currentModule === mod.id;
       return (
@@ -167,13 +184,16 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
               }
             }}
             aria-current={isActive ? 'page' : undefined}
-            className={`flex w-full flex-col rounded-lg px-3 py-2 text-left transition-colors focus-visible:outline-2 focus-visible:outline-blue-600 ${
+            aria-label={title}
+            title={title}
+            className={`nav-item flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left transition-colors focus-visible:outline-2 focus-visible:outline-blue-600 ${
               isActive
                 ? 'bg-blue-50 font-semibold text-blue-700 dark:bg-blue-950/60 dark:text-blue-300'
                 : 'text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800'
             }`}
           >
-            <span className="text-sm">{mod.title}</span>
+            <span className="nav-icon" aria-hidden="true">{icon}</span>
+            <span className="nav-label">{title}</span>
           </button>
         </li>
       );
@@ -183,16 +203,13 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
       <li key={mod.id}>
         <div
           aria-disabled="true"
-          className="flex w-full flex-col rounded-lg px-3 py-2 text-left opacity-60 cursor-not-allowed"
+          aria-label={title}
+          title={`${title} — Coming soon`}
+          className="nav-item flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left opacity-60 cursor-not-allowed"
         >
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
-              {mod.title}
-            </span>
-            <span className="rounded bg-gray-200 px-1.5 py-0.5 text-[10px] font-bold text-gray-600 dark:bg-gray-800 dark:text-gray-400">
-              Coming soon
-            </span>
-          </div>
+          <span className="nav-icon" aria-hidden="true">{icon}</span>
+          <span className="nav-label text-sm font-medium text-gray-500 dark:text-gray-400">{title}</span>
+          <span className="sr-only">Coming soon</span>
         </div>
       </li>
     );
@@ -200,10 +217,10 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
 
   const navigationGroups = [
     { title: 'Foundations', ids: ['number-systems', 'boolean-tool'] },
-    { title: 'Combinational design', ids: ['kmap-solver', 'circuit-simulator'] },
-    { title: 'Sequential design', ids: ['flipflop-simulator', 'sequential-designer'] },
-    { title: 'Practice and research', ids: ['practice', 'quiz', 'prepost-test', 'sus-survey', 'teacher-dashboard'] },
-    { title: 'Processor systems', ids: ['alu', '8086-cpu', 'interrupt-controller'] },
+    { title: 'Combinational', ids: ['kmap-solver', 'circuit-simulator'] },
+    { title: 'Sequential', ids: ['flipflop-simulator', 'sequential-designer'] },
+    { title: 'Practice & Research', ids: ['practice', 'quiz', 'prepost-test', 'sus-survey', 'teacher-dashboard'] },
+    { title: 'Processor', ids: ['alu', '8086-cpu', 'interrupt-controller'] },
   ];
   const knownModuleIds = navigationGroups.flatMap((group) => group.ids);
   const otherModules = MODULE_REGISTRY.filter((mod) => !knownModuleIds.includes(mod.id));
@@ -236,7 +253,8 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
       )}
 
       {/* Top Application Header */}
-      <header className="app-header sticky top-0 z-30 flex h-[66px] items-center justify-between border-b border-gray-200 bg-white/80 px-3 backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/80 sm:px-6">
+      <header className="app-header sticky top-0 z-30 flex h-14 items-center justify-between border-b border-gray-200 bg-white/80 px-3 backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/80 sm:px-6">
+        <h1 className="sr-only">Digital Electronics Virtual Lab</h1>
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             type="button"
@@ -249,11 +267,6 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
 
           <div className="flex items-center gap-2 min-w-0">
             <span aria-hidden="true" className="brand-mark hidden shrink-0 sm:inline-block" />
-            <h1 className="text-sm sm:text-base font-bold tracking-tight text-blue-600 dark:text-blue-400 sm:text-lg truncate">
-              Digital Electronics Virtual Lab
-            </h1>
-
-            <span className="hidden text-gray-300 dark:text-gray-700 sm:inline">|</span>
 
             {/* Inline Project Rename */}
             <div className="hidden sm:flex items-center gap-1.5">
@@ -405,24 +418,14 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
       </header>
 
       {/* Main Body with Sidebar Drawer */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className={`app-body flex flex-1 ${sidebarOpen ? 'sidebar-expanded' : 'sidebar-collapsed'}`}>
         {/* Mobile Backdrop */}
-        {sidebarOpen && (
-          <div
-            role="presentation"
-            className="fixed inset-0 z-30 bg-black/40 backdrop-blur-xs md:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
-
         {/* Collapsible Sidebar */}
         <aside
           aria-label="Module Navigation"
-          className={`fixed inset-y-0 left-0 z-40 flex w-72 flex-col border-r border-gray-200 bg-white transition-transform duration-200 dark:border-gray-800 dark:bg-gray-900 md:static md:translate-x-0 ${
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full md:-ml-72'
-          }`}
+          className="app-sidebar sticky top-14 z-20 flex shrink-0 flex-col border-r border-gray-200 bg-white transition-[width] duration-200 dark:border-gray-800 dark:bg-gray-900"
         >
-          <div className="flex h-14 items-center justify-between border-b border-gray-100 px-4 dark:border-gray-800 md:hidden">
+          <div className="sidebar-mobile-heading flex h-14 items-center justify-between border-b border-gray-100 px-4 dark:border-gray-800">
             <span className="font-bold text-sm">Navigation</span>
             <button
               type="button"
@@ -434,10 +437,10 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
             </button>
           </div>
 
-          <nav className="flex-1 overflow-y-auto p-4 space-y-5">
+          <nav className="sidebar-scroll flex-1 overflow-y-auto p-3 space-y-4">
             {navigationGroups.map((group) => (
-              <div key={group.title}>
-                <div className="mb-2 px-2 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+              <div key={group.title} className="nav-group">
+                <div className="nav-group-title mb-2 px-2 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                   {group.title}
                 </div>
                 <ul className="space-y-1">
@@ -452,9 +455,9 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
         {/* Main Content Area */}
         <main
           id="main"
-          className="flex-1 min-w-0 overflow-y-auto p-4 sm:p-6 lg:p-8 focus:outline-none"
+          className="app-main min-w-0 flex-1 focus:outline-none"
         >
-          <div className="mx-auto max-w-6xl min-w-0">
+          <div className="page-column mx-auto min-w-0">
             <PipelineStepper />
             {children}
           </div>
