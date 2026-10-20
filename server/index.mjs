@@ -3,6 +3,7 @@ import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createQuizGenerator } from './quiz.mjs';
+import { getClientIp } from './proxyIp.mjs';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const dist = resolve(root, 'dist');
@@ -19,6 +20,7 @@ const WINDOW_MS = 60_000;
 const MAX_REQUESTS = 5;
 const supabaseUrl = process.env.VITE_SUPABASE_URL?.replace(/\/$/, '');
 const supabaseAnonKey = process.env.VITE_SUPABASE_ANON_KEY;
+const trustProxy = process.env.NODE_ENV === 'production';
 
 async function verifiedUser(request) {
   const authorization = request.headers.authorization ?? '';
@@ -32,19 +34,6 @@ async function verifiedUser(request) {
 function send(response, status, body) {
   response.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
   response.end(JSON.stringify(body));
-}
-
-const trustProxy = process.env.NODE_ENV === 'production';
-
-function getClientIp(request) {
-  if (!trustProxy) return request.socket.remoteAddress ?? 'unknown';
-  // Render routes web requests through Cloudflare. CF-Connecting-IP is set at the edge;
-  // use X-Forwarded-For as the platform-compatible fallback when that header is absent.
-  const cloudflareIp = request.headers['cf-connecting-ip'];
-  if (typeof cloudflareIp === 'string' && cloudflareIp.trim()) return cloudflareIp.trim();
-  const forwarded = request.headers['x-forwarded-for'];
-  if (typeof forwarded === 'string' && forwarded.trim()) return forwarded.split(',')[0].trim();
-  return request.socket.remoteAddress ?? 'unknown';
 }
 
 function serveStatic(request, response, url) {
@@ -78,20 +67,20 @@ createServer(async (request, response) => {
   if (url.pathname === '/api/health' && request.method === 'GET') return send(response, 200, { ok: true });
   if (url.pathname === '/api' || url.pathname.startsWith('/api/')) {
     if (url.pathname === '/api/auth/teacher' && request.method === 'GET') {
-    if (!supabaseUrl || !supabaseAnonKey) return send(response, 503, { error: 'Login not configured.' });
-    try {
-      const user = await verifiedUser(request);
-      if (!user) return send(response, 401, { error: 'Sign in to continue.' });
-      if (user.app_metadata?.role !== 'teacher') return send(response, 403, { error: 'Teacher access required.' });
-      return send(response, 200, { authorized: true });
-    } catch { return send(response, 502, { error: 'Could not verify teacher access.' }); }
+      if (!supabaseUrl || !supabaseAnonKey) return send(response, 503, { error: 'Login not configured.' });
+      try {
+        const user = await verifiedUser(request);
+        if (!user) return send(response, 401, { error: 'Sign in to continue.' });
+        if (user.app_metadata?.role !== 'teacher') return send(response, 403, { error: 'Teacher access required.' });
+        return send(response, 200, { authorized: true });
+      } catch { return send(response, 502, { error: 'Could not verify teacher access.' }); }
     }
     if (request.method !== 'POST' || url.pathname !== '/api/quiz/generate') return send(response, 404, { error: 'Not found.' });
   } else {
     if (process.env.NODE_ENV === 'production') return serveStatic(request, response, url);
     return send(response, 404, { error: 'Not found.' });
   }
-  const ip = getClientIp(request);
+  const ip = getClientIp(request, trustProxy);
   const now = Date.now();
   const limit = limits.get(ip);
   if (limit && limit.expiresAt > now && limit.count >= MAX_REQUESTS) return send(response, 429, { error: 'Too many quiz requests. Wait a minute and try again.' });
