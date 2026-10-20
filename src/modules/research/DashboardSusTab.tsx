@@ -35,25 +35,25 @@ export const DashboardSusTab: React.FC<DashboardSusTabProps> = ({
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Total Evaluations</span>
-          <p className="mt-1 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100 font-mono">
+          <p className="metric-number mt-1 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
             {susSummary.count}
           </p>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Mean SUS Score</span>
-          <p className="mt-1 text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400 font-mono">
+          <p className="metric-number mt-1 text-2xl font-bold tracking-tight text-blue-600 dark:text-blue-400">
             {susSummary.mean.toFixed(1)} / 100
           </p>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Standard Deviation (SD)</span>
-          <p className="mt-1 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100 font-mono">
+          <p className="metric-number mt-1 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
             ±{susSummary.sd.toFixed(2)}
           </p>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <span className="text-xs font-medium text-gray-500 dark:text-gray-400">95% Confidence Interval</span>
-          <p className="mt-1 text-base font-bold tracking-tight text-gray-900 dark:text-gray-100 font-mono">
+          <p className="metric-number mt-1 text-base font-bold tracking-tight text-gray-900 dark:text-gray-100">
             [{susSummary.ci95[0].toFixed(1)}, {susSummary.ci95[1].toFixed(1)}]
           </p>
         </div>
@@ -62,19 +62,19 @@ export const DashboardSusTab: React.FC<DashboardSusTabProps> = ({
       <div className="grid grid-cols-3 gap-4">
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Median Score</span>
-          <p className="mt-1 text-xl font-bold text-gray-900 dark:text-gray-100 font-mono">
+          <p className="metric-number mt-1 text-xl font-bold text-gray-900 dark:text-gray-100">
             {susSummary.median.toFixed(1)}
           </p>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Minimum Score</span>
-          <p className="mt-1 text-xl font-bold text-gray-900 dark:text-gray-100 font-mono">
+          <p className="metric-number mt-1 text-xl font-bold text-gray-900 dark:text-gray-100">
             {susSummary.min.toFixed(1)}
           </p>
         </div>
         <div className="rounded-xl border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
           <span className="text-xs font-medium text-gray-500 dark:text-gray-400">Maximum Score</span>
-          <p className="mt-1 text-xl font-bold text-gray-900 dark:text-gray-100 font-mono">
+          <p className="metric-number mt-1 text-xl font-bold text-gray-900 dark:text-gray-100">
             {susSummary.max.toFixed(1)}
           </p>
         </div>

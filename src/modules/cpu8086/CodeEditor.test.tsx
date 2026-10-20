@@ -37,8 +37,8 @@ describe('CodeEditor', () => {
     );
 
     expect(screen.getByLabelText(/8086 Assembly source code editor/i)).toBeInTheDocument();
-    // Line 1 is next instruction -> has text "next"
-    expect(screen.getByText('next')).toBeInTheDocument();
+    // Line 1 is the current instruction.
+    expect(screen.getByText('Current')).toBeInTheDocument();
     // Line 2 has breakpoint -> has text "breakpoint"
     expect(screen.getByText('breakpoint')).toBeInTheDocument();
   });

@@ -68,6 +68,7 @@ export const CircuitPage: FC = () => {
 
   // Keyboard Help Modal
   const [isHelpOpen, setIsHelpOpen] = useState<boolean>(false);
+  const [canvasGeneration, setCanvasGeneration] = useState(0);
 
   // Synthesizer banner state
   const availableExpr = getAvailableExpressionFromProject(project);
@@ -148,8 +149,10 @@ export const CircuitPage: FC = () => {
   // Handle loading example
   const handleLoadExample = useCallback(
     (exampleGraph: CircuitGraph, title: string) => {
-      replace(exampleGraph, { undoable: true });
-      applyPatch(createCircuitStorePatch(exampleGraph));
+      const laidOutExample = layoutCircuit(exampleGraph);
+      replace(laidOutExample, { undoable: true });
+      applyPatch(createCircuitStorePatch(laidOutExample));
+      setCanvasGeneration((generation) => generation + 1);
       pushToast({ level: 'success', title: 'Example Loaded', message: `Loaded reference circuit '${title}'.` });
     },
     [replace, applyPatch, pushToast]
@@ -191,9 +194,11 @@ export const CircuitPage: FC = () => {
       {/* Top Header & Toolbar */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 pb-4 dark:border-gray-800">
         <div>
+          <span className="eyebrow">MODULE 04 · CIRCUIT SIMULATOR</span>
           <h2 className="text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
             Digital Circuit Schematic Simulator
           </h2>
+          <p className="module-description">Build, simulate, and inspect digital logic circuits.</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -222,7 +227,7 @@ export const CircuitPage: FC = () => {
             onClick={handleAutoLayout}
             aria-label="Automatically lay out circuit gates and route wires"
           >
-            📐 Auto-Layout
+            Auto-Layout
           </Button>
           <Button
             variant="ghost"
@@ -230,7 +235,7 @@ export const CircuitPage: FC = () => {
             onClick={() => setIsHelpOpen(true)}
             aria-label="Open keyboard shortcuts help modal"
           >
-            ⌨️ Keyboard Help
+            Keyboard Help
           </Button>
         </div>
       </div>
@@ -265,21 +270,22 @@ export const CircuitPage: FC = () => {
       />
 
       {/* Main Studio Body: Palette | Editor Viewport | Right Inspector/Diagnostics */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="circuit-workbench grid grid-cols-1 gap-6 items-start">
         {/* Left Column: Component Palette */}
-        <div className="lg:col-span-3">
+        <div className="circuit-palette-column">
           <Palette onAddNode={handleAddNodeFromPalette} onLoadExample={handleLoadExample} />
         </div>
 
         {/* Center Column: Editor (Canvas vs List Editor) */}
-        <div className="lg:col-span-5 space-y-3">
+        <div className="space-y-3 circuit-editor-column">
           <Tabs
             tabs={[
               {
                 id: 'canvas',
                 label: 'Schematic Canvas',
                 content: (
-                  <Canvas
+                    <Canvas
+                    key={canvasGeneration}
                     graph={graph}
                     values={sim.values}
                     onCommitGraph={handleCommitGraph}
@@ -292,6 +298,13 @@ export const CircuitPage: FC = () => {
                       sim.setInput(id, nextVal);
                     }}
                     onOpenHelpModal={() => setIsHelpOpen(true)}
+                    onDeleteResult={(deleted) => {
+                      if (deleted) {
+                        setSelectedNodeId(null);
+                        setSelectedWireId(null);
+                      }
+                      if (deleted) pushToast({ level: 'success', message: 'Component deleted.' });
+                    }}
                   />
                 ),
               },
@@ -315,10 +328,15 @@ export const CircuitPage: FC = () => {
             defaultValue={editorTab}
             onChange={(id) => setEditorTab(id as 'canvas' | 'list')}
           />
+          <div className="circuit-wire-legend" aria-label="Wire value legend">
+            <span><i className="wire-legend-high" />Logic High (1)</span>
+            <span><i className="wire-legend-low" />Logic Low (0)</span>
+            <span><i className="wire-legend-unknown" />Unknown / Floating (X)</span>
+          </div>
         </div>
 
         {/* Right Column: Inspector / Diagnostics / Truth Table / Timing */}
-        <div className="lg:col-span-4 space-y-3">
+        <div className="space-y-3 circuit-inspector-column">
           <Tabs
             tabs={[
               {

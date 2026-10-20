@@ -8,7 +8,6 @@
  */
 
 import { type FC, useMemo, useState } from 'react';
-import { PipelineStepper } from '../../components/layout/PipelineStepper';
 import { SendToNextButton } from '../../components/layout/SendToNextButton';
 import { useProjectStore } from '../../store/projectStore';
 import type { FlipFlopType } from '../../types/sequential';
@@ -83,17 +82,16 @@ export const SequentialPage: FC<SequentialPageProps> = ({ className = '' }) => {
   };
 
   return (
-    <div className={`space-y-6 ${className}`}>
+    <div className={`module-page page-column sequential-page ${className}`}>
       {/* Top Header with Pipeline Stepper */}
-      <header className="rounded-2xl border border-gray-200 bg-white p-6 shadow-xs dark:border-gray-800 dark:bg-gray-900">
+      <header className="module-card sequential-module-header">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div>
-            <span className="inline-block rounded-md bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800 dark:bg-blue-900/60 dark:text-blue-300">
-              Module ID: sequential-designer
-            </span>
-            <h2 className="mt-1 text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
+            <span className="eyebrow">MODULE 06</span>
+            <h2 className="module-page-title mt-1 text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
               Synchronous Sequential Circuit Designer
             </h2>
+            <p className="module-description">Design and verify synchronous counters and sequence detectors.</p>
             <div role="status" aria-live="polite" className="sr-only">
               Current active design step: {currentStep}
             </div>
@@ -126,27 +124,17 @@ export const SequentialPage: FC<SequentialPageProps> = ({ className = '' }) => {
           </div>
         </div>
 
-        {/* Global Pipeline Progress */}
-        <div className="mt-6 border-t border-gray-100 pt-4 dark:border-gray-800">
-          <PipelineStepper />
-        </div>
       </header>
 
       {/* Body View: Detector vs Counter */}
       {activeTab === 'detector' ? (
         <SequenceDetectorPage session={session} />
       ) : (
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-4">
-          {/* Left Wizard Navigation */}
-          <div className="lg:col-span-1">
-            <WizardStepper
-              state={state}
-              onSelectStep={selectStep}
-            />
-          </div>
+        <div className="sequential-workflow">
+          <WizardStepper state={state} onSelectStep={selectStep} />
 
-          {/* Right Active Step Container */}
-          <div className="space-y-6 lg:col-span-3">
+          {/* Active Step Container */}
+          <div className="space-y-6">
             {currentStep === 'flipflop' && (
               <SelectFlipFlop
                 selectedType={
@@ -191,7 +179,7 @@ export const SequentialPage: FC<SequentialPageProps> = ({ className = '' }) => {
                   aria-expanded={showCircuit}
                 >
                   <span>Synthesized Schematic Preview</span>
-                  <span className="text-xs">{showCircuit ? '▲ Hide Circuit' : '▼ Show Circuit'}</span>
+                  <span className="text-xs">{showCircuit ? 'Hide Circuit' : 'Show Circuit'}</span>
                 </button>
                 {showCircuit && (
                   <div className="mt-4">
@@ -215,8 +203,10 @@ export const SequentialPage: FC<SequentialPageProps> = ({ className = '' }) => {
                   value={effectiveKMapFunc}
                   onChange={(e) => setSelectedKMapFunc(e.target.value)}
                   aria-label="Choose function to open in the K-Map"
-                  className="rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-mono text-gray-800 shadow-xs focus:ring-2 focus:ring-blue-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                  disabled={availableFunctions.length === 0}
+                  className="sequential-kmap-select rounded-lg border border-gray-300 bg-white px-2.5 py-1.5 text-xs font-mono text-gray-800 shadow-xs focus:ring-2 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
                 >
+                  {availableFunctions.length === 0 && <option value="">No functions available</option>}
                   {availableFunctions.map((fn) => (
                     <option key={fn.name} value={fn.name}>
                       {fn.name} ({fn.variables.length} vars)

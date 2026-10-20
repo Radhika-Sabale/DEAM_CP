@@ -224,7 +224,7 @@ describe('StateTableEditor component', () => {
       expect.anything()
     );
 
-    const correctBadges = screen.getAllByText(/✓ Correct/i);
+    const correctBadges = screen.getAllByText(/Correct/i);
     expect(correctBadges).toHaveLength(4);
   });
 

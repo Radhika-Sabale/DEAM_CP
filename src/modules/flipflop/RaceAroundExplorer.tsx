@@ -86,7 +86,6 @@ export const RaceAroundExplorer: FC<RaceAroundExplorerProps> = ({ session, class
       <div className="border-b border-gray-100 pb-3 dark:border-gray-800">
         <div className="flex items-center gap-2">
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200 font-bold">
-            ⚡
           </span>
           <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">
             Race-Around Condition Explorer

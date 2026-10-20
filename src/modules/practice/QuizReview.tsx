@@ -106,7 +106,7 @@ export const QuizReview: FC<QuizReviewProps> = ({
                         : 'bg-red-100 text-red-800 dark:bg-red-900/60 dark:text-red-300'
                     }`}
                   >
-                    {isCorrect ? '✓ Correct' : '✗ Incorrect'}
+                    {isCorrect ? 'Correct' : 'Incorrect'}
                   </span>
                 </div>
 
@@ -124,6 +124,8 @@ export const QuizReview: FC<QuizReviewProps> = ({
                     </span>
                   </div>
                 </div>
+
+                {q.explanation && <p className="mt-3 text-xs leading-relaxed text-muted-foreground"><span className="font-semibold text-foreground">Explanation: </span>{q.explanation}</p>}
 
                 {/* Cognitive Misconception Diagnosis */}
                 {misconceptionInfo && (

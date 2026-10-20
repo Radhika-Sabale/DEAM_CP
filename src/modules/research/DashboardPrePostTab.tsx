@@ -82,7 +82,7 @@ export const DashboardPrePostTab: React.FC<DashboardPrePostTabProps> = ({
           role="status"
         >
           <h4 className="font-bold flex items-center gap-2 mb-1">
-            <span aria-hidden="true">⚠️</span> Insufficient Data for Inferential Statistics
+            Insufficient Data for Inferential Statistics
           </h4>
           <p className="text-xs">
             {summary.pairedStats.message} (Requires at least 2 participants who have completed both Pre-test and Post-test).

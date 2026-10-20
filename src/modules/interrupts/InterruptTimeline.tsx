@@ -83,22 +83,22 @@ export const InterruptTimeline: FC<InterruptTimelineProps> = ({
                     <td className="px-3 py-1.5">
                       {entry.kind === 'nmi' && (
                         <span className="inline-flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400">
-                          <span aria-hidden="true">⚡</span> NMI
+                          NMI
                         </span>
                       )}
                       {entry.kind === 'intr' && (
                         <span className="inline-flex items-center gap-1 font-semibold text-blue-600 dark:text-blue-400">
-                          <span aria-hidden="true">🔔</span> INTR
+                          INTR
                         </span>
                       )}
                       {entry.kind === 'single-step' && (
                         <span className="inline-flex items-center gap-1 font-semibold text-purple-600 dark:text-purple-400">
-                          <span aria-hidden="true">⚙</span> Single-Step
+                          Single-Step
                         </span>
                       )}
                       {entry.kind === 'software' && (
                         <span className="inline-flex items-center gap-1 font-semibold text-gray-700 dark:text-gray-300">
-                          <span aria-hidden="true">💻</span> INT {entry.vector}
+                          INT {entry.vector}
                         </span>
                       )}
                     </td>

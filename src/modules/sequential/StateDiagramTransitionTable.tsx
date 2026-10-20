@@ -195,9 +195,9 @@ export const StateDiagramTransitionTable: FC<StateDiagramTransitionTableProps> =
                   <td className="px-2.5 py-1.5 text-[11px]">
                     {res ? (
                       res.ok ? (
-                        <span className="font-semibold text-emerald-600 dark:text-emerald-400">✓ Correct</span>
+                        <span className="font-semibold text-emerald-600 dark:text-emerald-400">Correct</span>
                       ) : (
-                        <span className="font-semibold text-red-600 dark:text-red-400">✗ {res.msg}</span>
+                        <span role="status" className="font-semibold text-red-600 dark:text-red-400">{res.msg}</span>
                       )
                     ) : (
                       <span className="text-gray-400">—</span>

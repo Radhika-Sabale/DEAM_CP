@@ -108,7 +108,7 @@ const AssistedIcon: FC<{ readonly className?: string }> = ({ className = 'h-4 w-
 );
 
 /** Helper formatting step status to icon and label. */
-function renderStatusVisuals(status: StepStatus, isLocked: boolean) {
+function renderStatusVisuals(status: StepStatus, isLocked: boolean, isCurrent: boolean) {
   if (isLocked) {
     return {
       icon: <LockIcon className="h-4 w-4 text-gray-400 dark:text-gray-500" />,
@@ -118,18 +118,26 @@ function renderStatusVisuals(status: StepStatus, isLocked: boolean) {
     };
   }
 
+  if (isCurrent) {
+    return {
+      icon: <InProgressIcon className="h-4 w-4 text-blue-600 dark:text-blue-400" />,
+      label: 'Current',
+      badgeClass: 'bg-blue-50 text-blue-700 border-blue-300 dark:bg-blue-950/50 dark:text-blue-300 dark:border-blue-800',
+    };
+  }
+
   switch (status) {
     case 'verified':
       return {
         icon: <VerifiedIcon className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />,
-        label: 'Verified',
+        label: 'Done',
         badgeClass:
           'bg-emerald-50 text-emerald-700 border-emerald-300 dark:bg-emerald-950/50 dark:text-emerald-300 dark:border-emerald-800',
       };
     case 'assisted':
       return {
         icon: <AssistedIcon className="h-4 w-4 text-purple-600 dark:text-purple-400" />,
-        label: 'Assisted',
+        label: 'Done',
         badgeClass:
           'bg-purple-50 text-purple-700 border-purple-300 dark:bg-purple-950/50 dark:text-purple-300 dark:border-purple-800',
       };
@@ -159,18 +167,19 @@ export const WizardStepper: FC<WizardStepperProps> = ({
   onSelectStep,
   className = '',
 }) => {
+  const hasLockedSteps = SEQUENTIAL_STEP_IDS.some((stepId) => !isStepUnlocked(state, stepId));
   return (
     <nav
       aria-label="Sequential design steps"
       className={`rounded-xl border border-gray-200 bg-white p-3 shadow-xs dark:border-gray-800 dark:bg-gray-900 ${className}`}
     >
-      <ol className="grid grid-cols-1 gap-2 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-8">
+      <ol className="sequential-wizard-grid grid gap-2">
         {SEQUENTIAL_STEP_IDS.map((stepId, index) => {
           const isCurrent = state.currentStep === stepId;
           const unlocked = isStepUnlocked(state, stepId);
           const lockReason = getStepLockReason(state, stepId);
           const stepState = state.steps[stepId];
-          const visuals = renderStatusVisuals(stepState.status, !unlocked);
+          const visuals = renderStatusVisuals(stepState.status, !unlocked, isCurrent);
           const stepNumber = index + 1;
           const title = STEP_TITLES[stepId];
 
@@ -197,7 +206,7 @@ export const WizardStepper: FC<WizardStepperProps> = ({
               >
                 {/* Step header: Index + status badge */}
                 <div className="flex w-full items-center justify-between gap-1">
-                  <span className="text-[11px] font-bold text-gray-500 dark:text-gray-400">
+                  <span className="wizard-step-number text-[11px] font-bold text-gray-500 dark:text-gray-400">
                     Step {stepNumber}
                   </span>
                   <span
@@ -210,7 +219,7 @@ export const WizardStepper: FC<WizardStepperProps> = ({
 
                 {/* Step title */}
                 <span
-                  className={`text-xs font-semibold leading-tight line-clamp-1 ${
+                  className={`text-xs font-semibold leading-tight ${
                     isCurrent
                       ? 'text-blue-900 dark:text-blue-200'
                       : unlocked
@@ -224,7 +233,7 @@ export const WizardStepper: FC<WizardStepperProps> = ({
                 {/* Reason locked advisory */}
                 {!unlocked && lockReason && (
                   <span
-                    className="mt-0.5 text-[10px] text-amber-700 dark:text-amber-400 line-clamp-1"
+                    className="mt-0.5 text-[10px] text-amber-700 dark:text-amber-400"
                     aria-label={`Locked: ${lockReason}`}
                   >
                     {lockReason}
@@ -235,6 +244,11 @@ export const WizardStepper: FC<WizardStepperProps> = ({
           );
         })}
       </ol>
+      {hasLockedSteps && (
+        <p className="sequential-step-hint" role="note">
+          Define a valid sequential specification first.
+        </p>
+      )}
     </nav>
   );
 };

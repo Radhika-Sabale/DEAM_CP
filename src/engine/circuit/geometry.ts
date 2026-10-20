@@ -22,10 +22,22 @@ export {
   screenToWorld,
   worldToScreen,
   zoomAt,
+  zoomByStep,
 } from './viewport';
 
 /** Standard snap grid unit size in world pixels */
 export const GRID = 10;
+/** Shared canvas component geometry, in world units at 100% zoom. */
+export const CIRCUIT_NODE_WIDTH = 72;
+export const CIRCUIT_NODE_HEIGHT = 84;
+export const CIRCUIT_GATE_SYMBOL_WIDTH = 56;
+export const CIRCUIT_GATE_SYMBOL_HEIGHT = 36;
+export const CIRCUIT_GATE_STROKE_WIDTH = 1.75;
+export const CIRCUIT_WIRE_STROKE_WIDTH = 1.5;
+export const CIRCUIT_WIRE_HIGH_STROKE_WIDTH = 2.5;
+export const CIRCUIT_WIRE_SELECTION_STROKE_INCREMENT = 0.75;
+export const CIRCUIT_WIRE_HALO_STROKE_INCREMENT = 2;
+export const CIRCUIT_PORT_RADIUS = 3.5;
 
 /**
  * Hit-test result identifying a specific pin on a circuit node.
@@ -49,16 +61,11 @@ export function nodeSize(node: CircuitNode): Size {
     case 'input':
     case 'output':
     case 'clock':
-      return { width: 70, height: 40 };
+      return { width: CIRCUIT_NODE_WIDTH, height: CIRCUIT_NODE_HEIGHT };
     case 'const':
-      return { width: 50, height: 40 };
+      return { width: CIRCUIT_NODE_WIDTH, height: CIRCUIT_NODE_HEIGHT };
     case 'gate': {
-      if (node.gateType === 'NOT') {
-        return { width: 70, height: 40 };
-      }
-      const count = Math.max(2, node.inputCount);
-      const height = Math.max(40, (count + 1) * 16);
-      return { width: 80, height };
+      return { width: CIRCUIT_NODE_WIDTH, height: CIRCUIT_NODE_HEIGHT };
     }
   }
 }
@@ -171,6 +178,9 @@ export function fitToContent(
   containerSize: Size,
   padding = 40
 ): Viewport {
+  if (containerSize.width <= 0 || containerSize.height <= 0) {
+    return { x: 0, y: 0, zoom: 1 };
+  }
   if (graph.nodes.length === 0) {
     return { x: 0, y: 0, zoom: 1 };
   }
@@ -194,8 +204,8 @@ export function fitToContent(
   const availW = Math.max(10, containerSize.width - padding * 2);
   const availH = Math.max(10, containerSize.height - padding * 2);
 
-  const fitZoom = Math.min(1.5, Math.min(availW / contentW, availH / contentH));
-  const zoom = Math.min(3.0, Math.max(0.25, fitZoom));
+  const fitZoom = Math.min(1.3, Math.min(availW / contentW, availH / contentH));
+  const zoom = Math.max(0.8, fitZoom);
 
   const centerX = (minX + maxX) * 0.5;
   const centerY = (minY + maxY) * 0.5;

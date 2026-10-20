@@ -203,7 +203,8 @@ export const ClockStepper: FC<ClockStepperProps> = ({ session, className = '' })
             type="button"
             onClick={handleToggleClock}
             aria-label={`Toggle clock transition, current level ${cursorValues.CLK}`}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-gray-900 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-gray-800 focus:outline-hidden focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:hover:bg-gray-600"
+            aria-pressed={cursorValues.CLK === 1}
+            className="flipflop-clock-toggle inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-xs font-semibold shadow-xs"
           >
             <span>Toggle CLK ({cursorValues.CLK})</span>
           </button>
@@ -214,7 +215,7 @@ export const ClockStepper: FC<ClockStepperProps> = ({ session, className = '' })
             aria-label="Pulse clock full cycle"
             className="inline-flex items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-blue-700 focus:outline-hidden focus:ring-2 focus:ring-blue-500 dark:bg-blue-500 dark:hover:bg-blue-600"
           >
-            <span>⚡ Pulse Clock</span>
+            <span>Pulse Clock</span>
           </button>
         </div>
 
@@ -295,7 +296,7 @@ export const ClockStepper: FC<ClockStepperProps> = ({ session, className = '' })
               aria-label="Step cursor to previous event"
               className="rounded-md border border-gray-300 px-2 py-0.5 text-xs hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
             >
-              ◀ Previous Event
+              Previous Event
             </button>
             <button
               type="button"
@@ -303,7 +304,7 @@ export const ClockStepper: FC<ClockStepperProps> = ({ session, className = '' })
               aria-label="Step cursor to next event"
               className="rounded-md border border-gray-300 px-2 py-0.5 text-xs hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-800"
             >
-              Next Event ▶
+              Next Event
             </button>
           </div>
         </div>

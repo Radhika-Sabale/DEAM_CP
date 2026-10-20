@@ -10,7 +10,7 @@
  */
 
 import type { CircuitGraph, CircuitNode } from '../../types/circuit';
-import { nodeSize, snapToGrid } from './geometry';
+import { CIRCUIT_NODE_WIDTH, nodeSize, snapToGrid } from './geometry';
 import { buildIndex } from './graphIndex';
 import { topologicalLevels } from './graphTarjan';
 
@@ -22,9 +22,9 @@ export interface LayoutOptions {
   readonly startX?: number;
   /** Top-left initial Y offset in world pixels (default: 60) */
   readonly startY?: number;
-  /** Horizontal column spacing in world pixels (default: 80) */
+  /** Horizontal column spacing in world pixels (default: 160) */
   readonly colGap?: number;
-  /** Vertical row spacing in world pixels (default: 30) */
+  /** Vertical row spacing in world pixels (default: 96) */
   readonly rowGap?: number;
 }
 
@@ -45,8 +45,8 @@ export function layoutCircuit(
 
   const startX = snapToGrid(options.startX ?? 60);
   const startY = snapToGrid(options.startY ?? 60);
-  const colGap = snapToGrid(options.colGap ?? 80);
-  const rowGap = snapToGrid(options.rowGap ?? 30);
+  const colGap = snapToGrid(options.colGap ?? 140);
+  const rowGap = options.rowGap ?? 84;
 
   // 1. Compute topological depth levels
   const { levels } = topologicalLevels(graph);
@@ -217,12 +217,12 @@ export function layoutCircuit(
 
   // 4. Calculate Column Widths & Heights
   const columnWidths = columns.map((col) => {
-    let maxW = 70;
+    let maxW = CIRCUIT_NODE_WIDTH;
     for (const node of col) {
       const size = nodeSize(node);
       if (size.width > maxW) maxW = size.width;
     }
-    return snapToGrid(maxW);
+    return maxW;
   });
 
   const columnHeights = columns.map((col) => {

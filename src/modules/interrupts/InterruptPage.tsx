@@ -162,13 +162,15 @@ export const InterruptPage: FC = () => {
   );
 
   return (
-    <div className="interrupt-page workflow-stack">
+    <div className="module-page page-column interrupt-page workflow-stack">
       {/* Page Header */}
-      <div className="border-b border-gray-200 pb-4 dark:border-gray-800 flex flex-wrap items-center justify-between gap-4">
+      <header className="module-page-header flex flex-wrap items-center justify-between gap-4">
         <div>
+          <span className="eyebrow">MODULE 07 · INTERRUPTS</span>
           <h1 className="mt-1 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
             8086 Interrupt Controller & Subsystem
           </h1>
+          <p>Configure interrupt events and inspect CPU response state.</p>
         </div>
 
         {/* Sample Program Picker & Main Mode Toggle */}
@@ -217,7 +219,7 @@ export const InterruptPage: FC = () => {
             </button>
           </div>
         </div>
-      </div>
+      </header>
 
       {/* Ephemeral Rebuilt State Notice */}
       {rebuiltNoticeVisible && (
@@ -227,7 +229,6 @@ export const InterruptPage: FC = () => {
           className="flex items-center justify-between rounded-lg border border-blue-200 bg-blue-50/80 p-3 text-xs text-blue-900 dark:border-blue-900/50 dark:bg-blue-950/40 dark:text-blue-200"
         >
           <div className="flex items-center gap-2">
-            <span aria-hidden="true">ℹ</span>
             <span>Machine state is rebuilt from your project source; run or step to begin execution.</span>
           </div>
           <button

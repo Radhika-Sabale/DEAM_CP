@@ -225,7 +225,7 @@ export const InterruptLines: FC<InterruptLinesProps> = ({
                     </span>
                   ) : (
                     <span className="inline-flex items-center gap-1 font-bold text-emerald-700 dark:text-emerald-400">
-                      <span aria-hidden="true">✔</span> Ready (Will fire next)
+                      Ready (Will fire next)
                     </span>
                   )}
                 </div>

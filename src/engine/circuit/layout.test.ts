@@ -107,6 +107,23 @@ describe('layoutCircuit', () => {
     }
   });
 
+  it('uses readable default spacing between layout layers and rows', () => {
+    const laidOut = layoutCircuit(halfAdderGraph);
+    const inputs = laidOut.nodes.filter((node) => node.kind === 'input');
+    const inputTop = inputs[0];
+    const inputBottom = inputs[1];
+    expect(inputTop).toBeDefined();
+    expect(inputBottom).toBeDefined();
+    if (inputTop && inputBottom) {
+      const upper = inputTop.y < inputBottom.y ? inputTop : inputBottom;
+      const lower = upper === inputTop ? inputBottom : inputTop;
+      expect(lower.y - upper.y).toBe(nodeSize(upper).height + 84);
+    }
+    const source = laidOut.nodes.find((node) => node.id === 'in_A');
+    const gate = laidOut.nodes.find((node) => node.id === 'xor1');
+    expect(source && gate ? gate.x - source.x - nodeSize(source).width : 0).toBe(140);
+  });
+
   it('terminates and lays out circuits with feedback loops (SR latch)', () => {
     const laidOut = layoutCircuit(srLatchGraph);
     expect(laidOut.nodes.length).toBe(6);

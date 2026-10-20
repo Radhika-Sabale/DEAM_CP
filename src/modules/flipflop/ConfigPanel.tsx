@@ -56,7 +56,7 @@ export const ConfigPanel: FC<ConfigPanelProps> = ({
 
   return (
     <div
-      className={`rounded-xl border border-gray-200 bg-white p-5 shadow-xs dark:border-gray-800 dark:bg-gray-900 ${className}`}
+      className={`flipflop-config-card rounded-xl border border-gray-200 bg-white p-5 shadow-xs dark:border-gray-800 dark:bg-gray-900 ${className}`}
     >
       <div className="border-b border-gray-100 pb-3 dark:border-gray-800">
         <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">
@@ -67,7 +67,7 @@ export const ConfigPanel: FC<ConfigPanelProps> = ({
         </p>
       </div>
 
-      <div className="mt-4 space-y-4 text-xs">
+      <div className="flipflop-config-controls mt-4 space-y-4 text-xs">
         {/* Flip-Flop Type Radio Group */}
         <div>
           <fieldset>

@@ -73,7 +73,7 @@ export const QuizNavigator: FC<QuizNavigatorProps> = ({
               <div className="mt-1 flex items-center gap-0.5 text-[10px]">
                 {isAnswered ? (
                   <span className="font-semibold text-emerald-700 dark:text-emerald-400" title="Answered">
-                    ✓ Ans
+                    Answered
                   </span>
                 ) : (
                   <span className="text-gray-400 dark:text-gray-500" title="Unanswered">
@@ -88,7 +88,7 @@ export const QuizNavigator: FC<QuizNavigatorProps> = ({
                   className="mt-0.5 rounded px-1 text-[9px] font-bold text-amber-700 bg-amber-100 dark:bg-amber-950/60 dark:text-amber-300"
                   title="Flagged for review"
                 >
-                  ⚑ Flag
+                  Flag
                 </span>
               )}
             </button>

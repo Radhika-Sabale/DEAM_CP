@@ -6,7 +6,7 @@
 
 import { memo, type FC, type MouseEvent, type KeyboardEvent } from 'react';
 import type { LogicValue } from '../../types/ast';
-import { wireMidpoint, wirePath, type Point } from '../../engine/circuit/geometry';
+import { CIRCUIT_WIRE_HALO_STROKE_INCREMENT, CIRCUIT_WIRE_HIGH_STROKE_WIDTH, CIRCUIT_WIRE_SELECTION_STROKE_INCREMENT, CIRCUIT_WIRE_STROKE_WIDTH, wireMidpoint, wirePath, type Point } from '../../engine/circuit/geometry';
 
 export interface WireEdgeProps {
   readonly id: string;
@@ -48,18 +48,17 @@ export const WireEdge: FC<WireEdgeProps> = memo(
     const isUnknown = value === 'X';
 
     // 1. Channel 1: Stroke styling (1 = thick solid, 0 = thin solid, X = dashed)
-    const strokeWidth = isSelected ? 3.5 : isHigh ? 2.5 : 1.5;
+    const baseStrokeWidth = isHigh ? CIRCUIT_WIRE_HIGH_STROKE_WIDTH : CIRCUIT_WIRE_STROKE_WIDTH;
+    const strokeWidth = baseStrokeWidth + (isSelected ? CIRCUIT_WIRE_SELECTION_STROKE_INCREMENT : 0);
     const strokeDasharray = isUnknown ? '4,4' : undefined;
 
-    const strokeColor = isSelected
-      ? '#2563eb' // blue-600
-      : isHovered
-      ? '#3b82f6' // blue-500
+    const strokeColor = isSelected || isHovered
+      ? 'var(--teal)'
       : isHigh
-      ? '#1d4ed8' // blue-700
-      : isLow
-      ? '#4b5563' // gray-600
-      : '#b45309'; // amber-700 for X
+        ? 'var(--teal)'
+        : isLow
+          ? 'var(--muted)'
+          : 'var(--amber)';
 
     // 2. Channel 2: Badge visibility
     const showBadge = zoom >= 0.6 || isSelected || isHovered;
@@ -105,8 +104,8 @@ export const WireEdge: FC<WireEdgeProps> = memo(
             d={d}
             fill="none"
             stroke="#93c5fd"
-            strokeWidth={strokeWidth + 4}
-            strokeOpacity={0.6}
+            strokeWidth={strokeWidth + CIRCUIT_WIRE_HALO_STROKE_INCREMENT}
+            strokeOpacity={0.3}
             className="pointer-events-none"
           />
         )}
@@ -118,7 +117,7 @@ export const WireEdge: FC<WireEdgeProps> = memo(
           stroke={strokeColor}
           strokeWidth={strokeWidth}
           strokeDasharray={strokeDasharray}
-          className="transition-colors pointer-events-none"
+          className={`circuit-wire-path pointer-events-none${isHigh ? ' circuit-wire-high' : isLow ? ' circuit-wire-low' : ' circuit-wire-unknown'}`}
         />
 
         {/* Midpoint Value Badge */}
@@ -130,7 +129,7 @@ export const WireEdge: FC<WireEdgeProps> = memo(
               width={16}
               height={16}
               rx={4}
-              fill={isHigh ? '#dbeafe' : isLow ? '#f3f4f6' : '#fef3c7'}
+              fill="var(--soft)"
               stroke={strokeColor}
               strokeWidth={1}
             />
@@ -139,9 +138,8 @@ export const WireEdge: FC<WireEdgeProps> = memo(
               y={1}
               textAnchor="middle"
               dominantBaseline="middle"
-              className={`text-[9px] font-mono font-bold select-none ${
-                isHigh ? 'fill-blue-800' : isLow ? 'fill-gray-700' : 'fill-amber-800'
-              }`}
+              className="text-[9px] font-mono font-bold select-none"
+              fill="var(--ink)"
             >
               {value}
             </text>

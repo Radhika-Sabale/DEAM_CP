@@ -42,12 +42,14 @@ import { ToastContainer } from '../ui/Toast';
 import { ExamplesMenu } from './ExamplesMenu';
 import { PipelineStepper } from './PipelineStepper';
 import { ThemeToggle } from './ThemeToggle';
+import { AmbientBackground } from './AmbientBackground';
 
 export interface AppShellProps {
   children: ReactNode;
+  onLogout?: () => void;
 }
 
-export const AppShell: FC<AppShellProps> = ({ children }) => {
+export const AppShell: FC<AppShellProps> = ({ children, onLogout }) => {
   const currentModule = useUiStore(selectCurrentModule);
   const setModule = useUiStore((state) => state.setModule);
   const sidebarOpen = useUiStore(selectSidebarOpen);
@@ -162,10 +164,10 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
     '8086-cpu': '8086 CPU', 'interrupt-controller': 'Interrupts',
   };
   const iconTiles: Record<string, string> = {
-    'number-systems': '01', 'boolean-tool': 'ƒ', 'kmap-solver': 'K',
-    'circuit-simulator': '∿', 'flipflop-simulator': 'D', 'sequential-designer': 'FSM',
-    practice: 'P', quiz: 'Q', 'prepost-test': 'T', 'sus-survey': 'S',
-    'teacher-dashboard': '▤', alu: 'ALU', '8086-cpu': '86', 'interrupt-controller': 'IRQ',
+    'number-systems': '01', 'boolean-tool': '02', 'kmap-solver': '03',
+    'circuit-simulator': '04', 'flipflop-simulator': '05', 'sequential-designer': '06',
+    practice: '07', quiz: '08', 'prepost-test': '09', 'sus-survey': '10',
+    'teacher-dashboard': '11', alu: '12', '8086-cpu': '13', 'interrupt-controller': '14',
   };
 
   const renderNavModule = (mod: (typeof MODULE_REGISTRY)[number]) => {
@@ -215,19 +217,11 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
     );
   };
 
-  const navigationGroups = [
-    { title: 'Foundations', ids: ['number-systems', 'boolean-tool'] },
-    { title: 'Combinational', ids: ['kmap-solver', 'circuit-simulator'] },
-    { title: 'Sequential', ids: ['flipflop-simulator', 'sequential-designer'] },
-    { title: 'Practice & Research', ids: ['practice', 'quiz', 'prepost-test', 'sus-survey', 'teacher-dashboard'] },
-    { title: 'Processor', ids: ['alu', '8086-cpu', 'interrupt-controller'] },
-  ];
-  const knownModuleIds = navigationGroups.flatMap((group) => group.ids);
-  const otherModules = MODULE_REGISTRY.filter((mod) => !knownModuleIds.includes(mod.id));
-  if (otherModules.length) navigationGroups.push({ title: 'Other', ids: otherModules.map((mod) => mod.id) });
+  const navigationGroups = [{ title: 'Modules', ids: MODULE_REGISTRY.map((mod) => mod.id) }];
 
   return (
     <div className="app-shell flex min-h-screen flex-col">
+      <AmbientBackground />
       {/* Accessible Skip Link */}
       <a
         href="#main"
@@ -253,7 +247,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
       )}
 
       {/* Top Application Header */}
-      <header className="app-header sticky top-0 z-30 flex h-14 items-center justify-between border-b border-gray-200 bg-white/80 px-3 backdrop-blur-md dark:border-gray-800 dark:bg-gray-900/80 sm:px-6">
+      <header className="app-header z-30 flex h-16 items-center justify-between px-3 sm:px-6">
         <h1 className="sr-only">Digital Electronics Virtual Lab</h1>
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
@@ -266,7 +260,10 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
           </button>
 
           <div className="flex items-center gap-2 min-w-0">
-            <span aria-hidden="true" className="brand-mark hidden shrink-0 sm:inline-block" />
+            <button type="button" className="brand-home-button" aria-label="Home" title="Home" onClick={() => { window.location.hash = '#/home'; }}>
+              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M4 10.5 12 4l8 6.5v9H4v-9Z"/><path d="M9 19.5v-6h6v6"/></svg>
+            </button>
+            <span className="app-brand-name">DEAM Lab</span>
 
             {/* Inline Project Rename */}
             <div className="hidden sm:flex items-center gap-1.5">
@@ -294,7 +291,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
                   title="Click to rename project"
                   className="group flex items-center gap-1 rounded px-2 py-0.5 text-xs font-semibold text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800 focus-visible:outline-2 focus-visible:outline-blue-600"
                 >
-                  <span className="max-w-[140px] truncate sm:max-w-xs">{project.name}</span>
+                  <span className="project-name max-w-[140px] truncate sm:max-w-xs">{project.name}</span>
                   <EditIcon className="h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
                   {isDirty && (
                     <span
@@ -413,6 +410,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
             )}
           </div>
 
+          {onLogout && <button type="button" className="app-logout-button" onClick={onLogout}>Sign out</button>}
           <ThemeToggle />
         </div>
       </header>
@@ -420,10 +418,18 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
       {/* Main Body with Sidebar Drawer */}
       <div className={`app-body flex flex-1 ${sidebarOpen ? 'sidebar-expanded' : 'sidebar-collapsed'}`}>
         {/* Mobile Backdrop */}
+        {sidebarOpen && (
+          <button
+            className="sidebar-backdrop"
+            type="button"
+            aria-label="Close navigation menu"
+            onClick={() => setSidebarOpen(false)}
+          />
+        )}
         {/* Collapsible Sidebar */}
         <aside
           aria-label="Module Navigation"
-          className="app-sidebar sticky top-14 z-20 flex shrink-0 flex-col border-r border-gray-200 bg-white transition-[width] duration-200 dark:border-gray-800 dark:bg-gray-900"
+          className="app-sidebar z-20 flex shrink-0 flex-col border-r border-gray-200 bg-white transition-[width] duration-200 dark:border-gray-800 dark:bg-gray-900"
         >
           <div className="sidebar-mobile-heading flex h-14 items-center justify-between border-b border-gray-100 px-4 dark:border-gray-800">
             <span className="font-bold text-sm">Navigation</span>
@@ -437,10 +443,14 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
             </button>
           </div>
 
+          <div className="sidebar-brand">
+            <span className="brand-mark" aria-hidden="true" />
+            <span className="sidebar-brand-name">DEAM LAB</span>
+          </div>
           <nav className="sidebar-scroll flex-1 overflow-y-auto p-3 space-y-4">
             {navigationGroups.map((group) => (
               <div key={group.title} className="nav-group">
-                <div className="nav-group-title mb-2 px-2 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
+          <div className="nav-group-title mb-2 px-2 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">
                   {group.title}
                 </div>
                 <ul className="space-y-1">
@@ -457,7 +467,7 @@ export const AppShell: FC<AppShellProps> = ({ children }) => {
           id="main"
           className="app-main min-w-0 flex-1 focus:outline-none"
         >
-          <div className="page-column mx-auto min-w-0">
+          <div className={`page-column mx-auto min-w-0 ${currentModule === 'circuit-simulator' ? 'circuit-page-column' : ''}`}>
             <PipelineStepper />
             {children}
           </div>

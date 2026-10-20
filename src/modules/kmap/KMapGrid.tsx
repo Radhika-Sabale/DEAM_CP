@@ -7,6 +7,7 @@
 
 import {
   type FC,
+  type CSSProperties,
   type KeyboardEvent,
   type ReactNode,
   useCallback,
@@ -22,7 +23,7 @@ import {
   rowHeaderLabels,
 } from '../../engine/kmap/layout';
 import { KMapLayer5Var } from './KMapLayer5Var';
-import { GroupOverlay, type VisualGroup } from './GroupOverlay';
+import { getCellGroupIndices, getCellGroupShadows, GroupBadges, type VisualGroup } from './GroupOverlay';
 
 export interface KMapGridProps {
   readonly variableCount: number;
@@ -308,6 +309,8 @@ export const KMapGrid: FC<KMapGridProps> = ({
                       role="gridcell"
                       tabIndex={0}
                       aria-selected={isSelected}
+                      data-groups={getCellGroupIndices(overlayGroups, m).map((index) => index + 1).join(',') || undefined}
+                      style={overlayGroups.some((group) => group.cellIndices.includes(m)) ? { '--group-shadows': getCellGroupShadows(overlayGroups, m) } as CSSProperties : undefined}
                       data-dimmed={isDimmed || undefined}
                       data-value={String(val)}
                       aria-label={getCellAriaLabel(m)}
@@ -324,7 +327,7 @@ export const KMapGrid: FC<KMapGridProps> = ({
                           onChangeValue?.(m, directVal);
                         }
                       }}
-                      className={`kmap-cell relative flex h-14 sm:h-16 w-14 sm:w-16 shrink-0 cursor-pointer flex-col items-center justify-center border-b border-r border-gray-200 transition-colors focus:z-10 focus:outline-hidden focus:ring-2 focus:ring-blue-500 dark:border-gray-800 ${
+                      className={`kmap-cell relative flex h-14 sm:h-16 w-14 sm:w-16 shrink-0 cursor-pointer flex-col items-center justify-center border-b border-r border-gray-200 transition-colors focus:z-10 focus:outline-hidden focus:ring-2 focus:ring-blue-500 dark:border-gray-800 ${overlayGroups.some((group) => group.cellIndices.includes(m)) ? 'grouped' : ''} ${
                         isSelected
                           ? 'bg-blue-100 ring-2 ring-inset ring-blue-600 dark:bg-blue-950/70 dark:ring-blue-400'
                           : isHighlighted
@@ -336,7 +339,7 @@ export const KMapGrid: FC<KMapGridProps> = ({
                       <span className="absolute top-1 left-1.5 z-[3] text-[9px] font-mono text-gray-400 dark:text-gray-500">
                         {m}
                       </span>
-                      <GroupOverlay groups={overlayGroups} variableCount={variableCount} cellIndex={m} />
+                      <GroupBadges groups={overlayGroups} cellIndex={m} />
 
                       {/* Explicit Text Symbol */}
                       <span

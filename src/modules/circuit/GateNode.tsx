@@ -8,8 +8,9 @@
 import { memo, type FC, type KeyboardEvent, type MouseEvent } from 'react';
 import type { LogicValue } from '../../types/ast';
 import type { CircuitNode } from '../../types/circuit';
-import { nodeSize, pinPosition } from '../../engine/circuit/geometry';
-import { GATE_SYMBOLS, getNodeAccessibleName, getNodeSymbolText } from './gateSymbols';
+import { CIRCUIT_GATE_SYMBOL_HEIGHT, CIRCUIT_GATE_SYMBOL_WIDTH, CIRCUIT_PORT_RADIUS, nodeSize, pinPosition } from '../../engine/circuit/geometry';
+import { getNodeAccessibleName, getNodeSymbolText } from './gateSymbols';
+import { GateSymbolGraphic } from './GateSymbolGraphic';
 
 export interface GateNodeProps {
   readonly node: CircuitNode;
@@ -44,24 +45,18 @@ export const GateNode: FC<GateNodeProps> = memo(
     const symbolText = getNodeSymbolText(node);
 
     const isInput = node.kind === 'input';
-    const isOutput = node.kind === 'output';
-    const isClock = node.kind === 'clock';
-    const isConst = node.kind === 'const';
-    const isGate = node.kind === 'gate';
+    const nodeLabel = node.kind === 'gate'
+      ? `${node.gateType} ${node.label || node.id}`
+      : node.kind === 'input'
+        ? `${node.label || node.id} = ${String(outputValue)}`
+        : node.kind === 'output'
+          ? node.label || node.id
+          : node.kind === 'clock'
+            ? node.label || node.id
+            : `${node.id} = ${String(node.value)}`;
 
     // Color tokens based on value and selection
-    const strokeColor = isSelected
-      ? '#2563eb' // blue-600
-      : isFocused
-      ? '#4f46e5' // indigo-600
-      : '#4b5563'; // gray-600
-
-    const fillColor =
-      outputValue === 1
-        ? '#dbeafe' // blue-100
-        : outputValue === 0
-        ? '#f3f4f6' // gray-100
-        : '#fef3c7'; // amber-100 (for X)
+    const strokeColor = isSelected ? 'var(--teal)' : isFocused ? 'var(--lavender)' : 'var(--muted)';
 
     return (
       <g
@@ -101,205 +96,30 @@ export const GateNode: FC<GateNodeProps> = memo(
             height={size.height + 10}
             rx={8}
             fill="none"
-            stroke={isSelected ? '#3b82f6' : '#6366f1'}
+            stroke={isSelected ? 'var(--teal)' : 'var(--lavender)'}
             strokeWidth={2}
             strokeDasharray={isSelected ? undefined : '4,3'}
             className="pointer-events-none transition-all"
           />
         )}
 
-        {/* Input Toggle Node */}
-        {isInput && (
-          <g
-            className="cursor-pointer"
-            onClick={(e) => {
-              e.stopPropagation();
-              onToggleInput(node.id);
-            }}
-          >
-            <rect
-              x={0}
-              y={0}
-              width={size.width}
-              height={size.height}
-              rx={6}
-              fill={outputValue === 1 ? '#bfdbfe' : outputValue === 0 ? '#e5e7eb' : '#fde68a'}
-              stroke={strokeColor}
-              strokeWidth={isSelected ? 2.5 : 1.5}
-            />
-            <text
-              x={size.width / 2}
-              y={size.height / 2 - 4}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              className="text-[11px] font-bold fill-gray-800 dark:fill-gray-100 select-none"
-            >
-              {symbolText}
-            </text>
-            <text
-              x={size.width / 2}
-              y={size.height / 2 + 10}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              className="text-[12px] font-mono font-extrabold fill-blue-700 dark:fill-blue-300 select-none"
-            >
-              [{outputValue}]
-            </text>
-          </g>
-        )}
-
-        {/* Output Node */}
-        {isOutput && (
-          <g>
-            <rect
-              x={0}
-              y={0}
-              width={size.width}
-              height={size.height}
-              rx={6}
-              fill={fillColor}
-              stroke={strokeColor}
-              strokeWidth={isSelected ? 2.5 : 1.5}
-            />
-            <text
-              x={size.width / 2}
-              y={size.height / 2 - 4}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              className="text-[11px] font-bold fill-gray-800 dark:fill-gray-100 select-none"
-            >
-              {symbolText}
-            </text>
-            <text
-              x={size.width / 2}
-              y={size.height / 2 + 10}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              className="text-[12px] font-mono font-extrabold fill-emerald-700 dark:fill-emerald-400 select-none"
-            >
-              {outputValue}
-            </text>
-          </g>
-        )}
-
-        {/* Clock Source Node */}
-        {isClock && (
-          <g>
-            <rect
-              x={0}
-              y={0}
-              width={size.width}
-              height={size.height}
-              rx={6}
-              fill={outputValue === 1 ? '#c7d2fe' : '#e0e7ff'}
-              stroke={strokeColor}
-              strokeWidth={isSelected ? 2.5 : 1.5}
-            />
-            <path
-              d="M 12 28 L 22 28 L 22 14 L 32 14 L 32 28 L 42 28"
-              fill="none"
-              stroke="#4338ca"
-              strokeWidth={1.5}
-            />
-            <text
-              x={52}
-              y={22}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              className="text-[10px] font-mono font-bold fill-indigo-900"
-            >
-              {outputValue}
-            </text>
-          </g>
-        )}
-
-        {/* Constant Source Node */}
-        {isConst && (
-          <g>
-            <rect
-              x={0}
-              y={0}
-              width={size.width}
-              height={size.height}
-              rx={6}
-              fill="#f3f4f6"
-              stroke={strokeColor}
-              strokeWidth={isSelected ? 2.5 : 1.5}
-            />
-            <text
-              x={size.width / 2}
-              y={size.height / 2}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              className="text-[14px] font-mono font-bold fill-gray-900"
-            >
-              {node.value}
-            </text>
-          </g>
-        )}
-
-        {/* Logic Gate Node */}
-        {isGate && (
-          <g>
-            {/* Base Gate Shape */}
-            {(() => {
-              const sym = GATE_SYMBOLS[node.gateType];
-              const scaleY = size.height / sym.baseHeight;
-              return (
-                <g transform={`scale(1, ${scaleY})`}>
-                  {sym.inputArcPath && (
-                    <path
-                      d={sym.inputArcPath}
-                      fill="none"
-                      stroke={strokeColor}
-                      strokeWidth={1.5}
-                    />
-                  )}
-                  <path
-                    d={sym.path}
-                    fill={fillColor}
-                    stroke={strokeColor}
-                    strokeWidth={isSelected ? 2.5 : 1.5}
-                  />
-                  {sym.hasBubble && (
-                    <circle
-                      cx={sym.baseWidth + 4}
-                      cy={sym.baseHeight / 2}
-                      r={3.5}
-                      fill="#ffffff"
-                      stroke={strokeColor}
-                      strokeWidth={1.5}
-                    />
-                  )}
-                </g>
-              );
-            })()}
-
-            {/* Visible Gate Type Label */}
-            <text
-              x={node.gateType === 'NOT' ? 18 : 22}
-              y={size.height / 2}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              className="text-[10px] font-bold uppercase tracking-wider fill-gray-900 dark:fill-gray-900 select-none pointer-events-none"
-            >
-              {symbolText}
-            </text>
-
-            {/* Gate Optional Instance Label */}
-            {node.label && (
-              <text
-                x={size.width / 2}
-                y={-6}
-                textAnchor="middle"
-                className="text-[10px] font-semibold fill-gray-600 dark:fill-gray-300"
-              >
-                {node.label}
-              </text>
-            )}
-          </g>
-        )}
-
+        {/* Standard symbol, current value, and label for every component type */}
+        <g className={`circuit-node-motion${isSelected ? ' circuit-node-motion-selected' : ''}${isInput ? ' cursor-pointer' : ''}`} onClick={isInput ? (e) => { e.stopPropagation(); onToggleInput(node.id); } : undefined}>
+          <rect x={0} y={0} width={size.width} height={size.height} rx={8} className="circuit-node-frame" stroke={strokeColor} strokeWidth={isSelected ? 2.5 : 1.5} />
+          <GateSymbolGraphic
+            symbol={node.kind === 'gate' ? node.gateType : node.kind === 'input' ? 'INPUT' : node.kind === 'output' ? 'OUTPUT' : node.kind === 'clock' ? 'CLOCK' : node.value === 0 ? 'CONST0' : 'CONST1'}
+            x={(size.width - CIRCUIT_GATE_SYMBOL_WIDTH) / 2}
+            y={4}
+            width={CIRCUIT_GATE_SYMBOL_WIDTH}
+            height={CIRCUIT_GATE_SYMBOL_HEIGHT}
+            className="circuit-symbol-svg"
+          />
+          {node.kind === 'output' && <g className={`circuit-output-led${outputValue === 1 ? ' circuit-output-led-on' : ''}`} aria-label={`Output ${String(outputValue)}`}>
+            <circle cx={size.width / 2 - 7} cy={50} r={4} />
+            <text x={size.width / 2 + 2} y={51} dominantBaseline="middle">{String(outputValue)}</text>
+          </g>}
+          <text x={size.width / 2} y={node.kind === 'output' ? 68 : 61} textAnchor="middle" dominantBaseline="middle" className="circuit-node-label">{nodeLabel || symbolText}</text>
+        </g>
         {/* Input Pin Targets (on the left edge) */}
         {node.kind !== 'input' &&
           node.kind !== 'clock' &&
@@ -334,9 +154,9 @@ export const GateNode: FC<GateNodeProps> = memo(
                   <circle
                     cx={0}
                     cy={0}
-                    r={isTargetActive ? 7 : 4.5}
-                    fill={isTargetActive ? '#22c55e' : '#ffffff'}
-                    stroke={isTargetActive ? '#15803d' : '#4b5563'}
+                    r={isTargetActive ? 7 : CIRCUIT_PORT_RADIUS}
+                    fill={isTargetActive ? '#22c55e' : 'var(--card)'}
+                    stroke={isTargetActive ? '#15803d' : 'var(--muted)'}
                     strokeWidth={1.5}
                     className="transition-all hover:scale-125"
                   />
@@ -367,9 +187,9 @@ export const GateNode: FC<GateNodeProps> = memo(
             <circle
               cx={0}
               cy={0}
-              r={isWiringSource ? 7 : 4.5}
-              fill={isWiringSource ? '#3b82f6' : '#ffffff'}
-              stroke={isWiringSource ? '#1d4ed8' : '#4b5563'}
+              r={isWiringSource ? 7 : CIRCUIT_PORT_RADIUS}
+              fill={isWiringSource ? '#3b82f6' : 'var(--card)'}
+              stroke={isWiringSource ? '#1d4ed8' : 'var(--muted)'}
               strokeWidth={1.5}
               className="transition-all hover:scale-125"
             />

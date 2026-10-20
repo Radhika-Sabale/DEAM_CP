@@ -6,6 +6,7 @@
 
 import { type FC, type DragEvent, useState } from 'react';
 import type { CircuitGraph, CircuitNode, GateType } from '../../types/circuit';
+import { GateSymbolGraphic, type CircuitSymbol } from './GateSymbolGraphic';
 import {
   fullAdder,
   gatedDLatchNand,
@@ -28,24 +29,25 @@ interface PaletteItem {
   readonly label: string;
   readonly iconSymbol: string;
   readonly customValue?: 0 | 1;
+  readonly symbol: CircuitSymbol;
 }
 
 const GATE_ITEMS: readonly PaletteItem[] = [
-  { id: 'gate_and', kind: 'gate', gateType: 'AND', label: 'AND Gate', iconSymbol: 'AND' },
-  { id: 'gate_nand', kind: 'gate', gateType: 'NAND', label: 'NAND Gate', iconSymbol: 'NAND' },
-  { id: 'gate_or', kind: 'gate', gateType: 'OR', label: 'OR Gate', iconSymbol: 'OR' },
-  { id: 'gate_nor', kind: 'gate', gateType: 'NOR', label: 'NOR Gate', iconSymbol: 'NOR' },
-  { id: 'gate_xor', kind: 'gate', gateType: 'XOR', label: 'XOR Gate', iconSymbol: 'XOR' },
-  { id: 'gate_xnor', kind: 'gate', gateType: 'XNOR', label: 'XNOR Gate', iconSymbol: 'XNOR' },
-  { id: 'gate_not', kind: 'gate', gateType: 'NOT', label: 'NOT Inverter', iconSymbol: 'NOT' },
+  { id: 'gate_and', kind: 'gate', gateType: 'AND', label: 'AND Gate', iconSymbol: 'AND', symbol: 'AND' },
+  { id: 'gate_nand', kind: 'gate', gateType: 'NAND', label: 'NAND Gate', iconSymbol: 'NAND', symbol: 'NAND' },
+  { id: 'gate_or', kind: 'gate', gateType: 'OR', label: 'OR Gate', iconSymbol: 'OR', symbol: 'OR' },
+  { id: 'gate_nor', kind: 'gate', gateType: 'NOR', label: 'NOR Gate', iconSymbol: 'NOR', symbol: 'NOR' },
+  { id: 'gate_xor', kind: 'gate', gateType: 'XOR', label: 'XOR Gate', iconSymbol: 'XOR', symbol: 'XOR' },
+  { id: 'gate_xnor', kind: 'gate', gateType: 'XNOR', label: 'XNOR Gate', iconSymbol: 'XNOR', symbol: 'XNOR' },
+  { id: 'gate_not', kind: 'gate', gateType: 'NOT', label: 'NOT Inverter', iconSymbol: 'NOT', symbol: 'NOT' },
 ];
 
 const SOURCE_ITEMS: readonly PaletteItem[] = [
-  { id: 'node_input', kind: 'input', label: 'Input Switch', iconSymbol: 'IN' },
-  { id: 'node_output', kind: 'output', label: 'Output Probe', iconSymbol: 'OUT' },
-  { id: 'node_clock', kind: 'clock', label: 'Clock Source', iconSymbol: 'CLK' },
-  { id: 'node_const0', kind: 'const', customValue: 0, label: 'Constant 0', iconSymbol: '0' },
-  { id: 'node_const1', kind: 'const', customValue: 1, label: 'Constant 1', iconSymbol: '1' },
+  { id: 'node_input', kind: 'input', label: 'Input Switch', iconSymbol: 'IN', symbol: 'INPUT' },
+  { id: 'node_output', kind: 'output', label: 'Output Probe', iconSymbol: 'OUT', symbol: 'OUTPUT' },
+  { id: 'node_clock', kind: 'clock', label: 'Clock Source', iconSymbol: 'CLK', symbol: 'CLOCK' },
+  { id: 'node_const0', kind: 'const', customValue: 0, label: 'Constant 0', iconSymbol: '0', symbol: 'CONST0' },
+  { id: 'node_const1', kind: 'const', customValue: 1, label: 'Constant 1', iconSymbol: '1', symbol: 'CONST1' },
 ];
 
 export const Palette: FC<PaletteProps> = ({ onAddNode, onLoadExample }) => {
@@ -96,14 +98,14 @@ export const Palette: FC<PaletteProps> = ({ onAddNode, onLoadExample }) => {
   return (
     <aside
       aria-label="Component Palette & Examples"
-      className="flex flex-col gap-5 rounded-xl border border-gray-200 bg-white p-4 shadow-xs dark:border-gray-800 dark:bg-gray-900 w-full sm:w-64 shrink-0"
+      className="circuit-palette-strip flex w-full items-center gap-4 overflow-x-auto rounded-xl border border-gray-200 bg-white p-3 shadow-xs dark:border-gray-800 dark:bg-gray-900"
     >
       {/* Logic Gates Section */}
-      <div>
+      <div className="circuit-palette-group">
         <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2.5">
           Logic Gates
         </h3>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="circuit-palette-grid flex gap-2">
           {GATE_ITEMS.map((item) => (
             <button
               key={item.id}
@@ -112,23 +114,22 @@ export const Palette: FC<PaletteProps> = ({ onAddNode, onLoadExample }) => {
               onDragStart={(e) => handleDragStart(e, item)}
               onClick={() => onAddNode(item.kind, item.gateType)}
               aria-label={`Add ${item.label} to canvas`}
-              className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-2 text-left text-xs font-semibold text-gray-800 transition hover:border-blue-500 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-blue-500 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-blue-400 dark:hover:bg-blue-900/40"
+              title={item.label}
+              className="circuit-palette-item flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-2 text-left text-xs font-semibold text-gray-800 transition hover:border-blue-500 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-blue-500 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-blue-400 dark:hover:bg-blue-900/40"
             >
-              <span className="inline-flex h-5 w-8 items-center justify-center rounded-sm bg-blue-100 font-mono text-[10px] font-bold text-blue-800 dark:bg-blue-900/60 dark:text-blue-200">
-                {item.iconSymbol}
-              </span>
-              <span className="truncate">{item.gateType}</span>
+              <GateSymbolGraphic symbol={item.symbol} className="palette-symbol text-gray-800 dark:text-gray-100" />
+              <span>{item.label}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Inputs / Terminals Section */}
-      <div>
+      <div className="circuit-palette-group circuit-palette-terminals">
         <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-2.5">
           Inputs & Terminals
         </h3>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="circuit-palette-grid flex gap-2">
           {SOURCE_ITEMS.map((item) => (
             <button
               key={item.id}
@@ -137,19 +138,18 @@ export const Palette: FC<PaletteProps> = ({ onAddNode, onLoadExample }) => {
               onDragStart={(e) => handleDragStart(e, item)}
               onClick={() => onAddNode(item.kind, item.gateType, item.customValue)}
               aria-label={`Add ${item.label} to canvas`}
-              className="flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-2 text-left text-xs font-semibold text-gray-800 transition hover:border-blue-500 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-blue-500 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-blue-400 dark:hover:bg-blue-900/40"
+              title={item.label}
+              className="circuit-palette-item flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-2 text-left text-xs font-semibold text-gray-800 transition hover:border-blue-500 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-blue-500 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-blue-400 dark:hover:bg-blue-900/40"
             >
-              <span className="inline-flex h-5 w-7 items-center justify-center rounded-sm bg-emerald-100 font-mono text-[10px] font-bold text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200">
-                {item.iconSymbol}
-              </span>
-              <span className="truncate">{item.label}</span>
+              <GateSymbolGraphic symbol={item.symbol} className="palette-symbol text-gray-800 dark:text-gray-100" />
+              <span>{item.label}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Reference Examples Menu */}
-      <div className="border-t border-gray-200 pt-4 dark:border-gray-800">
+      <div className="circuit-example-select border-l border-gray-200 pl-4 dark:border-gray-800">
         <label
           htmlFor="palette-example-select"
           className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 block mb-1.5"
@@ -177,26 +177,6 @@ export const Palette: FC<PaletteProps> = ({ onAddNode, onLoadExample }) => {
         </select>
       </div>
 
-      {/* Visual Wire Legend */}
-      <div className="border-t border-gray-200 pt-4 text-xs text-gray-600 dark:border-gray-800 dark:text-gray-400">
-        <h4 className="font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400 text-[10px] mb-2">
-          Wire Value Legend
-        </h4>
-        <div className="space-y-1.5">
-          <div className="flex items-center gap-2">
-            <span className="h-0.5 w-6 bg-blue-700 rounded-sm" />
-            <span>Thick Solid = Logic High (1)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="h-[1.5px] w-6 bg-gray-600 rounded-sm" />
-            <span>Thin Solid = Logic Low (0)</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="h-0.5 w-6 border-b border-dashed border-amber-600" />
-            <span>Dashed = Unknown / Floating (X)</span>
-          </div>
-        </div>
-      </div>
     </aside>
   );
 };

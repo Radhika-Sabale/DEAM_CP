@@ -7,6 +7,7 @@ import { describe, it, expect, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import type { CircuitNode } from '../../types/circuit';
+import { CIRCUIT_GATE_STROKE_WIDTH, CIRCUIT_GATE_SYMBOL_HEIGHT, CIRCUIT_GATE_SYMBOL_WIDTH } from '../../engine/circuit/geometry';
 import { GateNode } from './GateNode';
 import { WireEdge } from './WireEdge';
 
@@ -81,6 +82,15 @@ describe('GateNode component', () => {
 
     fireEvent.click(pinOut);
     expect(handlePinClick).toHaveBeenCalledWith('g1', 'out', 0, expect.any(Object));
+  });
+
+  it('sizes the canvas symbol and outline from shared geometry constants', () => {
+    const node: CircuitNode = { id: 'g1', kind: 'gate', gateType: 'AND', inputCount: 2, x: 0, y: 0 };
+    const { container } = render(<svg><GateNode node={node} outputValue={1} isSelected={false} isFocused={false} isWiringActive={false} isWiringSource={false} activeWiringTargetPin={null} onSelectNode={vi.fn()} onToggleInput={vi.fn()} onPinClick={vi.fn()} onPinKeyDown={vi.fn()} /></svg>);
+    const symbol = container.querySelector('.circuit-symbol-svg');
+    expect(symbol).toHaveAttribute('width', String(CIRCUIT_GATE_SYMBOL_WIDTH));
+    expect(symbol).toHaveAttribute('height', String(CIRCUIT_GATE_SYMBOL_HEIGHT));
+    expect(symbol?.querySelector('g')).toHaveAttribute('stroke-width', String(CIRCUIT_GATE_STROKE_WIDTH));
   });
 });
 

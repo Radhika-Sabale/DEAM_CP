@@ -48,7 +48,7 @@ export const DiagnosticsPanel: FC<DiagnosticsPanelProps> = ({
               : 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/60 dark:text-emerald-200'
           }`}
         >
-          {errorCount > 0 ? '❌ Error' : warnCount > 0 ? '⚠️ Warning' : '✓ Valid'}
+          {errorCount > 0 ? 'Error' : warnCount > 0 ? 'Warning' : 'Valid'}
         </span>
       </div>
 
@@ -60,7 +60,7 @@ export const DiagnosticsPanel: FC<DiagnosticsPanelProps> = ({
       {/* Diagnostics List */}
       {diagnostics.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-8 text-center text-xs text-gray-500 dark:text-gray-400">
-          <span className="text-2xl mb-1 text-emerald-500">✓</span>
+          <span className="text-2xl mb-1 text-emerald-500">Valid</span>
           <span className="font-semibold text-gray-800 dark:text-gray-200">No problems found</span>
           <span>All pins are driven, references are valid, and logic levels are properly constrained.</span>
         </div>
@@ -85,7 +85,7 @@ export const DiagnosticsPanel: FC<DiagnosticsPanelProps> = ({
                 >
                   <div className="flex items-start gap-2">
                     <span className="font-bold shrink-0">
-                      {isError ? '❌ ERROR' : isWarn ? '⚠️ WARNING' : 'ℹ️ INFO'}
+                      {isError ? 'ERROR' : isWarn ? 'WARNING' : 'INFO'}
                     </span>
                     <div className="flex-1">
                       <span className="font-semibold text-gray-900 dark:text-gray-100">

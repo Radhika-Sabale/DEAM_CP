@@ -4,7 +4,7 @@
  * with multi-channel status representation (text + icons + aria-current) and keyboard navigation.
  */
 
-import { type FC, useState } from 'react';
+import { type FC, useEffect, useState } from 'react';
 import { getModule, getPipelineFor } from '../../modules/registry';
 import { selectCompletedModules, useProjectStore } from '../../store/projectStore';
 import { selectCurrentModule, useUiStore } from '../../store/uiStore';
@@ -16,7 +16,12 @@ export const PipelineStepper: FC = () => {
   const setModule = useUiStore((state) => state.setModule);
   const completedModules = useProjectStore(selectCompletedModules);
 
-  const [activeFlow, setActiveFlow] = useState<'combinational' | 'sequential'>('combinational');
+  const moduleFlow = currentModule === 'flipflop-simulator' || currentModule === 'sequential-designer'
+    ? 'sequential'
+    : 'combinational';
+  const [activeFlow, setActiveFlow] = useState<'combinational' | 'sequential'>(moduleFlow);
+
+  useEffect(() => setActiveFlow(moduleFlow), [moduleFlow]);
 
   const pipeline = getPipelineFor(activeFlow);
 
@@ -67,7 +72,7 @@ export const PipelineStepper: FC = () => {
         </div>
       </div>
 
-      <ol className="pipeline-step-list flex flex-col gap-2 py-1">
+      <ol className="pipeline-step-list pipeline-step-grid grid gap-2 py-1">
         {pipeline.map((stepId: ModuleId, index: number) => {
           const def = getModule(stepId);
           if (!def) return null;
@@ -75,11 +80,7 @@ export const PipelineStepper: FC = () => {
           const isCurrent = currentModule === stepId;
           const isCompleted = completedModules.includes(stepId);
 
-          const statusText = isCurrent
-            ? 'Current'
-            : isCompleted
-            ? 'Completed'
-            : 'Upcoming';
+          const statusText = isCurrent ? 'Current' : isCompleted ? 'Done' : 'Next';
 
           return (
             <li key={stepId} className="min-w-0">
@@ -113,7 +114,7 @@ export const PipelineStepper: FC = () => {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <div className="truncate text-xs font-semibold text-gray-900 dark:text-gray-100">
+                  <div className="text-xs font-semibold text-gray-900 dark:text-gray-100">
                     {def.title}
                   </div>
                   {/* Explicit text label ensures state is never communicated by color alone */}
@@ -126,7 +127,7 @@ export const PipelineStepper: FC = () => {
                         : 'text-gray-500 dark:text-gray-400'
                     }`}
                   >
-                    ({statusText})
+                    {statusText}
                   </span>
                 </div>
               </button>

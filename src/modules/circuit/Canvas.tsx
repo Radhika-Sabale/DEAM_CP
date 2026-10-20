@@ -7,6 +7,7 @@
 
 import {
   useCallback,
+  useEffect,
   useRef,
   useState,
   type FC,
@@ -19,9 +20,10 @@ import type { CircuitGraph, CircuitNode, GateType } from '../../types/circuit';
 import { addNode, moveNodes, nextNodeId } from '../../engine/circuit';
 import {
   pinPosition,
+  fitToContent,
   snapToGrid,
   wirePath,
-  zoomAt,
+  zoomByStep,
   type Size,
 } from '../../engine/circuit/geometry';
 import { GateNode } from './GateNode';
@@ -38,6 +40,7 @@ export interface CanvasProps {
   readonly onCommitTransaction: () => void;
   readonly onToggleInput: (nodeId: string) => void;
   readonly onOpenHelpModal?: () => void;
+  readonly onDeleteResult?: (deleted: boolean) => void;
 }
 
 export const Canvas: FC<CanvasProps> = ({
@@ -49,9 +52,11 @@ export const Canvas: FC<CanvasProps> = ({
   onCommitTransaction,
   onToggleInput,
   onOpenHelpModal,
+  onDeleteResult,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
-  const [containerSize, setContainerSize] = useState<Size>({ width: 800, height: 600 });
+  const [containerSize, setContainerSize] = useState<Size>({ width: 0, height: 0 });
+  const hasInitialFit = useRef(false);
   const [hoveredWireId, setHoveredWireId] = useState<string | null>(null);
 
   const {
@@ -83,18 +88,35 @@ export const Canvas: FC<CanvasProps> = ({
     containerSize,
     onCommitGraph,
     onToggleInput,
+    onDeleteResult,
   });
 
-  // Track container resize
+  // Track container resize and defer fitting until it has real dimensions.
   const measureContainer = useCallback((el: HTMLDivElement | null) => {
     containerRef.current = el;
-    if (el) {
-      const rect = el.getBoundingClientRect();
+  }, []);
+
+  useEffect(() => {
+    const element = containerRef.current;
+    if (!element) return;
+    const updateSize = () => {
+      const rect = element.getBoundingClientRect();
       if (rect.width > 0 && rect.height > 0) {
         setContainerSize({ width: rect.width, height: rect.height });
       }
-    }
+    };
+    updateSize();
+    if (typeof ResizeObserver === 'undefined') return;
+    const observer = new ResizeObserver(updateSize);
+    observer.observe(element);
+    return () => observer.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (hasInitialFit.current || graph.nodes.length === 0 || containerSize.width <= 0 || containerSize.height <= 0) return;
+    hasInitialFit.current = true;
+    setViewport((current) => ({ ...current, ...fitToContent(graph, containerSize) }));
+  }, [graph, containerSize, setViewport]);
 
   // Mouse wheel zoom
   const handleWheel = (e: WheelEvent<SVGSVGElement>) => {
@@ -102,8 +124,7 @@ export const Canvas: FC<CanvasProps> = ({
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const mouseScreen = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-    const factor = e.deltaY < 0 ? 1.15 : 0.85;
-    setViewport((prev) => zoomAt(prev, mouseScreen, factor));
+    setViewport((prev) => zoomByStep(prev, mouseScreen, e.deltaY < 0 ? 1 : -1));
   };
 
   // Background pointer down (pan or drag start)
@@ -284,7 +305,7 @@ export const Canvas: FC<CanvasProps> = ({
       ref={measureContainer}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      className="relative flex h-[580px] w-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-950 shadow-inner select-none"
+      className="circuit-canvas-shell relative flex w-full flex-col overflow-hidden rounded-xl border border-gray-200 bg-gray-50 dark:border-gray-800 dark:bg-gray-950 shadow-inner select-none"
     >
       {/* Screen Reader Live Region for Announcements */}
       <div aria-live="polite" className="sr-only">
@@ -292,7 +313,7 @@ export const Canvas: FC<CanvasProps> = ({
       </div>
 
       {/* Canvas Controls Toolbar */}
-      <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 rounded-lg border border-gray-200 bg-white/90 p-1.5 shadow-sm backdrop-blur-xs dark:border-gray-800 dark:bg-gray-900/90">
+      <div className="circuit-canvas-toolbar flex shrink-0 flex-nowrap items-center gap-1.5 border-b p-2">
         <Button variant="ghost" size="sm" onClick={handleZoomIn} aria-label="Zoom in canvas">
           +
         </Button>
@@ -306,24 +327,13 @@ export const Canvas: FC<CanvasProps> = ({
         <span className="font-mono text-xs text-gray-600 dark:text-gray-300 px-1">
           {Math.round(viewport.zoom * 100)}%
         </span>
-        {(selectedNodeIds.length > 0 || selectedWireIds.length > 0) && (
-          <>
-            <span className="h-4 w-px bg-gray-300 dark:bg-gray-700 mx-1" />
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={handleDeleteSelected}
-              aria-label={`Delete selected ${selectedNodeIds.length} nodes and ${selectedWireIds.length} wires`}
-            >
-              Delete
-            </Button>
-          </>
-        )}
+        <span className="h-4 w-px bg-gray-300 dark:bg-gray-700 mx-1" />
+        <Button className="circuit-delete-button" variant="secondary" size="sm" onClick={handleDeleteSelected} disabled={selectedNodeIds.length === 0 && selectedWireIds.length === 0}>Delete selected</Button>
         {onOpenHelpModal && (
           <>
             <span className="h-4 w-px bg-gray-300 dark:bg-gray-700 mx-1" />
             <Button variant="ghost" size="sm" onClick={onOpenHelpModal} aria-label="Open keyboard shortcuts help">
-              ⌨️ Help
+              Keyboard help
             </Button>
           </>
         )}
@@ -334,7 +344,7 @@ export const Canvas: FC<CanvasProps> = ({
         tabIndex={0}
         role="region"
         aria-label="Digital Circuit Schematic Canvas. Use Tab and Arrow keys to navigate, Space to toggle inputs, Enter to wire."
-        className="h-full w-full cursor-grab active:cursor-grabbing outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+        className="min-h-0 w-full flex-1 cursor-grab active:cursor-grabbing outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}

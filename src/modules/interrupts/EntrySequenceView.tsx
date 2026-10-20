@@ -82,7 +82,7 @@ export const EntrySequenceView: FC<EntrySequenceViewProps> = ({
             disabled={microStepIndex <= 0}
             aria-label="Previous micro-step"
           >
-            ◀ Back
+            Back
           </Button>
           <Button
             variant="primary"
@@ -91,7 +91,7 @@ export const EntrySequenceView: FC<EntrySequenceViewProps> = ({
             disabled={microStepIndex >= steps.length - 1}
             aria-label="Next micro-step"
           >
-            Next Step ▶
+            Next Step
           </Button>
           <Button
             variant="secondary"

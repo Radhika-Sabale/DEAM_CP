@@ -206,7 +206,7 @@ export const TruthTableCompare: FC<TruthTableCompareProps> = ({ graph, project }
           className="rounded-lg border border-amber-300 bg-amber-50 p-4 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200"
         >
           <div className="font-bold flex items-center gap-1.5 mb-1">
-            <span>⚠️ Truth Table Extraction Unavailable:</span>
+            <span>Truth Table Extraction Unavailable:</span>
           </div>
           <p>{extractResult.error.message}</p>
         </div>
@@ -233,7 +233,7 @@ export const TruthTableCompare: FC<TruthTableCompareProps> = ({ graph, project }
                 : 'bg-red-100 text-red-800 dark:bg-red-900/60 dark:text-red-200'
             }`}
           >
-            <span>{comparisonResult.status === 'match' ? '✓' : '❌'}</span>
+            <span>{comparisonResult.status === 'match' ? 'Match' : 'Mismatch'}</span>
             <span>
               {comparisonResult.status === 'match'
                 ? 'Complete Match! Circuit output matches target specification across all rows.'
@@ -321,7 +321,7 @@ export const TruthTableCompare: FC<TruthTableCompareProps> = ({ graph, project }
                               : 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
                           }`}
                         >
-                          {isMatch ? '✓ Match' : isMismatch ? '❌ Mismatch' : row.status}
+                          {isMatch ? 'Match' : isMismatch ? 'Mismatch' : row.status}
                         </span>
                       </td>
                     </tr>

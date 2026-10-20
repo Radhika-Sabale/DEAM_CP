@@ -40,7 +40,7 @@ export interface CellOutline {
   readonly radiusBottomLeft: boolean;
 }
 
-export const GROUP_COLORS = ['#6b93e6', '#4fa3b3', '#c27c9f', '#9a89d4', '#7f92cc', '#b08ac4'] as const;
+export const GROUP_COLORS = ['var(--group-1)', 'var(--group-2)', 'var(--group-3)', 'var(--group-4)', 'var(--group-5)', 'var(--group-6)'] as const;
 
 export function groupsWithCareCells(
   groups: readonly VisualGroup[],
@@ -59,6 +59,30 @@ export function getGroupStyle(index: number) {
     dashArray: 'none',
     strokeStyleName: 'solid',
   } as const;
+}
+
+const GROUP_COLOR_TOKENS = ['var(--group-1)', 'var(--group-2)', 'var(--group-3)', 'var(--group-4)', 'var(--group-5)', 'var(--group-6)'] as const;
+
+export function getCellGroupIndices(groups: readonly VisualGroup[], cellIndex: number): number[] {
+  return groups.flatMap((group, index) => group.cellIndices.includes(cellIndex) ? [index] : []);
+}
+
+export function getCellGroupShadows(groups: readonly VisualGroup[], cellIndex: number): string {
+  return getCellGroupIndices(groups, cellIndex)
+    .map((index) => `inset 0 0 0 3px ${GROUP_COLOR_TOKENS[index % GROUP_COLOR_TOKENS.length]}`)
+    .join(', ');
+}
+
+export function GroupBadges({ groups, cellIndex }: { groups: readonly VisualGroup[]; cellIndex: number }) {
+  const memberships = getCellGroupIndices(groups, cellIndex);
+  if (memberships.length === 0) return null;
+  return (
+    <span className="kmap-group-badges" aria-hidden="true">
+      {memberships.map((index) => (
+        <span key={`${groups[index]?.id}-${cellIndex}`} className="kmap-group-badge" style={{ '--kgroup': GROUP_COLOR_TOKENS[index % GROUP_COLOR_TOKENS.length] } as CSSProperties}>{index + 1}</span>
+      ))}
+    </span>
+  );
 }
 
 interface Position { readonly row: number; readonly col: number; readonly layer: number; }

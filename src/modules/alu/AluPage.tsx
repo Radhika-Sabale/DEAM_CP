@@ -199,12 +199,14 @@ export const AluPage: FC = () => {
   };
 
   return (
-    <div className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8 space-y-6">
-      <div className="border-b border-gray-200 pb-4 dark:border-gray-800 flex flex-wrap items-center justify-between gap-4">
+    <div className="module-page page-column alu-page">
+      <header className="module-page-header flex flex-wrap items-center justify-between gap-4">
         <div>
+          <span className="eyebrow">MODULE 05</span>
           <h1 className="mt-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
             Arithmetic Logic Unit (ALU)
           </h1>
+          <p>Explore arithmetic, logic operations, and the resulting flags.</p>
         </div>
 
         <div className="flex flex-col items-end gap-1">
@@ -223,9 +225,9 @@ export const AluPage: FC = () => {
             </p>
           )}
         </div>
-      </div>
+      </header>
 
-      <Tabs tabs={tabs} defaultValue="explore" />
+      <section className="module-card"><Tabs className="module-tabs" tabs={tabs} defaultValue="explore" /></section>
     </div>
   );
 };

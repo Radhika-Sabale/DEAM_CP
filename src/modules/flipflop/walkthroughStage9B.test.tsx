@@ -71,7 +71,7 @@ describe('Stage 9B Flip-Flop Module Walkthrough & Integration', () => {
       () => {
         expect(useUiStore.getState().currentModule).toBe('sequential-designer');
         expect(
-          screen.getByText(/Module ID: sequential-designer/i)
+          screen.getByRole('heading', { name: /Synchronous Sequential Circuit Designer/i })
         ).toBeInTheDocument();
       },
       { timeout: 10000 }

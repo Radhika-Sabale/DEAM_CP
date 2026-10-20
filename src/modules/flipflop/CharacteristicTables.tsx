@@ -105,7 +105,7 @@ export const CharacteristicTables: FC<CharacteristicTablesProps> = ({
                         )}
                         {row.invalid && (
                           <span className="inline-flex items-center gap-1 rounded-md bg-amber-100 px-2 py-0.5 text-[11px] font-bold text-amber-800 dark:bg-amber-900/60 dark:text-amber-300">
-                            <span aria-hidden="true">⚠</span> Invalid
+                            Invalid
                           </span>
                         )}
                       </td>

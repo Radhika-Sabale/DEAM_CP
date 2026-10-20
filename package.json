@@ -5,7 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:all": "node scripts/dev-all.mjs",
+    "dev:client": "vite",
     "build": "tsc --noEmit && vite build",
+    "start": "node scripts/start.mjs",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -19,9 +22,9 @@
     "docs:check": "vite-node scripts/check-catalog.ts && vite-node scripts/check-links.ts"
   },
   "dependencies": {
-    "@fontsource/inter": "^5.3.0",
+    "@fontsource-variable/fraunces": "^5.3.0",
+    "@fontsource-variable/manrope": "^5.3.0",
     "@fontsource/jetbrains-mono": "^5.3.0",
-    "@fontsource/space-grotesk": "^5.3.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "zustand": "^4.5.5"

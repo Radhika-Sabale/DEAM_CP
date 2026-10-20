@@ -22,8 +22,8 @@ describe('FlipFlopPage', () => {
   it('renders FlipFlopPage and synchronizes type to project store', () => {
     render(<FlipFlopPage />);
 
-    expect(screen.getByText('Flip-Flop & Latch Workbench')).toBeDefined();
-    expect(screen.getByText(/Module 5 • Sequential Pipeline/i)).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Flip-Flop & Latch Workbench' })).toBeInTheDocument();
+    expect(screen.getByText('MODULE 05 · FLIP-FLOP LAB')).toBeInTheDocument();
 
     // Select JK flip-flop
     const jkRadio = screen.getByDisplayValue('JK');

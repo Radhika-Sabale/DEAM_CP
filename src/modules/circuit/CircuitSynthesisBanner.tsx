@@ -75,7 +75,7 @@ export const CircuitSynthesisBanner: FC<CircuitSynthesisBannerProps> = ({
           onClick={onGenerate}
           aria-label="Generate circuit schematic from Boolean expression"
         >
-          ⚡ Generate Circuit
+          Generate Circuit
         </Button>
       </div>
     </div>

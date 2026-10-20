@@ -114,7 +114,7 @@ export const EventLog: FC<EventLogProps> = ({ session, className = '' }) => {
                       : 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-200'
                   }`}
                 >
-                  <span aria-hidden="true">{isError ? '✖' : isWarning ? '⚠' : 'ℹ'}</span>
+                  <span>{isError ? 'Error' : isWarning ? 'Warning' : 'Info'}</span>
                   <span>{isError ? 'Error' : isWarning ? 'Warning' : 'Info'}</span>
                 </span>
 
@@ -131,9 +131,9 @@ export const EventLog: FC<EventLogProps> = ({ session, className = '' }) => {
         {state.config.type === 'SR' && (
           <details className="group rounded-lg border border-amber-200 bg-amber-50/50 p-3 dark:border-amber-900/40 dark:bg-amber-950/20 text-xs">
             <summary className="cursor-pointer font-bold text-amber-900 dark:text-amber-200 flex items-center justify-between">
-              <span>🔍 What does forbidden state mean? ({invalidStateInfo.title})</span>
+              <span>What does forbidden state mean? ({invalidStateInfo.title})</span>
               <span className="text-[10px] text-amber-700 dark:text-amber-400 group-open:rotate-180 transition-transform">
-                ▼
+                Show details
               </span>
             </summary>
             <div className="mt-2 space-y-2 text-amber-950 dark:text-amber-200 text-[11px] leading-relaxed">
@@ -151,9 +151,9 @@ export const EventLog: FC<EventLogProps> = ({ session, className = '' }) => {
         {isLevel && raceExplanation && (
           <details className="group rounded-lg border border-blue-200 bg-blue-50/50 p-3 dark:border-blue-900/40 dark:bg-blue-950/20 text-xs">
             <summary className="cursor-pointer font-bold text-blue-900 dark:text-blue-200 flex items-center justify-between">
-              <span>🔍 What is a Race-Around Hazard in Level-Sensitive Latches?</span>
+              <span>What is a Race-Around Hazard in Level-Sensitive Latches?</span>
               <span className="text-[10px] text-blue-700 dark:text-blue-400 group-open:rotate-180 transition-transform">
-                ▼
+                Show details
               </span>
             </summary>
             <div className="mt-2 space-y-2 text-blue-950 dark:text-blue-200 text-[11px] leading-relaxed">

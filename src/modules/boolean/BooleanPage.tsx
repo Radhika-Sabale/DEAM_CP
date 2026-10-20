@@ -191,21 +191,23 @@ export const BooleanPage: FC<BooleanPageProps> = ({ onStepEvent }) => {
   ];
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
-            Boolean Expression Analysis
-          </h2>
-        </div>
-
-        {/* Send to Next Module with Handoff Summary */}
-        <div className="flex flex-col items-end gap-1">
+    <div className="module-page page-column boolean-page">
+      <header className="module-page-header">
+        <span className="eyebrow">MODULE 02</span>
+        <h1>Boolean Expression Analysis</h1>
+        <p>Build, simplify, and compare Boolean expressions across five analysis views.</p>
+      </header>
+      <section className="module-card boolean-card" aria-label="Boolean expression workbench">
+        <div className="module-title">
+          <div>
+            <span className="eyebrow">BOOLEAN STUDIO</span>
+            <h2>Expression workbench</h2>
+            <p>Enter an expression, then explore its truth table and equivalent forms.</p>
+          </div>
           <SendToNextButton />
         </div>
-      </div>
-
-      <Tabs tabs={tabs} defaultValue="expr-table" />
+        <Tabs className="module-tabs" tabs={tabs} defaultValue="expr-table" />
+      </section>
     </div>
   );
 };

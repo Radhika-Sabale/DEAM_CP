@@ -89,7 +89,7 @@ describe('StateDiagramEditor component', () => {
     );
 
     // Shows 5 correct verdicts
-    const correctIndicators = screen.getAllByText(/✓ Correct/i);
+    const correctIndicators = screen.getAllByText(/Correct/i);
     expect(correctIndicators).toHaveLength(5);
   });
 
@@ -115,7 +115,7 @@ describe('StateDiagramEditor component', () => {
     fireEvent.click(checkBtn);
 
     // Should indicate incorrect or missing transitions
-    const incorrectBadges = screen.getAllByText(/✗/i);
+    const incorrectBadges = screen.getAllByRole('status');
     expect(incorrectBadges.length).toBeGreaterThan(0);
   });
 

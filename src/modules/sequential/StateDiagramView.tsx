@@ -228,7 +228,7 @@ export const StateDiagramView: FC<StateDiagramViewProps> = ({
           <span>
             {tableOpen ? 'Hide' : 'Show'} Accessible Transition Table ({diagram.edges.length} Transitions)
           </span>
-          <span className="text-gray-400">{tableOpen ? '▲' : '▼'}</span>
+          <span className="text-gray-400">{tableOpen ? 'Hide' : 'Show'}</span>
         </button>
 
         {tableOpen && (

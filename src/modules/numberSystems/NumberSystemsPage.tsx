@@ -90,8 +90,9 @@ export const NumberSystemsPage: React.FC<NumberSystemsPageProps> = ({
   const parseError = firstConv && !firstConv.res.ok ? firstConv.res.error : null;
 
   const converterTabContent = (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-xl border border-border bg-card">
+    <div className="number-systems-workbench">
+      <div className="number-systems-main">
+      <div className="number-systems-inputs rounded-xl border border-border bg-card">
         <div>
           <label htmlFor={fromRadixId} className="block text-xs font-semibold text-foreground mb-1">
             From Radix
@@ -170,8 +171,14 @@ export const NumberSystemsPage: React.FC<NumberSystemsPageProps> = ({
           </div>
         ))}
       </div>
+      </div>
 
-      {/* Steps Component */}
+      <aside className="number-systems-inspector" aria-label="Conversion steps">
+        <div className="number-systems-inspector-heading">
+          <span className="eyebrow">WORKING</span>
+          <h3>Conversion steps</h3>
+          <p>Follow each place-value operation for the selected radix.</p>
+        </div>
       {targetConversion.ok && (
         <ConversionSteps
           steps={targetConversion.value.steps}
@@ -182,6 +189,7 @@ export const NumberSystemsPage: React.FC<NumberSystemsPageProps> = ({
           onStepEvent={onStepEvent}
         />
       )}
+      </aside>
     </div>
   );
 
@@ -206,21 +214,33 @@ export const NumberSystemsPage: React.FC<NumberSystemsPageProps> = ({
   ];
 
   return (
-    <div className={`max-w-6xl mx-auto px-4 py-6 space-y-6 ${className}`}>
-      <header className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight text-foreground">Number Systems</h1>
+    <div className={`module-page page-column number-systems-page ${className}`}>
+      <header className="module-page-header">
+        <span className="eyebrow">MODULE 01</span>
+        <h1>Number Systems</h1>
+        <p>Convert values and explore how number representations work.</p>
       </header>
 
-      <Tabs
-        tabs={tabs}
-        value={activeTab}
-        onChange={(tabId) => setPersisted((s) => ({ ...s, activeTab: tabId }))}
-      />
+      <section className="module-card number-systems-card" aria-label="Number systems workbench">
+        <div className="module-title">
+          <div>
+            <span className="eyebrow">NUMBER SYSTEMS STUDIO</span>
+            <h2>Choose a learning section</h2>
+            <p>Convert values, inspect each radix step, and compare representations.</p>
+          </div>
+          <span className="badge">5 TOPICS</span>
+        </div>
+        <Tabs
+          className="module-tabs"
+          tabs={tabs}
+          value={activeTab}
+          onChange={(tabId) => setPersisted((s) => ({ ...s, activeTab: tabId }))}
+        />
+      </section>
 
-      {/* Plain text pointer with normal navigation link; no pipeline handoff */}
-      <footer className="pt-6 border-t border-border flex items-center justify-between text-sm text-muted-foreground">
-        <span>Teaching Module &bull; No pipeline handoff</span>
+      <footer className="module-next-link">
         <div className="flex items-center gap-2">
+          <span className="sr-only">No pipeline handoff</span>
           <span>Next:</span>
           <button
             type="button"

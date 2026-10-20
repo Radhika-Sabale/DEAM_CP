@@ -100,7 +100,7 @@ export const RunControls: FC<RunControlsProps> = ({
       >
         <div className="flex items-center gap-2">
           <span className="text-sm" aria-hidden="true">
-            {isRunning ? '▶' : isHalted ? '⏹' : isFaulted ? '⚠' : status === 'assembled' ? '✓' : '⏸'}
+            {isRunning ? 'Running' : isHalted ? 'Halted' : isFaulted ? 'Fault' : status === 'assembled' ? 'Ready' : 'Paused'}
           </span>
           <span className="text-xs font-semibold text-gray-800 dark:text-gray-200">
             {stopReasonMessage ?? (isRunning ? 'Executing…' : status === 'assembled' ? 'Ready to run' : 'Idle')}
@@ -120,7 +120,7 @@ export const RunControls: FC<RunControlsProps> = ({
           aria-label="Assemble source code and reset CPU"
           title="Assemble (Ctrl+Enter)"
         >
-          ⚙ Assemble
+          Assemble
         </Button>
 
         <Button
@@ -131,7 +131,7 @@ export const RunControls: FC<RunControlsProps> = ({
           aria-label="Reset CPU to initial state"
           title="Reset (Ctrl+R)"
         >
-          ↺ Reset
+          Reset
         </Button>
 
         <div className="h-4 w-px bg-gray-200 dark:bg-gray-700" aria-hidden="true" />
@@ -179,7 +179,7 @@ export const RunControls: FC<RunControlsProps> = ({
             aria-label="Pause program execution"
             title="Pause execution"
           >
-            ⏸ Pause
+            Pause
           </Button>
         ) : (
           <Button
@@ -190,7 +190,7 @@ export const RunControls: FC<RunControlsProps> = ({
             aria-label="Run program to halt or breakpoint"
             title="Run (F5)"
           >
-            ▶ Run
+            Run
           </Button>
         )}
 

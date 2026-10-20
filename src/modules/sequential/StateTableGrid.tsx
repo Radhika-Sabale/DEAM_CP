@@ -125,9 +125,9 @@ export const StateTableGrid: FC<StateTableGridProps> = ({
                 )}
                 <td className="px-3 py-2 text-[11px]">
                   {nextCell?.isCorrect === true ? (
-                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">✓ Correct</span>
+                    <span className="font-semibold text-emerald-600 dark:text-emerald-400">Correct</span>
                   ) : nextCell?.isCorrect === false ? (
-                    <span className="font-semibold text-red-600 dark:text-red-400">✗ {nextCell.errorMsg}</span>
+                    <span role="status" className="font-semibold text-red-600 dark:text-red-400">{nextCell.errorMsg}</span>
                   ) : (
                     <span className="text-gray-400">—</span>
                   )}

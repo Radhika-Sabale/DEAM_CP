@@ -100,6 +100,8 @@ export interface QuizQuestion {
   readonly difficulty: Difficulty;
   /** Question prompt text */
   readonly prompt: string;
+  /** Optional concise model-authored explanation shown in quiz review. */
+  readonly explanation?: string;
   /** For multiple-choice: ordered option texts (shuffled by seed) */
   readonly options?: readonly string[];
   /** Index of the correct option within `options` (multiple-choice only) */

@@ -48,8 +48,8 @@ describe('FlipFlopTiming', () => {
 
     render(<FlipFlopTiming session={result.current} />);
 
-    // Should find the text marker "▲ Edge: Load 1"
-    expect(screen.getByText(/▲ Edge: Load 1/i)).toBeDefined();
+    // Edge events are labelled in plain text.
+    expect(screen.getByText(/Edge: Load 1/i)).toBeDefined();
   });
 
   it('collapsible audit table lists every signal transition', () => {

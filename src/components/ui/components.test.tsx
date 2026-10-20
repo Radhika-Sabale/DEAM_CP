@@ -142,7 +142,7 @@ describe('PipelineStepper step accessibility', () => {
 
     expect(currentStepBtn).toBeDefined();
     expect(currentStepBtn).toHaveTextContent('Boolean Expression Analysis');
-    expect(currentStepBtn).toHaveTextContent('(Current)');
+    expect(currentStepBtn).toHaveTextContent('Current');
   });
 });
 

@@ -12,7 +12,10 @@ import {
   useState,
 } from 'react';
 import { AppShell } from './components/layout/AppShell';
+import { HomePage } from './components/layout/HomePage';
 import { SendToNextButton } from './components/layout/SendToNextButton';
+import { LoginPage } from './auth/LoginPage';
+import { isAuthConfigured, restoreSession, signOut, verifyTeacherAccess, type AuthSession } from './auth/supabaseAuth';
 import { useTheme } from './hooks/useTheme';
 import { getModule, MODULE_REGISTRY } from './modules/registry';
 import { createDebouncedAutosave, saveProject } from './store/persistence';
@@ -27,14 +30,42 @@ export const App: FC = () => {
   const currentModuleId = useUiStore(selectCurrentModule);
   const setModule = useUiStore((state) => state.setModule);
   const [routeNotFound, setRouteNotFound] = useState(false);
+  const [routeHome, setRouteHome] = useState(false);
+  const [routeLogin, setRouteLogin] = useState(false);
+  const [authSession, setAuthSession] = useState<AuthSession | null>(null);
+  const [authReady, setAuthReady] = useState(!isAuthConfigured);
+  const [teacherAccess, setTeacherAccess] = useState<'checking' | 'allowed' | 'denied'>('checking');
   const previousModule = useRef(currentModuleId);
   const currentModuleRef = useRef(currentModuleId);
   currentModuleRef.current = currentModuleId;
+
+  useEffect(() => {
+    let active = true;
+    restoreSession().then((session) => {
+      if (!active) return;
+      setAuthSession(session);
+      setAuthReady(true);
+    });
+    return () => { active = false; };
+  }, []);
 
   // We use client-side window.location.hash for routing so the app remains fully static and offline-capable without a server or router package.
   useEffect(() => {
     const handleHashSync = (): void => {
       const raw = window.location.hash.replace(/^#\/?/, '');
+      if (raw === 'login') {
+        setRouteLogin(true);
+        setRouteHome(false);
+        setRouteNotFound(false);
+        return;
+      }
+      setRouteLogin(false);
+      if (raw === 'home') {
+        setRouteHome(true);
+        setRouteNotFound(false);
+        return;
+      }
+      setRouteHome(false);
       const aliasMap: Record<string, ModuleId> = {
         boolean: 'boolean-tool',
         'boolean-tool': 'boolean-tool',
@@ -77,10 +108,46 @@ export const App: FC = () => {
   }, [setModule]);
 
   useEffect(() => {
+    if (!authReady) return;
+    if (!isAuthConfigured) return;
+    if (!authSession) {
+      if (!routeLogin) {
+        try { if (window.location.hash && window.location.hash !== '#/login') window.sessionStorage.setItem('deam:auth:returnTo', window.location.hash); } catch { /* Route still redirects if storage is unavailable. */ }
+        window.history.replaceState(null, '', '#/login');
+        setRouteLogin(true);
+      }
+      return;
+    }
+    if (routeLogin) {
+      let target = '#/home';
+      try { target = window.sessionStorage.getItem('deam:auth:returnTo') || target; window.sessionStorage.removeItem('deam:auth:returnTo'); } catch { /* Default to home. */ }
+      window.location.hash = target === '#/login' ? '#/home' : target;
+    }
+  }, [authReady, authSession, routeLogin]);
+
+  useEffect(() => {
+    if (!authReady || currentModuleId !== 'teacher-dashboard') {
+      setTeacherAccess('checking');
+      return;
+    }
+    if (!isAuthConfigured || !authSession) {
+      setTeacherAccess('denied');
+      return;
+    }
+    let active = true;
+    setTeacherAccess('checking');
+    verifyTeacherAccess(authSession).then((allowed) => {
+      if (active) setTeacherAccess(allowed ? 'allowed' : 'denied');
+    }).catch(() => { if (active) setTeacherAccess('denied'); });
+    return () => { active = false; };
+  }, [authReady, authSession, currentModuleId]);
+
+  useEffect(() => {
     if (previousModule.current !== currentModuleId) {
       previousModule.current = currentModuleId;
       window.history.replaceState(null, '', `#/${currentModuleId}`);
       setRouteNotFound(false);
+      setRouteHome(false);
     }
   }, [currentModuleId]);
 
@@ -106,15 +173,31 @@ export const App: FC = () => {
   const activeModule = getModule(currentModuleId);
   const ActiveComponent = activeModule?.component;
 
+  if (!authReady) return <div className="login-page" role="status">Checking sign-in…</div>;
+  if (routeLogin || (isAuthConfigured && !authSession)) {
+    return <LoginPage onAuthenticated={(session) => { setAuthSession(session); setRouteLogin(true); }} />;
+  }
+
+  const handleLogout = async () => {
+    await signOut(authSession);
+    setAuthSession(null);
+    window.location.hash = '#/login';
+  };
+
   return (
-    <AppShell>
+    <AppShell onLogout={authSession ? handleLogout : undefined}>
       <div className="space-y-6">
         {routeNotFound ? (
-          <section className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-sm dark:border-gray-800 dark:bg-gray-900">
+          <section className="module-card not-found-page p-8 text-center">
+            <span className="eyebrow">PAGE NOT FOUND</span>
             <h1 className="mb-2 text-2xl font-bold">Page not found</h1>
             <p className="mb-4 text-sm text-gray-600 dark:text-gray-300">This route does not match a module.</p>
             <a className="inline-flex rounded-full bg-blue-700 px-4 py-2 text-sm font-semibold text-white" href="#/boolean-tool">Go to Boolean</a>
           </section>
+        ) : currentModuleId === 'teacher-dashboard' && teacherAccess === 'checking' ? (
+          <div role="status" className="module-card p-6 text-sm text-muted-foreground">Verifying teacher access…</div>
+        ) : currentModuleId === 'teacher-dashboard' && teacherAccess === 'denied' ? (
+          <section role="alert" className="module-card p-6"><h1>{isAuthConfigured ? 'Teacher access required' : 'Login not configured'}</h1><p>{isAuthConfigured ? 'This account does not have the teacher role.' : 'Configure Supabase sign-in before opening the teacher dashboard.'}</p></section>
         ) : <Suspense
           fallback={
             <div
@@ -127,7 +210,7 @@ export const App: FC = () => {
           }
         >
           {ActiveComponent ? (
-            <ActiveComponent />
+          routeHome ? <HomePage /> : <ActiveComponent />
           ) : (
             <div className="p-8 text-center text-red-600">
               Module "{currentModuleId}" not found.
@@ -136,9 +219,11 @@ export const App: FC = () => {
         </Suspense>}
 
         {/* Transition Handoff Button */}
-        <div className="flex justify-end border-t border-gray-200 pt-4 dark:border-gray-800">
-          <SendToNextButton />
-        </div>
+        {currentModuleId !== 'sequential-designer' && currentModuleId !== 'kmap-solver' && (
+          <div className="flex justify-end border-t border-gray-200 pt-4 dark:border-gray-800">
+            <SendToNextButton />
+          </div>
+        )}
       </div>
     </AppShell>
   );

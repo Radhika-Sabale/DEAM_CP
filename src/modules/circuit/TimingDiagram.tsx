@@ -174,7 +174,7 @@ export const TimingDiagram: FC<TimingDiagramProps> = ({ graph, trace, currentTim
           className="rounded-lg border border-amber-300 bg-amber-50 p-3.5 text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200 space-y-1"
         >
           <span className="font-bold flex items-center gap-1">
-            <span>⚡ Static Logic Hazard Detected:</span>
+            <span>Static Logic Hazard Detected:</span>
           </span>
           {detectedHazards.map((h, idx) => (
             <p key={idx} className="text-[11px]">
@@ -461,7 +461,7 @@ export const TimingDiagram: FC<TimingDiagramProps> = ({ graph, trace, currentTim
           aria-expanded={showChangesTable}
           className="flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400"
         >
-          <span>{showChangesTable ? '▼ Hide' : '▶ Show'} Complete Trace Event Log ({trace.changes.length} events)</span>
+          <span>{showChangesTable ? 'Hide' : 'Show'} Complete Trace Event Log ({trace.changes.length} events)</span>
         </button>
 
         {showChangesTable && (

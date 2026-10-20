@@ -62,7 +62,7 @@ describe('Sequential Circuit Designer Integration (Stage 10E)', () => {
     await waitFor(() => {
       expect(useUiStore.getState().currentModule).toBe('sequential-designer');
     }, { timeout: 10000 });
-    expect(await screen.findByText(/Module ID: sequential-designer/i, {}, { timeout: 10000 })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: /Synchronous Sequential Circuit Designer/i }, { timeout: 10000 })).toBeInTheDocument();
 
     // 3. Step 2 DefineCounter: set modulus to 10 up
     const modInput = screen.getByLabelText(/Modulus/i);

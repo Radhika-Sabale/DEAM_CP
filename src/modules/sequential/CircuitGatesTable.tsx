@@ -48,7 +48,7 @@ export const CircuitGatesTable: FC<CircuitGatesTableProps> = ({
         aria-expanded={isOpen}
       >
         <span>Accessible Circuit Netlist & Gate Table ({graph.nodes.length} nodes, {graph.wires.length} wires)</span>
-        <span className="text-sm font-semibold">{isOpen ? '▲ Hide' : '▼ Show'}</span>
+        <span className="text-sm font-semibold">{isOpen ? 'Hide' : 'Show'}</span>
       </button>
 
       {isOpen && (

@@ -207,7 +207,7 @@ export const SequentialWaveform: FC<SequentialWaveformProps> = ({
           aria-expanded={showTable}
         >
           <span>Accessible Signal Changes Table ({changes.length} events recorded)</span>
-          <span className="text-xs">{showTable ? '▲ Hide Table' : '▼ Show Table'}</span>
+          <span className="text-xs">{showTable ? 'Hide Table' : 'Show Table'}</span>
         </button>
 
         {showTable && (

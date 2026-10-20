@@ -127,7 +127,7 @@ export const SequenceDetectorPage: FC<SequenceDetectorPageProps> = ({
                 aria-expanded={showCircuit}
               >
                 <span>Synthesized Schematic Preview</span>
-                <span className="text-xs">{showCircuit ? '▲ Hide Circuit' : '▼ Show Circuit'}</span>
+                <span className="text-xs">{showCircuit ? 'Hide Circuit' : 'Show Circuit'}</span>
               </button>
               {showCircuit && (
                 <div className="mt-4">

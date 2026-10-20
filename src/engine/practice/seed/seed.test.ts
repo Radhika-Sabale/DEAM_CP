@@ -85,7 +85,7 @@ describe('Seed Problems Stage 12A Authoritative Test Suite', () => {
       }
 
       console.log('\n================== SEED PROBLEMS VERIFICATION REPORT ==================');
-      console.log('Module ID               | Problems | Steps Validated | Mismatches');
+      console.log('Module                  | Problems | Steps Validated | Mismatches');
       console.log('------------------------------------------------------------------------');
       let totalP = 0;
       let totalS = 0;

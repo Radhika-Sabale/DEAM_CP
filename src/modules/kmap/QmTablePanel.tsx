@@ -50,7 +50,7 @@ export const QmTablePanel: FC<QmTablePanelProps> = ({
           className="flex w-full items-center justify-between p-4 text-left font-bold text-gray-900 dark:text-gray-100"
         >
           <span className="text-sm">Quine-McCluskey Implicant Tables ({solution.qmTrace.columns.length} columns)</span>
-          <span className="text-xs text-gray-500">{openSections.qmTable ? '▼ Collapse' : '▶ Expand'}</span>
+          <span className="text-xs text-gray-500">{openSections.qmTable ? 'Collapse' : 'Expand'}</span>
         </button>
 
         {openSections.qmTable && (
@@ -87,7 +87,7 @@ export const QmTablePanel: FC<QmTablePanelProps> = ({
                                   imp.combined ? 'text-emerald-600' : 'text-blue-600 font-semibold'
                                 }`}
                               >
-                                {imp.combined ? '✓' : 'PI'}
+                                {imp.combined ? 'Combined' : 'PI'}
                               </span>
                             </div>
                           ))}
@@ -110,7 +110,7 @@ export const QmTablePanel: FC<QmTablePanelProps> = ({
           className="flex w-full items-center justify-between p-4 text-left font-bold text-gray-900 dark:text-gray-100"
         >
           <span className="text-sm">Prime Implicant Coverage Chart</span>
-          <span className="text-xs text-gray-500">{openSections.piChart ? '▼ Collapse' : '▶ Expand'}</span>
+          <span className="text-xs text-gray-500">{openSections.piChart ? 'Collapse' : 'Expand'}</span>
         </button>
 
         {openSections.piChart && (
@@ -198,7 +198,7 @@ export const QmTablePanel: FC<QmTablePanelProps> = ({
           className="flex w-full items-center justify-between p-4 text-left font-bold text-gray-900 dark:text-gray-100"
         >
           <span className="text-sm">Iterative Reduction Steps ({solution.reductionSteps.length})</span>
-          <span className="text-xs text-gray-500">{openSections.dominance ? '▼ Collapse' : '▶ Expand'}</span>
+          <span className="text-xs text-gray-500">{openSections.dominance ? 'Collapse' : 'Expand'}</span>
         </button>
 
         {openSections.dominance && (
@@ -231,7 +231,7 @@ export const QmTablePanel: FC<QmTablePanelProps> = ({
             className="flex w-full items-center justify-between p-4 text-left font-bold text-gray-900 dark:text-gray-100"
           >
             <span className="text-sm">Petrick's Method Algebraic Expansion ({solution.petrickSteps.length} steps)</span>
-            <span className="text-xs text-gray-500">{openSections.petrick ? '▼ Collapse' : '▶ Expand'}</span>
+          <span className="text-xs text-gray-500">{openSections.petrick ? 'Collapse' : 'Expand'}</span>
           </button>
 
           {openSections.petrick && (

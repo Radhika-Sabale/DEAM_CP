@@ -24,8 +24,8 @@ describe('WizardStepper component', () => {
     const items = screen.getAllByRole('listitem');
     expect(items).toHaveLength(8);
 
-    // First step is Not started (since not yet verified), remaining steps are Locked
-    expect(screen.getByText('Not started')).toBeInTheDocument();
+    // The initial step is current and remaining steps are locked.
+    expect(screen.getByText('Current')).toBeInTheDocument();
     const lockedBadges = screen.getAllByText('Locked');
     expect(lockedBadges.length).toBe(7);
   });
@@ -60,6 +60,7 @@ describe('WizardStepper component', () => {
     render(<WizardStepper state={state} onSelectStep={vi.fn()} />);
 
     expect(screen.getByText('Choose a flip-flop first')).toBeInTheDocument();
+    expect(screen.getByText('Define a valid sequential specification first.')).toBeInTheDocument();
   });
 
   it('allows keyboard navigation to unlocked steps and ignores locked steps', () => {

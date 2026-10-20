@@ -14,6 +14,7 @@ import {
   screenToWorld,
   worldToScreen,
   zoomAt,
+  zoomByStep,
   fitToContent,
   nodesInViewport,
   hitTestPin,
@@ -65,19 +66,19 @@ describe('geometry engine', () => {
     ],
   };
 
-  it('nodeSize grows appropriately with gate input count', () => {
+  it('uses shared component dimensions independent of input count', () => {
     const sizeIn = nodeSize(mockInput);
-    expect(sizeIn.width).toBe(70);
-    expect(sizeIn.height).toBe(40);
+    expect(sizeIn.width).toBe(72);
+    expect(sizeIn.height).toBe(84);
 
     const sizeNot = nodeSize(mockNot);
-    expect(sizeNot.width).toBe(70);
-    expect(sizeNot.height).toBe(40);
+    expect(sizeNot.width).toBe(72);
+    expect(sizeNot.height).toBe(84);
 
     const size2 = nodeSize({ id: 'g2', kind: 'gate', gateType: 'AND', inputCount: 2, x: 0, y: 0 });
     const size5 = nodeSize({ id: 'g5', kind: 'gate', gateType: 'AND', inputCount: 5, x: 0, y: 0 });
 
-    expect(size5.height).toBeGreaterThan(size2.height);
+    expect(size5).toEqual(size2);
   });
 
   it('pin positions lie on the node boundary', () => {
@@ -160,6 +161,14 @@ describe('geometry engine', () => {
     expect(zoomWayIn.zoom).toBe(MAX_ZOOM);
   });
 
+  it('zoomByStep changes zoom in 10 percentage-point steps within bounds', () => {
+    const viewport = { x: 20, y: 30, zoom: 0.7 };
+    expect(zoomByStep(viewport, { x: 200, y: 150 }, 1).zoom).toBeCloseTo(0.8);
+    expect(zoomByStep(viewport, { x: 200, y: 150 }, -1).zoom).toBeCloseTo(0.6);
+    expect(zoomByStep({ ...viewport, zoom: 0.4 }, { x: 0, y: 0 }, -1).zoom).toBe(0.4);
+    expect(zoomByStep({ ...viewport, zoom: 2 }, { x: 0, y: 0 }, 1).zoom).toBe(2);
+  });
+
   it('fitToContent encompasses all nodes in the graph', () => {
     const container = { width: 800, height: 600 };
     const viewport = fitToContent(mockGraph, container, 20);
@@ -174,6 +183,13 @@ describe('geometry engine', () => {
       expect(screenBotRight.x).toBeLessThanOrEqual(container.width - 15);
       expect(screenBotRight.y).toBeLessThanOrEqual(container.height - 15);
     }
+  });
+
+  it('fitToContent waits for measurable dimensions and clamps fit between 80% and 130%', () => {
+    expect(fitToContent(mockGraph, { width: 0, height: 0 })).toEqual({ x: 0, y: 0, zoom: 1 });
+    const fitted = fitToContent(mockGraph, { width: 1600, height: 1000 });
+    expect(fitted.zoom).toBeGreaterThanOrEqual(0.8);
+    expect(fitted.zoom).toBeLessThanOrEqual(1.3);
   });
 
   it('nodesInViewport spatial culling matches brute-force bounding box intersection', () => {

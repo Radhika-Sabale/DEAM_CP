@@ -243,7 +243,7 @@ export const MemoryViewer: FC<MemoryViewerProps> = ({
               onClick={() => setStartRow((r) => Math.max(0, r - VISIBLE_ROWS))}
               aria-label="Previous memory page"
             >
-              ▲
+              Previous
             </Button>
             <span className="font-mono text-[11px] text-gray-400">
               {formatHex16(startRow * BYTES_PER_ROW)} - {formatHex16((startRow + VISIBLE_ROWS) * BYTES_PER_ROW - 1)}
@@ -254,7 +254,7 @@ export const MemoryViewer: FC<MemoryViewerProps> = ({
               onClick={() => setStartRow((r) => Math.min(TOTAL_ROWS - VISIBLE_ROWS, r + VISIBLE_ROWS))}
               aria-label="Next memory page"
             >
-              ▼
+              Next
             </Button>
           </div>
         </div>

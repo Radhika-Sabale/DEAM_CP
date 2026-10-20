@@ -156,12 +156,14 @@ export const PracticePage: FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
+    <div className="module-page page-column practice-page">
+      <header className="module-page-header">
+        <span className="eyebrow">MODULE 08 · PRACTICE</span>
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
           Step-by-Step Practice Workbench
-        </h2>
-      </div>
+        </h1>
+        <p>Work through a generated problem one verified step at a time.</p>
+      </header>
 
       {/* Control Bar */}
       <PracticeControls

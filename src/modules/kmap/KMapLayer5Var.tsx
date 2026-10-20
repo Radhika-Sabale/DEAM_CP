@@ -5,7 +5,7 @@
  * adjacency explanations, keyboard navigation, and overlay slots.
  */
 
-import { type FC, type KeyboardEvent } from 'react';
+import { type CSSProperties, type FC, type KeyboardEvent } from 'react';
 import type { LogicValue } from '../../types/ast';
 import {
   axisVariables,
@@ -13,7 +13,7 @@ import {
   colHeaderLabels,
   rowHeaderLabels,
 } from '../../engine/kmap/layout';
-import { GroupOverlay, type VisualGroup } from './GroupOverlay';
+import { getCellGroupIndices, getCellGroupShadows, GroupBadges, type VisualGroup } from './GroupOverlay';
 
 export interface KMapLayer5VarProps {
   readonly variableNames: readonly string[];
@@ -115,6 +115,9 @@ export const KMapLayer5Var: FC<KMapLayer5VarProps> = ({
                       role="gridcell"
                       tabIndex={0}
                       data-dimmed={isDimmed || undefined}
+                      data-groups={getCellGroupIndices(overlayGroups, m).map((index) => index + 1).join(',') || undefined}
+                      style={overlayGroups.some((group) => group.cellIndices.includes(m)) ? { '--group-shadows': getCellGroupShadows(overlayGroups, m) } as CSSProperties : undefined}
+                      aria-selected={isSelected}
                       aria-label={getCellAriaLabel(m)}
                       onClick={() => onCellClick(m)}
                       onMouseDown={() => onMouseDown(m)}
@@ -125,7 +128,7 @@ export const KMapLayer5Var: FC<KMapLayer5VarProps> = ({
                           onCellClick(m);
                         }
                       }}
-                      className={`relative flex h-12 sm:h-14 w-12 sm:w-14 shrink-0 cursor-pointer flex-col items-center justify-center border-b border-r border-gray-200 transition-colors focus:z-10 focus:outline-hidden focus:ring-2 focus:ring-blue-500 dark:border-gray-800 ${
+                      className={`kmap-cell relative flex h-12 sm:h-14 w-12 sm:w-14 shrink-0 cursor-pointer flex-col items-center justify-center border-b border-r border-gray-200 transition-colors focus:z-10 focus:outline-hidden focus:ring-2 focus:ring-blue-500 dark:border-gray-800 ${overlayGroups.some((group) => group.cellIndices.includes(m)) ? 'grouped' : ''} ${
                         isSelected
                           ? 'bg-blue-100 ring-2 ring-inset ring-blue-600 dark:bg-blue-950/70 dark:ring-blue-400'
                           : isHighlighted
@@ -136,7 +139,7 @@ export const KMapLayer5Var: FC<KMapLayer5VarProps> = ({
                       <span className="absolute top-1 left-1.5 z-[3] text-[8px] font-mono text-gray-400 dark:text-gray-500">
                         {m}
                       </span>
-                      <GroupOverlay groups={overlayGroups} variableCount={5} cellIndex={m} layerFilter={layerIndex} />
+                      <GroupBadges groups={overlayGroups} cellIndex={m} />
                       <span
                         className={`relative z-[3] text-base font-bold font-mono ${
                           val === 1

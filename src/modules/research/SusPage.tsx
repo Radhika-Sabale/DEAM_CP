@@ -87,17 +87,19 @@ export const SusPage: FC = () => {
   };
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
+    <div className="module-page page-column sus-page">
+      <header className="module-page-header">
+        <span className="eyebrow">MODULE 11 · SURVEY</span>
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
           System Usability Scale (SUS)
-        </h2>
-      </div>
+        </h1>
+        <p>Rate the usability of the lab using the standard ten item scale.</p>
+      </header>
 
       {interpretation ? (
         <div className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-xs dark:border-gray-800 dark:bg-gray-900 space-y-6">
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 text-xl font-bold">
-            ✓
+            Submitted
           </div>
 
           <div>

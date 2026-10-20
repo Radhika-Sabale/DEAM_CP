@@ -296,12 +296,10 @@ export const ScenarioEditor: FC<ScenarioEditorProps> = ({
                     <td className="px-3 py-1.5">
                       {isNmi ? (
                         <span className="inline-flex items-center gap-1 font-bold text-amber-600 dark:text-amber-400">
-                          <span aria-hidden="true">⚡</span>
                           NMI
                         </span>
                       ) : (
                         <span className="inline-flex items-center gap-1 font-semibold text-blue-600 dark:text-blue-400">
-                          <span aria-hidden="true">🔔</span>
                           INTR
                         </span>
                       )}
@@ -354,7 +352,7 @@ export const ScenarioEditor: FC<ScenarioEditorProps> = ({
               Import Scenario JSON
             </h4>
             <Button variant="ghost" size="sm" onClick={() => setIsImportOpen(false)}>
-              ✕
+              Remove
             </Button>
           </div>
           <form onSubmit={handleImportSubmit} className="space-y-2">

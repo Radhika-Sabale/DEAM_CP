@@ -76,10 +76,10 @@ export const FlipFlopTiming: FC<FlipFlopTimingProps> = ({ session, className = '
 
   return (
     <div
-      className={`rounded-xl border border-gray-200 bg-white p-5 shadow-xs dark:border-gray-800 dark:bg-gray-900 text-xs space-y-4 ${className}`}
+      className={`flipflop-timing-layout rounded-xl border border-gray-200 bg-white p-5 shadow-xs dark:border-gray-800 dark:bg-gray-900 text-xs space-y-4 ${className}`}
     >
       {/* Waveform Header & Zoom Toolbar */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-3 dark:border-gray-800">
+      <div className="flipflop-timing-header flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-3 dark:border-gray-800">
         <div>
           <h3 className="text-sm font-bold text-gray-900 dark:text-gray-100">
             Timing Waveforms & Signal Inspector
@@ -127,7 +127,7 @@ export const FlipFlopTiming: FC<FlipFlopTimingProps> = ({ session, className = '
 
       {/* Instantaneous Values at Cursor Table */}
       <div className="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-800">
-        <table className="w-full text-left text-xs border-collapse font-mono">
+        <table className="flipflop-signal-table w-full text-left text-xs border-collapse font-mono">
           <thead className="bg-gray-50 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
             <tr>
               <th scope="col" className="p-2 font-bold uppercase tracking-wider text-[11px] font-sans">
@@ -184,7 +184,7 @@ export const FlipFlopTiming: FC<FlipFlopTimingProps> = ({ session, className = '
           className="flex items-center gap-1.5 text-xs font-bold text-blue-600 hover:text-blue-700 dark:text-blue-400"
         >
           <span>
-            {showAuditTable ? '▼ Hide' : '▶ Show'} Complete Trace Event Log ({changes.length} transitions)
+            {showAuditTable ? 'Hide' : 'Show'} Complete Trace Event Log ({changes.length} transitions)
           </span>
         </button>
 

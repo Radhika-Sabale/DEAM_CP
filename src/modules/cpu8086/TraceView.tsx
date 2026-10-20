@@ -48,7 +48,6 @@ export const TraceView: FC<TraceViewProps> = ({
           className="flex items-center justify-between border-b border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200"
         >
           <div className="flex items-center gap-2">
-            <span aria-hidden="true">⏱</span>
             <span className="font-semibold">
               Viewing step {historyIndex + 1} of {historyLength} (read-only)
             </span>
@@ -70,7 +69,7 @@ export const TraceView: FC<TraceViewProps> = ({
           <h3 className="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-gray-400">Execution Trace</h3>
           {historyTruncated && (
             <span className="text-[10px] text-amber-600 dark:text-amber-400 font-semibold" title="Oldest steps discarded to maintain performance">
-              ⚠ Truncated
+              Truncated
             </span>
           )}
         </div>

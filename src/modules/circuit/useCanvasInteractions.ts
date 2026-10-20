@@ -19,14 +19,16 @@ import {
   type Point,
   type Size,
   type Viewport,
-  zoomAt,
+  zoomByStep,
 } from '../../engine/circuit/geometry';
+import { layoutCircuit } from '../../engine/circuit/layout';
 
 export interface UseCanvasInteractionsProps {
   readonly graph: CircuitGraph;
   readonly containerSize: Size;
   readonly onCommitGraph: (nextGraph: CircuitGraph) => void;
   readonly onToggleInput: (nodeId: string) => void;
+  readonly onDeleteResult?: (deleted: boolean) => void;
 }
 
 export interface WiringState {
@@ -43,6 +45,7 @@ export function useCanvasInteractions({
   containerSize,
   onCommitGraph,
   onToggleInput,
+  onDeleteResult,
 }: UseCanvasInteractionsProps) {
   // Viewport transform
   const [viewport, setViewport] = useState<Viewport>({ x: 0, y: 0, zoom: 1.0 });
@@ -95,19 +98,21 @@ export function useCanvasInteractions({
   // Zoom controls
   const handleZoomIn = useCallback(() => {
     const center = { x: containerSize.width / 2, y: containerSize.height / 2 };
-    setViewport((prev) => zoomAt(prev, center, 1.25));
+    setViewport((prev) => zoomByStep(prev, center, 1));
   }, [containerSize]);
 
   const handleZoomOut = useCallback(() => {
     const center = { x: containerSize.width / 2, y: containerSize.height / 2 };
-    setViewport((prev) => zoomAt(prev, center, 0.8));
+    setViewport((prev) => zoomByStep(prev, center, -1));
   }, [containerSize]);
 
   const handleFitToContent = useCallback(() => {
-    const fitted = fitToContent(graph, containerSize);
+    const arranged = layoutCircuit(graph);
+    if (arranged !== graph) onCommitGraph(arranged);
+    const fitted = fitToContent(arranged, containerSize);
     setViewport(fitted);
     setAnnouncement('Fitted circuit to viewport');
-  }, [graph, containerSize]);
+  }, [graph, containerSize, onCommitGraph]);
 
   // Selection handlers
   const handleSelectNode = useCallback(
@@ -143,10 +148,12 @@ export function useCanvasInteractions({
 
   // Delete selected elements
   const handleDeleteSelected = useCallback(() => {
+    if (selectedNodeIds.length === 0 && selectedWireIds.length === 0) {
+      setAnnouncement('Select a component to delete');
+      onDeleteResult?.(false);
+      return;
+    }
     let nextGraph = graph;
-    const deletedNodesCount = selectedNodeIds.length;
-    const deletedWiresCount = selectedWireIds.length;
-
     for (const wireId of selectedWireIds) {
       nextGraph = removeWire(nextGraph, wireId);
     }
@@ -158,9 +165,26 @@ export function useCanvasInteractions({
       onCommitGraph(nextGraph);
       setSelectedNodeIds([]);
       setSelectedWireIds([]);
-      setAnnouncement(`Deleted ${deletedNodesCount} nodes and ${deletedWiresCount} wires`);
+      if (wiring.active && selectedNodeIds.includes(wiring.fromNodeId)) {
+        setWiring({ active: false, fromNodeId: '', fromPin: 0, currentMouseWorld: { x: 0, y: 0 }, targetNodeId: null, targetPin: null });
+      }
+      setFocusedNodeId(null);
+      setAnnouncement('Component deleted.');
+      onDeleteResult?.(true);
     }
-  }, [graph, selectedNodeIds, selectedWireIds, onCommitGraph]);
+  }, [graph, selectedNodeIds, selectedWireIds, onCommitGraph, onDeleteResult, wiring.active, wiring.fromNodeId]);
+
+  useEffect(() => {
+    const onDocumentKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (event.key !== 'Delete' && event.key !== 'Backspace') return;
+      const target = event.target;
+      if (target instanceof HTMLElement && (target.matches('input,select,textarea,button,[role="button"]') || target.isContentEditable)) return;
+      event.preventDefault();
+      handleDeleteSelected();
+    };
+    document.addEventListener('keydown', onDocumentKeyDown);
+    return () => document.removeEventListener('keydown', onDocumentKeyDown);
+  }, [handleDeleteSelected]);
 
   // Pin Wiring Handlers
   const handlePinClick = useCallback(
@@ -236,15 +260,6 @@ export function useCanvasInteractions({
         return;
       }
 
-      // Delete / Backspace removes selected items
-      if (e.key === 'Delete' || e.key === 'Backspace') {
-        const target = e.target as HTMLElement | null;
-        if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA')) return;
-        e.preventDefault();
-        handleDeleteSelected();
-        return;
-      }
-
       // Left / Right navigates through nodes in topological order
       if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
         const ids = topologicalNodeIds.current;
@@ -302,7 +317,6 @@ export function useCanvasInteractions({
       wiring.active,
       cancelWiring,
       handleClearSelection,
-      handleDeleteSelected,
       focusedNodeId,
       graph,
       onCommitGraph,

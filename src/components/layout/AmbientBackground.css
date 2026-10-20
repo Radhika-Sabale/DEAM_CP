@@ -1,0 +1,37 @@
+.ambient-background {
+  position: fixed;
+  z-index: 0;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 36rem 30rem at var(--pointer-x, 50%) var(--pointer-y, 18%), color-mix(in srgb, var(--teal) 10%, transparent), transparent 72%),
+    radial-gradient(ellipse 32rem 28rem at calc(100% - var(--pointer-x, 50%)) calc(100% - var(--pointer-y, 18%)), color-mix(in srgb, var(--pink) 10%, transparent), transparent 72%),
+    radial-gradient(ellipse 34rem 28rem at 100% 0, color-mix(in srgb, var(--lavender) 13%, transparent), transparent 72%);
+  filter: hue-rotate(var(--pointer-hue, 0deg));
+}
+.ambient-background::before,.ambient-background::after {
+  position: absolute;
+  width: 35rem;
+  height: 26rem;
+  border-radius: 50%;
+  content: '';
+  filter: blur(72px);
+  opacity: .13;
+  will-change: transform;
+}
+.ambient-background::before {
+  top: 38%; left: 22%;
+  background: var(--mint);
+  animation: ambient-drift 22s ease-in-out infinite alternate;
+}
+.ambient-background::after {
+  right: 4%; bottom: -7%;
+  background: var(--yellow);
+  animation: ambient-drift 25s ease-in-out -8s infinite alternate-reverse;
+}
+:root.dark .ambient-background,:root[data-theme='dark'] .ambient-background { opacity: .48; }
+@keyframes ambient-drift { to { transform: translate3d(4rem,-2rem,0) scale(1.06); } }
+@media (prefers-reduced-motion: reduce) {
+  .ambient-background::before,.ambient-background::after { animation: none; }
+}

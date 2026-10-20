@@ -77,7 +77,7 @@ describe('TruthTableCompare component', () => {
     render(<TruthTableCompare graph={graph} project={project} />);
 
     expect(screen.getByText(/Mismatch detected/i)).toBeInTheDocument();
-    expect(screen.getAllByText(/❌ Mismatch/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Mismatch/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/inverted across all care rows/i)).toBeInTheDocument();
   });
 

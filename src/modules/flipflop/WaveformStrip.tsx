@@ -142,9 +142,9 @@ export const WaveformStrip: FC<WaveformStripProps> = ({
                 y1={24}
                 x2={x}
                 y2={svgHeight - 20}
-                stroke="#e5e7eb"
+                stroke="var(--line)"
                 strokeDasharray="2,2"
-                className="dark:stroke-gray-800"
+                opacity={0.72}
               />
               <text
                 x={x}
@@ -174,8 +174,8 @@ export const WaveformStrip: FC<WaveformStripProps> = ({
                 y1={trackHeight}
                 x2={svgWidth}
                 y2={trackHeight}
-                stroke="#f3f4f6"
-                className="dark:stroke-gray-900"
+                stroke="var(--line)"
+                opacity={0.8}
               />
 
               {/* Signal Name Label */}
@@ -183,7 +183,8 @@ export const WaveformStrip: FC<WaveformStripProps> = ({
                 x={labelWidth - 12}
                 y={trackHeight / 2 + 3}
                 textAnchor="end"
-                className="text-[11px] font-bold fill-gray-700 dark:fill-gray-300"
+                className="text-[11px] font-bold"
+                fill="var(--muted)"
               >
                 {sig.label}
               </text>
@@ -288,7 +289,7 @@ export const WaveformStrip: FC<WaveformStripProps> = ({
                   textAnchor="middle"
                   className="text-[9px] font-bold fill-blue-700 dark:fill-blue-300 font-sans"
                 >
-                  ▲ Edge: {ev.operation}
+                  Edge: {ev.operation}
                 </text>
               </g>
             );
@@ -303,7 +304,7 @@ export const WaveformStrip: FC<WaveformStripProps> = ({
                   textAnchor="middle"
                   className="text-[9px] font-bold fill-amber-700 dark:fill-amber-300 font-sans"
                 >
-                  ⚡ Race #{ev.toggleIndex}
+                  Race #{ev.toggleIndex}
                 </text>
               </g>
             );
@@ -318,7 +319,7 @@ export const WaveformStrip: FC<WaveformStripProps> = ({
                   textAnchor="middle"
                   className="text-[9px] font-bold fill-red-700 dark:fill-red-400 font-sans"
                 >
-                  ⚠ Invalid Input
+                  Invalid Input
                 </text>
               </g>
             );
@@ -333,7 +334,7 @@ export const WaveformStrip: FC<WaveformStripProps> = ({
                   textAnchor="middle"
                   className="text-[9px] font-bold fill-red-700 dark:fill-red-400 font-sans"
                 >
-                  ⚠ PRE/CLR Conflict
+                  PRE/CLR Conflict
                 </text>
               </g>
             );
@@ -348,7 +349,7 @@ export const WaveformStrip: FC<WaveformStripProps> = ({
                   textAnchor="middle"
                   className="text-[9px] font-bold fill-red-700 dark:fill-red-400 font-sans"
                 >
-                  ⏱ {ev.violationType === 'setup' ? 'Setup' : 'Hold'} Violation
+                  {ev.violationType === 'setup' ? 'Setup' : 'Hold'} Violation
                 </text>
               </g>
             );

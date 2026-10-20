@@ -373,9 +373,9 @@ export const StudentModePanel: FC<StudentModePanelProps> = ({
           <div className="flex items-center gap-2">
             <span className="text-base font-bold">
               {groupSetResult.valid && groupSetResult.isMinimal
-                ? '✓ Valid & Minimal Solution!'
+                ? 'Valid & Minimal Solution!'
                 : groupSetResult.valid
-                ? 'ℹ Correct but Not Minimal'
+                ? 'Correct but Not Minimal'
                 : '✕ Incomplete or Invalid Cover'}
             </span>
           </div>

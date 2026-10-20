@@ -431,7 +431,7 @@ export const PracticePanel: FC<PracticePanelProps> = ({ session, className = '' 
                         }}
                         className="rounded-lg bg-emerald-600 px-3 py-1.5 text-xs font-semibold text-white shadow-xs hover:bg-emerald-700 dark:bg-emerald-500"
                       >
-                        ▶ Apply Predicted Pulse to Simulator
+                        Apply Predicted Pulse to Simulator
                       </button>
                     )}
                   </div>

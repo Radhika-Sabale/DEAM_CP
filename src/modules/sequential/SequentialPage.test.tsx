@@ -31,7 +31,7 @@ describe('SequentialPage component', () => {
     useUiStore.setState({ currentModule: 'sequential-designer' });
   });
 
-  it('renders top-level page with PipelineStepper, tabs, WizardStepper, and K-Map handoff', () => {
+  it('renders the module heading, tabs, WizardStepper, and K-Map handoff', () => {
     render(<SequentialPage />);
 
     // Header title
@@ -43,8 +43,7 @@ describe('SequentialPage component', () => {
     expect(counterTab).toBeInTheDocument();
     expect(detectorTab).toBeInTheDocument();
 
-    // Global Pipeline progress
-    expect(screen.getByRole('navigation', { name: /Design synthesis pipeline stages/i })).toBeInTheDocument();
+    expect(screen.getByText('MODULE 06')).toBeInTheDocument();
 
     // Wizard stepper
     expect(screen.getByRole('navigation', { name: /Sequential design steps/i })).toBeInTheDocument();

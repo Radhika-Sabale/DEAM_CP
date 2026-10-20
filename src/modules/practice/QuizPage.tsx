@@ -11,12 +11,13 @@ import { type FC, useEffect, useState } from 'react';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { AVAILABLE_TOPICS, buildQuiz, scoreQuiz } from '../../engine/practice/quiz';
-import type { Quiz, QuizResult } from '../../engine/practice/types';
+import type { Difficulty, Quiz, QuizQuestion, QuizResult } from '../../engine/practice/types';
 import { useStepTimer } from '../../hooks/useStepTimer';
 import { useLogStore } from '../../store/logStore';
 import { useStudyStore } from '../../store/studyStore';
 import { QuizNavigator } from './QuizNavigator';
 import { QuizReview } from './QuizReview';
+import { restoreSession } from '../../auth/supabaseAuth';
 
 export const QuizPage: FC = () => {
   const [topic, setTopic] = useState<string>(AVAILABLE_TOPICS[0] ?? 'boolean-tool');
@@ -28,6 +29,10 @@ export const QuizPage: FC = () => {
   const [isSubmitted, setIsSubmitted] = useState<boolean>(false);
   const [quizResult, setQuizResult] = useState<QuizResult | null>(null);
   const [confirmModalOpen, setConfirmModalOpen] = useState<boolean>(false);
+  const [aiDifficulty, setAiDifficulty] = useState<Difficulty>('medium');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [generationError, setGenerationError] = useState('');
+  const [isAiGenerated, setIsAiGenerated] = useState(false);
 
   // Active step timer for informational display
   const timer = useStepTimer();
@@ -35,6 +40,8 @@ export const QuizPage: FC = () => {
   const handleInitQuiz = (selectedTopic: string, currentSeed: number) => {
     const q = buildQuiz(selectedTopic, currentSeed);
     setQuiz(q);
+    setIsAiGenerated(false);
+    setGenerationError('');
     setCurrentIndex(0);
     setAnswers({});
     setFlaggedIds(new Set());
@@ -48,6 +55,56 @@ export const QuizPage: FC = () => {
     handleInitQuiz(topic, seed);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [topic, seed]);
+
+  const handleGenerateQuiz = async () => {
+    setIsGenerating(true);
+    setGenerationError('');
+    try {
+      const session = await restoreSession();
+      const response = await fetch('/api/quiz/generate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json', ...(session ? { Authorization: `Bearer ${session.access_token}` } : {}) },
+        body: JSON.stringify({ topicId: topic, difficulty: aiDifficulty, questionCount: 10 }),
+      });
+      const payload = await response.json() as { error?: string; questions?: Array<{ question: string; options: string[]; correctIndex: number; explanation: string }> };
+      if (!response.ok || !payload.questions || payload.questions.length !== 10) {
+        throw new Error(payload.error || 'Could not generate a quiz. The static quiz remains available.');
+      }
+      const questions: QuizQuestion[] = payload.questions.map((item, index) => ({
+        id: `ai-${topic}-${index + 1}`,
+        type: 'multiple-choice',
+        difficulty: aiDifficulty,
+        prompt: item.question,
+        options: item.options,
+        correctOptionIndex: item.correctIndex,
+        correctAnswer: item.options[item.correctIndex] ?? '',
+        explanation: item.explanation,
+        subSkill: 'AI-generated',
+      }));
+      const difficultyMix = { easy: 0, medium: 0, hard: 0 };
+      difficultyMix[aiDifficulty] = questions.length;
+      setQuiz({ topic, seed, difficultyMix, questions });
+      setCurrentIndex(0);
+      setAnswers({});
+      setFlaggedIds(new Set());
+      setIsSubmitted(false);
+      setQuizResult(null);
+      setIsAiGenerated(true);
+      timer.reset();
+      timer.start();
+    } catch (error) {
+      setQuiz(buildQuiz(topic, seed));
+      setCurrentIndex(0);
+      setAnswers({});
+      setFlaggedIds(new Set());
+      setIsSubmitted(false);
+      setQuizResult(null);
+      setIsAiGenerated(false);
+      setGenerationError(error instanceof Error ? error.message : 'Could not generate a quiz. The static quiz remains available.');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   if (!quiz) return null;
 
@@ -116,13 +173,15 @@ export const QuizPage: FC = () => {
   const formattedTime = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
 
   return (
-    <div className="space-y-6">
+    <div className="module-page page-column quiz-page">
       {/* Quiz Header Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <header className="module-page-header flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
+          <span className="eyebrow">MODULE 09 · QUIZZES</span>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
             Formative Concept Quiz
-          </h2>
+          </h1>
+          <p>Choose a topic, answer each question, and review the results.</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -143,10 +202,19 @@ export const QuizPage: FC = () => {
             ))}
           </select>
           <div className="rounded-md bg-gray-100 px-2.5 py-1 text-xs font-mono text-gray-600 dark:bg-gray-800 dark:text-gray-300">
-            ⏱ {formattedTime}
+            Time {formattedTime}
           </div>
+          <label className="sr-only" htmlFor="quiz-ai-difficulty">Generated quiz difficulty</label>
+          <select id="quiz-ai-difficulty" value={aiDifficulty} onChange={(event) => setAiDifficulty(event.target.value as Difficulty)} disabled={isSubmitted || isGenerating} aria-label="Generated quiz difficulty" className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">
+            <option value="easy">Easy</option><option value="medium">Medium</option><option value="hard">Hard</option>
+          </select>
+          <Button variant="secondary" size="sm" onClick={handleGenerateQuiz} disabled={isSubmitted || isGenerating}>
+            {isGenerating ? 'Generating quiz…' : 'Generate new quiz'}
+          </Button>
         </div>
-      </div>
+      </header>
+
+      {generationError && <p role="status" className="text-sm text-muted-foreground">{generationError}</p>}
 
       {isSubmitted && quizResult ? (
         <QuizReview
@@ -175,6 +243,7 @@ export const QuizPage: FC = () => {
                 <span className="inline-block rounded-md bg-blue-100 px-2.5 py-0.5 text-xs font-semibold text-blue-800 dark:bg-blue-900/60 dark:text-blue-300">
                   Question {currentIndex + 1} of {quiz.questions.length} • {currentQ.difficulty.toUpperCase()}
                 </span>
+                {isAiGenerated && <span className="ml-2 inline-block rounded-md border border-border px-2.5 py-0.5 text-xs font-medium text-muted-foreground">AI-generated</span>}
                 <p className="mt-2 text-base font-semibold text-gray-900 dark:text-gray-100">
                   {currentQ.prompt}
                 </p>
@@ -186,7 +255,7 @@ export const QuizPage: FC = () => {
                 onClick={handleToggleFlag}
                 className="shrink-0 text-xs gap-1.5"
               >
-                <span>{isFlagged ? '⚑ Flagged' : '⚐ Flag for review'}</span>
+                <span>{isFlagged ? 'Flagged' : 'Flag for review'}</span>
               </Button>
             </div>
 

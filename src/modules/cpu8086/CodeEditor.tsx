@@ -212,7 +212,7 @@ export const CodeEditor: FC<CodeEditorProps> = ({
                   <span className="w-4 text-center shrink-0">
                     {isCurrent && (
                       <span className="text-amber-600 dark:text-amber-400 font-bold" title="Next instruction">
-                        ▶<span className="sr-only">next</span>
+                        Current
                       </span>
                     )}
                   </span>
@@ -221,7 +221,7 @@ export const CodeEditor: FC<CodeEditorProps> = ({
                   <span className="w-10 shrink-0 text-left">
                     {errorMsg && (
                       <span className="inline-flex items-center gap-0.5 text-[9px] font-bold text-red-600 dark:text-red-400">
-                        ⚠<span>Error</span>
+                        <span>Error</span>
                       </span>
                     )}
                   </span>
@@ -269,7 +269,6 @@ export const CodeEditor: FC<CodeEditorProps> = ({
           className="border-t border-red-200 bg-red-50/70 p-3 dark:border-red-900/60 dark:bg-red-950/30 overflow-x-auto"
         >
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-red-600 dark:text-red-400 font-bold text-xs" aria-hidden="true">⚠</span>
             <h4 className="text-xs font-bold text-red-800 dark:text-red-300">
               Assembler Errors ({errors.length})
             </h4>

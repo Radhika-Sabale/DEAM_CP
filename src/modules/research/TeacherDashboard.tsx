@@ -131,15 +131,16 @@ export const TeacherDashboard: React.FC = () => {
   ];
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
+    <div className="module-page page-column teacher-dashboard-page">
+      <header className="module-page-header">
+        <span className="eyebrow">MODULE 12 · RESEARCH</span>
+        <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
           Teacher &amp; Researcher Dashboard
-        </h2>
+        </h1>
         <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
           Local analysis of student problem-solving, cognitive misconceptions, and curriculum efficacy.
         </p>
-      </div>
+      </header>
 
       <DashboardImportSection
         onEventsLoaded={handleEventsLoaded}

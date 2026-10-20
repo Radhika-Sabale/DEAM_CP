@@ -52,7 +52,7 @@ export const SimulationControls: FC<SimulationControlsProps> = ({
           aria-live="assertive"
           className="flex items-center gap-2 rounded-lg border border-red-300 bg-red-50 p-3 text-xs text-red-800 dark:border-red-800 dark:bg-red-950/60 dark:text-red-200"
         >
-          <span className="font-bold text-red-600 dark:text-red-400">⚠️ Simulation Oscillation:</span>
+          <span className="font-bold text-red-600 dark:text-red-400">Simulation Oscillation:</span>
           <span>{oscillationMessage}</span>
         </div>
       )}
@@ -63,7 +63,7 @@ export const SimulationControls: FC<SimulationControlsProps> = ({
         <div className="flex flex-wrap items-center gap-2">
           {isPlaying ? (
             <Button variant="secondary" size="sm" onClick={onPause} aria-label="Pause continuous simulation">
-              ⏸ Pause
+              Pause
             </Button>
           ) : (
             <Button
@@ -73,7 +73,7 @@ export const SimulationControls: FC<SimulationControlsProps> = ({
               disabled={status === 'oscillating'}
               aria-label="Play continuous clock & event simulation"
             >
-              ▶ Play
+              Play
             </Button>
           )}
 
@@ -111,7 +111,7 @@ export const SimulationControls: FC<SimulationControlsProps> = ({
           </Button>
 
           <Button variant="ghost" size="sm" onClick={onReset} aria-label="Reset simulation to time t = 0">
-            ↺ Reset
+            Reset
           </Button>
         </div>
 
@@ -134,7 +134,7 @@ export const SimulationControls: FC<SimulationControlsProps> = ({
                 : 'bg-amber-100 text-amber-800 dark:bg-amber-900/60 dark:text-amber-200'
             }`}
           >
-            <span>{status === 'ok' ? '✓' : status === 'oscillating' ? '⚠' : '⌛'}</span>
+            <span>{status === 'ok' ? 'Valid' : status === 'oscillating' ? 'Oscillating' : 'Waiting'}</span>
             <span className="capitalize">{status === 'ok' ? 'Settled' : status}</span>
           </span>
         </div>

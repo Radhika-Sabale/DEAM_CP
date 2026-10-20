@@ -170,7 +170,7 @@ export const IvtViewer: FC<IvtViewerProps> = ({
               disabled={currentPage === 0}
               aria-label="Previous page of vectors"
             >
-              ◀
+              Previous
             </Button>
             <span className="font-mono text-[11px] text-gray-500">
               {currentPage + 1}/{totalPages}
@@ -182,7 +182,7 @@ export const IvtViewer: FC<IvtViewerProps> = ({
               disabled={currentPage >= totalPages - 1}
               aria-label="Next page of vectors"
             >
-              ▶
+              Next
             </Button>
           </div>
         </div>

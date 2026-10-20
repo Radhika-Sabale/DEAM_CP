@@ -4,10 +4,10 @@
  */
 
 /** Minimum permitted viewport zoom factor */
-export const MIN_ZOOM = 0.25;
+export const MIN_ZOOM = 0.4;
 
 /** Maximum permitted viewport zoom factor */
-export const MAX_ZOOM = 3.0;
+export const MAX_ZOOM = 2.0;
 
 /**
  * 2D point coordinate in Cartesian plane.
@@ -100,4 +100,17 @@ export function zoomAt(
     x: screenPoint.x - worldX * newZoom,
     y: screenPoint.y - worldY * newZoom,
   };
+}
+
+/** Applies a fixed percentage-point zoom step while preserving the screen anchor. */
+export function zoomByStep(
+  viewport: Viewport,
+  screenPoint: Point,
+  direction: -1 | 1,
+  step = 0.1,
+  minZoom = MIN_ZOOM,
+  maxZoom = MAX_ZOOM
+): Viewport {
+  const targetZoom = Math.min(maxZoom, Math.max(minZoom, viewport.zoom + direction * step));
+  return zoomAt(viewport, screenPoint, targetZoom / viewport.zoom, minZoom, maxZoom);
 }

@@ -87,13 +87,14 @@ export const PrePostTestPage: FC = () => {
   const currentItem = items[currentIndex];
 
   return (
-    <div className="space-y-6">
+    <div className="module-page page-column prepost-page">
       {/* Header and Stage Switcher */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <header className="module-page-header flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
+          <span className="eyebrow">MODULE 10 · ASSESSMENT</span>
+          <h1 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-gray-100">
             Diagnostic Assessment ({stage === 'pre' ? 'Pre-Test' : 'Post-Test'})
-          </h2>
+          </h1>
           <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
             Allocated Form: <span className="font-bold text-blue-600 dark:text-blue-400">Form {assignedForm}</span>
           </p>
@@ -131,7 +132,7 @@ export const PrePostTestPage: FC = () => {
             Post-Test
           </button>
         </div>
-      </div>
+      </header>
 
       {/* Strict Research Constraint Advisory */}
       <div className="rounded-lg border border-amber-200 bg-amber-50 p-4 text-xs text-amber-900 dark:border-amber-900/50 dark:bg-amber-950/40 dark:text-amber-200">
@@ -143,7 +144,7 @@ export const PrePostTestPage: FC = () => {
       {isCompleted ? (
         <div className="rounded-xl border border-gray-200 bg-white p-8 text-center shadow-xs dark:border-gray-800 dark:bg-gray-900 space-y-4">
           <div className="inline-flex h-12 w-12 items-center justify-center rounded-full bg-emerald-100 text-emerald-600 dark:bg-emerald-950/60 dark:text-emerald-400 text-xl font-bold">
-            ✓
+            Completed
           </div>
           <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100">
             Assessment Completed
@@ -218,7 +219,7 @@ export const PrePostTestPage: FC = () => {
                   >
                     <span>{idx + 1}</span>
                     <span className="block text-[9px] font-normal">
-                      {isAns ? '✓ Ans' : '○ Pend'}
+                      {isAns ? 'Answered' : 'Pending'}
                     </span>
                   </button>
                 );
