@@ -18,6 +18,8 @@ function evaluateBinaryRef(type: GateType, inputs: readonly (0 | 1)[]): 0 | 1 {
   switch (type) {
     case 'NOT':
       return inputs[0] === 1 ? 0 : 1;
+    case 'BUFFER':
+      return inputs[0] ?? 0;
     case 'AND':
       return inputs.every((x) => x === 1) ? 1 : 0;
     case 'OR':
@@ -140,6 +142,14 @@ describe('gateLogic', () => {
     it('returns X for NOT with arity !== 1', () => {
       expect(evaluateGate('NOT', [])).toBe('X');
       expect(evaluateGate('NOT', [0, 1])).toBe('X');
+    });
+
+    it('passes a single input through BUFFER and preserves unknown', () => {
+      expect(evaluateGate('BUFFER', [0])).toBe(0);
+      expect(evaluateGate('BUFFER', [1])).toBe(1);
+      expect(evaluateGate('BUFFER', ['X'])).toBe('X');
+      expect(evaluateGate('BUFFER', [])).toBe('X');
+      expect(evaluateGate('BUFFER', [0, 1])).toBe('X');
     });
 
     it('returns X for multi-input gates with arity < 2 or > 8', () => {

@@ -226,7 +226,12 @@ export function useCanvasInteractions({
             targetNodeId: null,
             targetPin: null,
           });
+        } else {
+          setAnnouncement('A wire must end at an input pin.');
         }
+      }
+      if (!wiring.active && direction === 'in') {
+        setAnnouncement('Start a connection from an output pin.');
       }
     },
     [wiring, graph, onCommitGraph]

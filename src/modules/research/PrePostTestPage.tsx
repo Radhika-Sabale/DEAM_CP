@@ -13,6 +13,7 @@ import { Modal } from '../../components/ui/Modal';
 import { FORM_A_ITEMS, FORM_B_ITEMS, scoreTest } from '../../engine/evaluation/prepost';
 import type { PrePostItem } from '../../engine/evaluation/types';
 import { useLogStore } from '../../store/logStore';
+import { requireAccount } from '../../auth/requireAccount';
 import { useStudyStore } from '../../store/studyStore';
 import { PrePostQuestionCard } from './PrePostQuestionCard';
 
@@ -47,7 +48,7 @@ export const PrePostTestPage: FC = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const submitResult = () => {
     const timestamp = new Date().toISOString();
     const result = scoreTest(assignedForm, answers, timestamp);
 
@@ -67,6 +68,8 @@ export const PrePostTestPage: FC = () => {
 
     setIsCompleted(true);
   };
+
+  const handleSubmit = () => requireAccount('Sign in to submit your assessment results.', submitResult);
 
   const handleConfirmUnlock = () => {
     if (stage === 'pre') unlockPretest();

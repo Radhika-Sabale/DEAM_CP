@@ -158,7 +158,7 @@ export function setGateInputCount(
   }
 
   const validCount =
-    targetNode.gateType === 'NOT'
+    targetNode.gateType === 'NOT' || targetNode.gateType === 'BUFFER'
       ? 1
       : Math.min(8, Math.max(2, Math.floor(count)));
 

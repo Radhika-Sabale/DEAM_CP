@@ -5,7 +5,7 @@
  * Wires local state directly to the global project store and pipeline stepper.
  */
 
-import { type FC, useCallback, useEffect, useState } from 'react';
+import { type FC, useCallback, useEffect, useRef, useState } from 'react';
 import type { BoolNode, TruthTable } from '../../types/ast';
 import {
   buildTruthTable,
@@ -34,6 +34,8 @@ export interface BooleanPageProps {
 
 export const BooleanPage: FC<BooleanPageProps> = ({ onStepEvent }) => {
   const project = useProjectStore(selectCurrentProject);
+  const projectExpressionRef = useRef(project.expression);
+  projectExpressionRef.current = project.expression;
   const applyPatch = useProjectStore((state) => state.applyPatch);
   const setModule = useUiStore((state) => state.setModule);
 
@@ -77,7 +79,9 @@ export const BooleanPage: FC<BooleanPageProps> = ({ onStepEvent }) => {
           expression: result.ast,
           variables: result.variables,
           truthTable: newTable,
+          ...(projectExpressionRef.current && toString(projectExpressionRef.current) === toString(result.ast) ? {} : { kmap: undefined, minimizedExpression: undefined }),
         });
+        projectExpressionRef.current = result.ast;
       } else {
         setCurrentAst(null);
       }

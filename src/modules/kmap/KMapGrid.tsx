@@ -248,7 +248,7 @@ export const KMapGrid: FC<KMapGridProps> = ({
         />
       ) : (
         /* Standard 2, 3, or 4 variable grid */
-        <div ref={gridContainerRef} className="relative inline-block overflow-x-auto p-2">
+        <div ref={gridContainerRef} className="relative kmap-grid-scroll overflow-x-auto p-2">
           <div
             role="grid"
             aria-label={`${variableCount}-variable Karnaugh Map`}
@@ -278,6 +278,7 @@ export const KMapGrid: FC<KMapGridProps> = ({
                   key={`col-${cIdx}`}
                   role="columnheader"
                   className="flex h-8 w-14 sm:w-16 shrink-0 items-center justify-center border-b border-r border-gray-200 bg-gray-50 font-mono text-xs font-semibold text-gray-700 dark:border-gray-800 dark:bg-gray-900 dark:text-gray-300"
+                  style={{ width: 'var(--kmap-cell-size)', height: 'calc(var(--kmap-cell-size) * .5)' }}
                 >
                   {cLabel}
                 </div>
@@ -310,7 +311,7 @@ export const KMapGrid: FC<KMapGridProps> = ({
                       tabIndex={0}
                       aria-selected={isSelected}
                       data-groups={getCellGroupIndices(overlayGroups, m).map((index) => index + 1).join(',') || undefined}
-                      style={overlayGroups.some((group) => group.cellIndices.includes(m)) ? { '--group-shadows': getCellGroupShadows(overlayGroups, m) } as CSSProperties : undefined}
+                      style={{ width: 'var(--kmap-cell-size)', height: 'var(--kmap-cell-size)', ...(overlayGroups.some((group) => group.cellIndices.includes(m)) ? { '--group-shadows': getCellGroupShadows(overlayGroups, m) } : {}) } as CSSProperties}
                       data-dimmed={isDimmed || undefined}
                       data-value={String(val)}
                       aria-label={getCellAriaLabel(m)}

@@ -12,7 +12,7 @@
 
 import '@testing-library/jest-dom';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { useLogStore } from '../../store/logStore';
 import { CONSENT_TEXT_PLACEHOLDER, useStudyStore } from '../../store/studyStore';
 import { ParticipantSetup } from './ParticipantSetup';
@@ -24,6 +24,10 @@ import { TeacherDashboard } from './TeacherDashboard';
 import { toCsv } from '../../engine/evaluation/csvExport';
 
 describe('Stage 11C Full Walkthrough Verification', () => {
+  const continueAsAuthenticated = (event: Event) => (event as CustomEvent<{ continueAction: () => void }>).detail.continueAction();
+  beforeEach(() => window.addEventListener('deam:require-account', continueAsAuthenticated));
+  afterEach(() => window.removeEventListener('deam:require-account', continueAsAuthenticated));
+
   it('executes the full participant, practice, quiz, SUS, dashboard, and deletion lifecycle', async () => {
     // 0. Reset stores
     useLogStore.getState().clearLog();

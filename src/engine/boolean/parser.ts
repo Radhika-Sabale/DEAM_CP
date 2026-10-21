@@ -128,7 +128,7 @@ export function parse(input: string, options?: ParseOptions): ParseResult {
 
   function parsePostfix(prevOp?: Token): BoolNode {
     let node = parsePrimary(prevOp);
-    while (peek().type === 'apostrophe') {
+    while (peek().type === 'apostrophe' || (peek().type === 'not' && peek().value === '!')) {
       const apos = advance();
       node = { type: 'not', child: node, span: span(node.span ? node.span.start : apos.start, apos.span.end) };
     }

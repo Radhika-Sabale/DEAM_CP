@@ -15,7 +15,8 @@ import { AppShell } from './components/layout/AppShell';
 import { HomePage } from './components/layout/HomePage';
 import { SendToNextButton } from './components/layout/SendToNextButton';
 import { LoginPage } from './auth/LoginPage';
-import { isAuthConfigured, restoreSession, signOut, verifyTeacherAccess, type AuthSession } from './auth/supabaseAuth';
+import { isAuthConfigured, restoreSession, signOut, subscribeAuthState, verifyTeacherAccess, type AuthSession } from './auth/supabaseAuth';
+import { Modal } from './components/ui/Modal';
 import { useTheme } from './hooks/useTheme';
 import { getModule, MODULE_REGISTRY } from './modules/registry';
 import { createDebouncedAutosave, saveProject } from './store/persistence';
@@ -32,14 +33,33 @@ export const App: FC = () => {
   const [routeNotFound, setRouteNotFound] = useState(false);
   const [routeHome, setRouteHome] = useState(false);
   const [routeLogin, setRouteLogin] = useState(false);
+  const [loginMode, setLoginMode] = useState<'signin' | 'signup'>('signin');
   const [authSession, setAuthSession] = useState<AuthSession | null>(null);
-  const [authReady, setAuthReady] = useState(!isAuthConfigured);
+  const [authReady, setAuthReady] = useState(!isAuthConfigured());
   const [teacherAccess, setTeacherAccess] = useState<'checking' | 'allowed' | 'denied'>('checking');
+  const [authPrompt, setAuthPrompt] = useState<string | null>(null);
+  const [authPromptMode, setAuthPromptMode] = useState<'signin' | 'signup'>('signin');
+  const pendingAuthAction = useRef<(() => void) | null>(null);
   const previousModule = useRef(currentModuleId);
   const currentModuleRef = useRef(currentModuleId);
   currentModuleRef.current = currentModuleId;
 
   useEffect(() => {
+    return subscribeAuthState(setAuthSession);
+  }, []);
+
+  useEffect(() => {
+    const onRequireAccount = (event: Event) => {
+      const detail = (event as CustomEvent<{ reason: string; continueAction: () => void }>).detail;
+      if (authSession) detail.continueAction();
+      else requestSignIn(detail.reason, detail.continueAction);
+    };
+    window.addEventListener('deam:require-account', onRequireAccount);
+    return () => window.removeEventListener('deam:require-account', onRequireAccount);
+  }, [authSession]);
+
+  useEffect(() => {
+    if (!isAuthConfigured()) return;
     let active = true;
     restoreSession().then((session) => {
       if (!active) return;
@@ -53,7 +73,8 @@ export const App: FC = () => {
   useEffect(() => {
     const handleHashSync = (): void => {
       const raw = window.location.hash.replace(/^#\/?/, '');
-      if (raw === 'login') {
+      if (raw.startsWith('login')) {
+        setLoginMode(raw.includes('mode=signup') ? 'signup' : 'signin');
         setRouteLogin(true);
         setRouteHome(false);
         setRouteNotFound(false);
@@ -108,29 +129,11 @@ export const App: FC = () => {
   }, [setModule]);
 
   useEffect(() => {
-    if (!authReady) return;
-    if (!isAuthConfigured) return;
-    if (!authSession) {
-      if (!routeLogin) {
-        try { if (window.location.hash && window.location.hash !== '#/login') window.sessionStorage.setItem('deam:auth:returnTo', window.location.hash); } catch { /* Route still redirects if storage is unavailable. */ }
-        window.history.replaceState(null, '', '#/login');
-        setRouteLogin(true);
-      }
-      return;
-    }
-    if (routeLogin) {
-      let target = '#/home';
-      try { target = window.sessionStorage.getItem('deam:auth:returnTo') || target; window.sessionStorage.removeItem('deam:auth:returnTo'); } catch { /* Default to home. */ }
-      window.location.hash = target === '#/login' ? '#/home' : target;
-    }
-  }, [authReady, authSession, routeLogin]);
-
-  useEffect(() => {
     if (!authReady || currentModuleId !== 'teacher-dashboard') {
       setTeacherAccess('checking');
       return;
     }
-    if (!isAuthConfigured || !authSession) {
+    if (!isAuthConfigured() || !authSession) {
       setTeacherAccess('denied');
       return;
     }
@@ -159,7 +162,7 @@ export const App: FC = () => {
     }, 1200);
 
     const unsubscribe = useProjectStore.subscribe((state) => {
-      if (state.isDirty) {
+      if (authSession && state.isDirty) {
         debouncedSave(state.project);
       }
     });
@@ -168,24 +171,39 @@ export const App: FC = () => {
       debouncedSave.cancel();
       unsubscribe();
     };
-  }, []);
+  }, [authSession]);
 
   const activeModule = getModule(currentModuleId);
   const ActiveComponent = activeModule?.component;
 
-  if (!authReady) return <div className="login-page" role="status">Checking sign-in…</div>;
-  if (routeLogin || (isAuthConfigured && !authSession)) {
-    return <LoginPage onAuthenticated={(session) => { setAuthSession(session); setRouteLogin(true); }} />;
+  const requestSignIn = (reason: string, afterSignIn?: () => void, mode: 'signin' | 'signup' = 'signin') => {
+    pendingAuthAction.current = afterSignIn ?? null;
+    setAuthPromptMode(mode);
+    setAuthPrompt(reason);
+  };
+  const handleAuthenticated = (session: AuthSession) => {
+    setAuthSession(session);
+    setRouteLogin(false);
+    setAuthPrompt(null);
+    const action = pendingAuthAction.current;
+    pendingAuthAction.current = null;
+    action?.();
+    if (window.location.hash.startsWith('#/login')) window.location.hash = `#/${currentModuleRef.current}`;
+  };
+
+  if (routeLogin) {
+    return <LoginPage onAuthenticated={handleAuthenticated} initialMode={loginMode} />;
   }
 
   const handleLogout = async () => {
     await signOut(authSession);
     setAuthSession(null);
-    window.location.hash = '#/login';
+    window.location.hash = '#/home';
   };
 
   return (
-    <AppShell onLogout={authSession ? handleLogout : undefined}>
+    <>
+    <AppShell onLogout={authSession ? handleLogout : undefined} authUser={authSession?.user} onRequestSignIn={requestSignIn}>
       <div className="space-y-6">
         {routeNotFound ? (
           <section className="module-card not-found-page p-8 text-center">
@@ -197,7 +215,7 @@ export const App: FC = () => {
         ) : currentModuleId === 'teacher-dashboard' && teacherAccess === 'checking' ? (
           <div role="status" className="module-card p-6 text-sm text-muted-foreground">Verifying teacher access…</div>
         ) : currentModuleId === 'teacher-dashboard' && teacherAccess === 'denied' ? (
-          <section role="alert" className="module-card p-6"><h1>{isAuthConfigured ? 'Teacher access required' : 'Login not configured'}</h1><p>{isAuthConfigured ? 'This account does not have the teacher role.' : 'Configure Supabase sign-in before opening the teacher dashboard.'}</p></section>
+          <section role="alert" className="module-card p-6"><h1>{isAuthConfigured() ? 'Teacher access required' : 'Login not configured'}</h1><p>{isAuthConfigured() ? authSession ? 'This account does not have the teacher role.' : 'Teacher access only. Sign in with a teacher account to continue.' : 'Configure Supabase sign-in before opening the teacher dashboard.'}</p>{!authSession && isAuthConfigured() && <button type="button" className="login-submit mt-4" onClick={() => requestSignIn('Sign in with a teacher account to continue.')}>Sign in</button>}</section>
         ) : <Suspense
           fallback={
             <div
@@ -226,6 +244,10 @@ export const App: FC = () => {
         )}
       </div>
     </AppShell>
+    <Modal isOpen={Boolean(authPrompt)} onClose={() => { setAuthPrompt(null); pendingAuthAction.current = null; }} title="Sign in to continue">
+      <LoginPage onAuthenticated={handleAuthenticated} reason={authPrompt ?? undefined} initialMode={authPromptMode} />
+    </Modal>
+    </>
   );
 };
 

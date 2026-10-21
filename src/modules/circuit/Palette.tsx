@@ -4,7 +4,7 @@
  * Allows adding logic gates, terminals, and sources via click, keyboard Enter, or drag-and-drop.
  */
 
-import { type FC, type DragEvent, useState } from 'react';
+import { type FC, type DragEvent, type PointerEvent as ReactPointerEvent, useRef, useState } from 'react';
 import type { CircuitGraph, CircuitNode, GateType } from '../../types/circuit';
 import { GateSymbolGraphic, type CircuitSymbol } from './GateSymbolGraphic';
 import {
@@ -40,6 +40,7 @@ const GATE_ITEMS: readonly PaletteItem[] = [
   { id: 'gate_xor', kind: 'gate', gateType: 'XOR', label: 'XOR Gate', iconSymbol: 'XOR', symbol: 'XOR' },
   { id: 'gate_xnor', kind: 'gate', gateType: 'XNOR', label: 'XNOR Gate', iconSymbol: 'XNOR', symbol: 'XNOR' },
   { id: 'gate_not', kind: 'gate', gateType: 'NOT', label: 'NOT Inverter', iconSymbol: 'NOT', symbol: 'NOT' },
+  { id: 'gate_buffer', kind: 'gate', gateType: 'BUFFER', label: 'Buffer', iconSymbol: 'BUFFER', symbol: 'BUFFER' },
 ];
 
 const SOURCE_ITEMS: readonly PaletteItem[] = [
@@ -52,8 +53,11 @@ const SOURCE_ITEMS: readonly PaletteItem[] = [
 
 export const Palette: FC<PaletteProps> = ({ onAddNode, onLoadExample }) => {
   const [selectedExample, setSelectedExample] = useState<string>('');
+  const pointerStart = useRef<{ x: number; y: number; moved: boolean } | null>(null);
+  const suppressClick = useRef(false);
 
   const handleDragStart = (e: DragEvent<HTMLButtonElement>, item: PaletteItem) => {
+    window.dispatchEvent(new CustomEvent('deam:circuit-palette-drag-end'));
     e.dataTransfer.setData(
       'application/json',
       JSON.stringify({
@@ -63,6 +67,30 @@ export const Palette: FC<PaletteProps> = ({ onAddNode, onLoadExample }) => {
       })
     );
     e.dataTransfer.effectAllowed = 'copy';
+  };
+
+  const handlePointerDown = (e: ReactPointerEvent<HTMLButtonElement>, item: PaletteItem) => {
+    if (e.button !== 0) return;
+    pointerStart.current = { x: e.clientX, y: e.clientY, moved: false };
+    const detail = { kind: item.kind, gateType: item.gateType, customValue: item.customValue };
+    window.dispatchEvent(new CustomEvent('deam:circuit-palette-drag', { detail }));
+  };
+
+  const handlePointerMove = (e: ReactPointerEvent<HTMLButtonElement>) => {
+    if (!pointerStart.current) return;
+    if (Math.hypot(e.clientX - pointerStart.current.x, e.clientY - pointerStart.current.y) > 5) {
+      pointerStart.current.moved = true;
+    }
+  };
+
+  const handlePointerUp = () => {
+    if (pointerStart.current?.moved) {
+      suppressClick.current = true;
+      window.setTimeout(() => { pointerStart.current = null; }, 0);
+      return;
+    }
+    pointerStart.current = null;
+    return null;
   };
 
   const handleSelectExample = (key: string) => {
@@ -112,7 +140,10 @@ export const Palette: FC<PaletteProps> = ({ onAddNode, onLoadExample }) => {
               type="button"
               draggable
               onDragStart={(e) => handleDragStart(e, item)}
-              onClick={() => onAddNode(item.kind, item.gateType)}
+              onPointerDown={(e) => handlePointerDown(e, item)}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onClick={() => { if (suppressClick.current) { suppressClick.current = false; return; } onAddNode(item.kind, item.gateType); }}
               aria-label={`Add ${item.label} to canvas`}
               title={item.label}
               className="circuit-palette-item flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-2 text-left text-xs font-semibold text-gray-800 transition hover:border-blue-500 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-blue-500 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-blue-400 dark:hover:bg-blue-900/40"
@@ -136,7 +167,10 @@ export const Palette: FC<PaletteProps> = ({ onAddNode, onLoadExample }) => {
               type="button"
               draggable
               onDragStart={(e) => handleDragStart(e, item)}
-              onClick={() => onAddNode(item.kind, item.gateType, item.customValue)}
+              onPointerDown={(e) => handlePointerDown(e, item)}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onClick={() => { if (suppressClick.current) { suppressClick.current = false; return; } onAddNode(item.kind, item.gateType, item.customValue); }}
               aria-label={`Add ${item.label} to canvas`}
               title={item.label}
               className="circuit-palette-item flex items-center gap-2 rounded-lg border border-gray-200 bg-gray-50 px-2.5 py-2 text-left text-xs font-semibold text-gray-800 transition hover:border-blue-500 hover:bg-blue-50 focus-visible:ring-2 focus-visible:ring-blue-500 outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200 dark:hover:border-blue-400 dark:hover:bg-blue-900/40"

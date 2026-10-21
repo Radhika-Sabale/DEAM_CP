@@ -7,12 +7,13 @@
  * active timer display, telemetry logging, and misconception-grounded review.
  */
 
-import { type FC, useEffect, useState } from 'react';
+import { type FC, useEffect, useRef, useState } from 'react';
 import { Button } from '../../components/ui/Button';
 import { Modal } from '../../components/ui/Modal';
 import { AVAILABLE_TOPICS, buildQuiz, scoreQuiz } from '../../engine/practice/quiz';
+import { requireAccount } from '../../auth/requireAccount';
 import type { Difficulty, Quiz, QuizQuestion, QuizResult } from '../../engine/practice/types';
-import { useStepTimer } from '../../hooks/useStepTimer';
+import { formatActiveDuration, useActiveQuizTimer } from '../../hooks/useActiveQuizTimer';
 import { useLogStore } from '../../store/logStore';
 import { useStudyStore } from '../../store/studyStore';
 import { QuizNavigator } from './QuizNavigator';
@@ -33,9 +34,19 @@ export const QuizPage: FC = () => {
   const [isGenerating, setIsGenerating] = useState(false);
   const [generationError, setGenerationError] = useState('');
   const [isAiGenerated, setIsAiGenerated] = useState(false);
+  const [resultDurationMs, setResultDurationMs] = useState(0);
+  const [timerAnnouncement, setTimerAnnouncement] = useState('');
+  const previousPausedState = useRef(false);
 
-  // Active step timer for informational display
-  const timer = useStepTimer();
+  // This quiz has no time limit: show active elapsed time, excluding pauses.
+  const timer = useActiveQuizTimer();
+
+  useEffect(() => {
+    if (previousPausedState.current !== timer.isPaused) {
+      previousPausedState.current = timer.isPaused;
+      setTimerAnnouncement(timer.isPaused ? 'Quiz paused' : 'Quiz resumed');
+    }
+  }, [timer.isPaused]);
 
   const handleInitQuiz = (selectedTopic: string, currentSeed: number) => {
     const q = buildQuiz(selectedTopic, currentSeed);
@@ -47,8 +58,8 @@ export const QuizPage: FC = () => {
     setFlaggedIds(new Set());
     setIsSubmitted(false);
     setQuizResult(null);
-    timer.reset();
-    timer.start();
+    setResultDurationMs(0);
+    timer.restart();
   };
 
   useEffect(() => {
@@ -90,8 +101,8 @@ export const QuizPage: FC = () => {
       setIsSubmitted(false);
       setQuizResult(null);
       setIsAiGenerated(true);
-      timer.reset();
-      timer.start();
+      setResultDurationMs(0);
+      timer.restart();
     } catch (error) {
       setQuiz(buildQuiz(topic, seed));
       setCurrentIndex(0);
@@ -100,6 +111,8 @@ export const QuizPage: FC = () => {
       setIsSubmitted(false);
       setQuizResult(null);
       setIsAiGenerated(false);
+      setResultDurationMs(0);
+      timer.restart();
       setGenerationError(error instanceof Error ? error.message : 'Could not generate a quiz. The static quiz remains available.');
     } finally {
       setIsGenerating(false);
@@ -141,11 +154,13 @@ export const QuizPage: FC = () => {
 
   const executeSubmit = () => {
     setConfirmModalOpen(false);
-    timer.stop();
+    const activeDurationMs = timer.stop();
+    setResultDurationMs(activeDurationMs);
     const scored = scoreQuiz(quiz, answers);
     setQuizResult(scored);
     setIsSubmitted(true);
 
+    requireAccount('Sign in to save your quiz score.', () => {
     // Telemetry: log quiz-answered events for each question
     for (const q of quiz.questions) {
       const qRes = scored.perQuestion.find((r) => r.questionId === q.id);
@@ -162,15 +177,15 @@ export const QuizPage: FC = () => {
     useLogStore.getState().logEvent({
       eventType: 'module-completed',
       moduleId: topic,
-      durationMs: timer.elapsedMs,
+      durationMs: activeDurationMs,
       finalScore: scored.score,
     });
 
     useStudyStore.getState().recordTaskCompleted('quizzesCompletedCount');
+    });
   };
 
-  const seconds = Math.floor(timer.elapsedMs / 1000);
-  const formattedTime = `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
+  const formattedTime = formatActiveDuration(timer.elapsedMs);
 
   return (
     <div className="module-page page-column quiz-page">
@@ -201,8 +216,21 @@ export const QuizPage: FC = () => {
               </option>
             ))}
           </select>
-          <div className="rounded-md bg-gray-100 px-2.5 py-1 text-xs font-mono text-gray-600 dark:bg-gray-800 dark:text-gray-300">
-            Time {formattedTime}
+          <div className="quiz-timer-control">
+            <span className="quiz-timer-value" aria-label={`${timer.isPaused ? 'Paused' : 'Elapsed'} quiz time ${formattedTime}`}>
+              Time {formattedTime}
+            </span>
+            {!isSubmitted && (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={timer.isPaused ? timer.resume : timer.pause}
+                aria-label={timer.isPaused ? 'Resume quiz timer' : 'Pause quiz timer'}
+                aria-pressed={timer.isPaused}
+              >
+                {timer.isPaused ? 'Resume' : 'Pause'}
+              </Button>
+            )}
           </div>
           <label className="sr-only" htmlFor="quiz-ai-difficulty">Generated quiz difficulty</label>
           <select id="quiz-ai-difficulty" value={aiDifficulty} onChange={(event) => setAiDifficulty(event.target.value as Difficulty)} disabled={isSubmitted || isGenerating} aria-label="Generated quiz difficulty" className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs text-gray-900 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100">
@@ -215,18 +243,21 @@ export const QuizPage: FC = () => {
       </header>
 
       {generationError && <p role="status" className="text-sm text-muted-foreground">{generationError}</p>}
+      <span className="sr-only" role="status" aria-live="polite">{timerAnnouncement}</span>
 
       {isSubmitted && quizResult ? (
         <QuizReview
           quiz={quiz}
           result={quizResult}
           answers={answers}
+          durationMs={resultDurationMs}
           onRetake={() => {
             setSeed((s) => s + 1);
           }}
         />
       ) : (
-        <div className="space-y-6">
+        <div className={`quiz-active-area${timer.isPaused ? ' is-paused' : ''}`}>
+          <div className="space-y-6 quiz-active-content" aria-hidden={timer.isPaused}>
           <QuizNavigator
             totalQuestions={quiz.questions.length}
             currentIndex={currentIndex}
@@ -335,6 +366,18 @@ export const QuizPage: FC = () => {
               </div>
             </div>
           </div>
+          </div>
+          {timer.isPaused && (
+            <div className="quiz-paused-overlay">
+              <div className="quiz-paused-card">
+                <strong>Quiz paused</strong>
+                <span>Your answers are saved. Resume when you are ready.</span>
+                <Button variant="primary" size="md" onClick={timer.resume} aria-label="Resume quiz">
+                  Resume
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

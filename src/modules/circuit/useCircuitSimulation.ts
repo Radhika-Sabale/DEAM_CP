@@ -121,8 +121,9 @@ export function useCircuitSimulation(graph: CircuitGraph): UseCircuitSimulationR
       }
     }
 
-    // Settle initial time 0 state
-    const settleRes = sim.settle({ maxTime: 0 });
+    // Resolve combinational propagation through all scheduled gate delays. The
+    // simulator's settle method stops before the next clock edge.
+    const settleRes = sim.settle();
     setStatus(settleRes.status);
     if (settleRes.status === 'oscillating') {
       const oscillatingList = (settleRes.oscillatingNodeIds ?? []).join(', ');
@@ -143,7 +144,8 @@ export function useCircuitSimulation(graph: CircuitGraph): UseCircuitSimulationR
       const sim = simulatorRef.current;
       if (!sim) return;
 
-      const res = sim.setInput(nodeId, value);
+      const inputRes = sim.setInput(nodeId, value);
+      const res = inputRes.status === 'ok' ? sim.settle() : inputRes;
       setStatus(res.status);
       if (res.status === 'oscillating') {
         const oscillatingList = (res.oscillatingNodeIds ?? []).join(', ');
@@ -246,7 +248,7 @@ export function useCircuitSimulation(graph: CircuitGraph): UseCircuitSimulationR
       }
     }
 
-    sim.settle({ maxTime: 0 });
+    sim.settle();
     syncStateFromSim(sim);
   }, [graph, delayMode, syncStateFromSim]);
 

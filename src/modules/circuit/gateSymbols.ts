@@ -123,6 +123,18 @@ export const GATE_SYMBOLS: Record<GateType, GateSymbolDefinition> = {
     baseWidth: 45,
     baseHeight: 40,
   },
+  BUFFER: {
+    type: 'BUFFER',
+    name: 'Buffer',
+    description: 'Passes its single input through unchanged.',
+    hasBubble: false,
+    defaultInputCount: 1,
+    minInputCount: 1,
+    maxInputCount: 1,
+    path: 'M 0 0 L 45 20 L 0 40 Z',
+    baseWidth: 45,
+    baseHeight: 40,
+  },
 };
 
 /**

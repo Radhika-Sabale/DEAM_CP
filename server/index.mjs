@@ -1,12 +1,14 @@
 import { createServer } from 'node:http';
-import { createReadStream, existsSync, readFileSync, statSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createQuizGenerator } from './quiz.mjs';
 import { getClientIp } from './proxyIp.mjs';
+import { createStaticHandler } from './staticFiles.mjs';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const dist = resolve(root, 'dist');
+const serveStatic = createStaticHandler(dist);
 try {
   for (const line of readFileSync(resolve(root, '.env'), 'utf8').split(/\r?\n/)) {
     const match = line.match(/^\s*([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)\s*$/);
@@ -34,32 +36,6 @@ async function verifiedUser(request) {
 function send(response, status, body) {
   response.writeHead(status, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' });
   response.end(JSON.stringify(body));
-}
-
-function serveStatic(request, response, url) {
-  if (request.method !== 'GET' && request.method !== 'HEAD') return send(response, 405, { error: 'Method not allowed.' });
-  let pathname;
-  try { pathname = decodeURIComponent(url.pathname); } catch { return send(response, 400, { error: 'Invalid path.' }); }
-  const requested = resolve(dist, `.${pathname}`);
-  const safePath = requested === dist || requested.startsWith(`${dist}/`) || requested.startsWith(`${dist}\\`);
-  const filePath = safePath && existsSync(requested) && statSync(requested).isFile() ? requested : resolve(dist, 'index.html');
-  if (!existsSync(filePath)) return send(response, 503, { error: 'Built frontend not found. Run npm run build first.' });
-  const extension = filePath.slice(filePath.lastIndexOf('.')).toLowerCase();
-  const contentTypes = {
-    '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
-    '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8', '.svg': 'image/svg+xml',
-    '.png': 'image/png', '.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.webp': 'image/webp', '.ico': 'image/x-icon',
-    '.woff': 'font/woff', '.woff2': 'font/woff2', '.ttf': 'font/ttf', '.otf': 'font/otf',
-  };
-  const isHtml = extension === '.html';
-  response.writeHead(200, {
-    'content-type': contentTypes[extension] ?? 'application/octet-stream',
-    'content-length': statSync(filePath).size,
-    'cache-control': isHtml ? 'no-cache' : 'public, max-age=31536000, immutable',
-    'x-content-type-options': 'nosniff',
-  });
-  if (request.method === 'HEAD') return response.end();
-  createReadStream(filePath).pipe(response);
 }
 
 createServer(async (request, response) => {

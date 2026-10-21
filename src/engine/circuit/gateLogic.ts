@@ -6,6 +6,7 @@
  * - AND: Dominant 0 (any 0 produces 0), otherwise any X produces X, otherwise 1.
  * - OR: Dominant 1 (any 1 produces 1), otherwise any X produces X, otherwise 0.
  * - NOT: Inverts 0 <-> 1; preserves X. Requires exactly 1 input.
+ * - BUFFER: Passes its single input through unchanged.
  * - NAND: Inverted AND output.
  * - NOR: Inverted OR output.
  * - XOR: Multi-input odd parity. Any X produces X.
@@ -31,7 +32,7 @@ export function invert(val: LogicValue): LogicValue {
  * Evaluates a combinational logic gate with 3-valued logic semantics.
  *
  * Arity rules:
- * - NOT: requires exactly 1 input.
+ * - NOT and BUFFER: require exactly 1 input.
  * - AND, OR, NAND, NOR, XOR, XNOR: requires 2 to 8 inputs.
  * - Any arity violation returns 'X' (static validation flags arity errors).
  *
@@ -46,10 +47,11 @@ export function evaluateGate(
   const count = inputs.length;
 
   // Validate arity bounds
-  if (type === 'NOT') {
+  if (type === 'NOT' || type === 'BUFFER') {
     if (count !== 1) return 'X';
     const first = inputs[0];
-    return first !== undefined ? invert(first) : 'X';
+    if (first === undefined) return 'X';
+    return type === 'NOT' ? invert(first) : first;
   }
 
   if (count < 2 || count > 8) {

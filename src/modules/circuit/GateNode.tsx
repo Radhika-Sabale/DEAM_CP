@@ -5,7 +5,7 @@
  * interactive value toggles for inputs, and high-contrast accessibility rings.
  */
 
-import { memo, type FC, type KeyboardEvent, type MouseEvent } from 'react';
+import { memo, type FC, type KeyboardEvent, type MouseEvent, type PointerEvent, useEffect, useRef, useState } from 'react';
 import type { LogicValue } from '../../types/ast';
 import type { CircuitNode } from '../../types/circuit';
 import { CIRCUIT_GATE_SYMBOL_HEIGHT, CIRCUIT_GATE_SYMBOL_WIDTH, CIRCUIT_PORT_RADIUS, nodeSize, pinPosition } from '../../engine/circuit/geometry';
@@ -23,6 +23,7 @@ export interface GateNodeProps {
   readonly onSelectNode: (id: string, e: MouseEvent | KeyboardEvent) => void;
   readonly onToggleInput: (id: string) => void;
   readonly onPinClick: (nodeId: string, direction: 'in' | 'out', pinIndex: number, e: MouseEvent) => void;
+  readonly onPinPointerDown?: (nodeId: string, direction: 'in' | 'out', pinIndex: number, e: PointerEvent<SVGGElement>) => void;
   readonly onPinKeyDown: (nodeId: string, direction: 'in' | 'out', pinIndex: number, e: KeyboardEvent) => void;
 }
 
@@ -38,8 +39,18 @@ export const GateNode: FC<GateNodeProps> = memo(
     onSelectNode,
     onToggleInput,
     onPinClick,
+    onPinPointerDown,
     onPinKeyDown,
   }) => {
+    const previousOutput = useRef(outputValue);
+    const [valueChanged, setValueChanged] = useState(false);
+    useEffect(() => {
+      if (previousOutput.current === outputValue) return;
+      previousOutput.current = outputValue;
+      setValueChanged(true);
+      const timer = window.setTimeout(() => setValueChanged(false), 180);
+      return () => window.clearTimeout(timer);
+    }, [outputValue]);
     const size = nodeSize(node);
     const accessibleName = getNodeAccessibleName(node, String(outputValue));
     const symbolText = getNodeSymbolText(node);
@@ -104,7 +115,7 @@ export const GateNode: FC<GateNodeProps> = memo(
         )}
 
         {/* Standard symbol, current value, and label for every component type */}
-        <g className={`circuit-node-motion${isSelected ? ' circuit-node-motion-selected' : ''}${isInput ? ' cursor-pointer' : ''}`} onClick={isInput ? (e) => { e.stopPropagation(); onToggleInput(node.id); } : undefined}>
+        <g className={`circuit-node-motion${isSelected ? ' circuit-node-motion-selected' : ''}${valueChanged ? ' circuit-node-value-changed' : ''}${isInput ? ' cursor-pointer' : ''}`} onClick={isInput ? (e) => { e.stopPropagation(); onToggleInput(node.id); } : undefined}>
           <rect x={0} y={0} width={size.width} height={size.height} rx={8} className="circuit-node-frame" stroke={strokeColor} strokeWidth={isSelected ? 2.5 : 1.5} />
           <GateSymbolGraphic
             symbol={node.kind === 'gate' ? node.gateType : node.kind === 'input' ? 'INPUT' : node.kind === 'output' ? 'OUTPUT' : node.kind === 'clock' ? 'CLOCK' : node.value === 0 ? 'CONST0' : 'CONST1'}
@@ -140,6 +151,11 @@ export const GateNode: FC<GateNodeProps> = memo(
                   role="button"
                   aria-label={`${node.id} input ${idx}`}
                   className="cursor-crosshair outline-none"
+                  data-circuit-pin="true"
+                  data-node-id={node.id}
+                  data-pin-direction="in"
+                  data-pin-index={idx}
+                  onPointerDown={(e) => onPinPointerDown?.(node.id, 'in', idx, e)}
                   onClick={(e) => {
                     e.stopPropagation();
                     onPinClick(node.id, 'in', idx, e);
@@ -173,6 +189,11 @@ export const GateNode: FC<GateNodeProps> = memo(
             role="button"
             aria-label={`${node.id} output`}
             className="cursor-crosshair outline-none"
+            data-circuit-pin="true"
+            data-node-id={node.id}
+            data-pin-direction="out"
+            data-pin-index={0}
+            onPointerDown={(e) => onPinPointerDown?.(node.id, 'out', 0, e)}
             onClick={(e) => {
               e.stopPropagation();
               onPinClick(node.id, 'out', 0, e);

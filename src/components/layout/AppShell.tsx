@@ -15,6 +15,8 @@ import {
 import { MODULE_REGISTRY } from '../../modules/registry';
 import { exportProjectToJson, importProject } from '../../store/projectIO';
 import { isStorageAvailable } from '../../store/persistence';
+import { saveProject } from '../../store/persistence';
+import type { AuthUser } from '../../auth/supabaseAuth';
 import {
   selectCurrentProject,
   selectIsDirty,
@@ -47,9 +49,11 @@ import { AmbientBackground } from './AmbientBackground';
 export interface AppShellProps {
   children: ReactNode;
   onLogout?: () => void;
+  authUser?: AuthUser;
+  onRequestSignIn?: (reason: string, afterSignIn?: () => void, mode?: 'signin' | 'signup') => void;
 }
 
-export const AppShell: FC<AppShellProps> = ({ children, onLogout }) => {
+export const AppShell: FC<AppShellProps> = ({ children, onLogout, authUser, onRequestSignIn }) => {
   const currentModule = useUiStore(selectCurrentModule);
   const setModule = useUiStore((state) => state.setModule);
   const sidebarOpen = useUiStore(selectSidebarOpen);
@@ -81,6 +85,7 @@ export const AppShell: FC<AppShellProps> = ({ children, onLogout }) => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [examplesModalOpen, setExamplesModalOpen] = useState(false);
   const [storageBlocked, setStorageBlocked] = useState(false);
+  const [accountMenuOpen, setAccountMenuOpen] = useState(false);
 
   useEffect(() => {
     if (!isStorageAvailable()) {
@@ -261,7 +266,7 @@ export const AppShell: FC<AppShellProps> = ({ children, onLogout }) => {
 
           <div className="flex items-center gap-2 min-w-0">
             <button type="button" className="brand-home-button" aria-label="Home" title="Home" onClick={() => { window.location.hash = '#/home'; }}>
-              <svg aria-hidden="true" viewBox="0 0 24 24" fill="none"><path d="M4 10.5 12 4l8 6.5v9H4v-9Z"/><path d="M9 19.5v-6h6v6"/></svg>
+              <img className="brand-logo brand-logo-topbar" src="/logo-mark.svg" alt="" aria-hidden="true" />
             </button>
             <span className="app-brand-name">DEAM Lab</span>
 
@@ -326,6 +331,17 @@ export const AppShell: FC<AppShellProps> = ({ children, onLogout }) => {
                 role="menu"
                 className="absolute right-0 z-40 mt-1.5 w-48 rounded-lg border border-gray-200 bg-white p-1 shadow-xl dark:border-gray-800 dark:bg-gray-900"
               >
+                <button role="menuitem" type="button" onClick={() => {
+                  setProjectMenuOpen(false);
+                  if (authUser) { saveProject(project); pushToast({ level: 'success', title: 'Project Saved', message: 'Your project is saved on this device.' }); }
+                  else onRequestSignIn?.('Sign in to save your project.', () => { saveProject(project); pushToast({ level: 'success', title: 'Project Saved', message: 'Your project is saved on this device.' }); });
+                }} className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">Save</button>
+                <button role="menuitem" type="button" onClick={() => {
+                  setProjectMenuOpen(false);
+                  if (authUser) setSwitchModalOpen(true);
+                  else onRequestSignIn?.('Sign in to open My Projects.', () => setSwitchModalOpen(true));
+                }} className="flex w-full items-center gap-2 rounded-md px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 dark:text-gray-300 dark:hover:bg-gray-800">My Projects</button>
+                <div className="my-1 border-t border-gray-100 dark:border-gray-800" />
                 <button
                   role="menuitem"
                   type="button"
@@ -410,7 +426,17 @@ export const AppShell: FC<AppShellProps> = ({ children, onLogout }) => {
             )}
           </div>
 
-          {onLogout && <button type="button" className="app-logout-button" onClick={onLogout}>Sign out</button>}
+          {authUser ? <div className="relative">
+            <button type="button" className="app-account-button" aria-expanded={accountMenuOpen} onClick={() => setAccountMenuOpen((open) => !open)}>
+              <span className="app-account-avatar">{(authUser.user_metadata?.display_name || authUser.user_metadata?.full_name || authUser.email || 'U').trim().split(/\s+/).map((part) => part[0]).slice(0, 2).join('').toUpperCase()}</span>
+              <span className="hidden sm:inline">{authUser.user_metadata?.display_name || authUser.user_metadata?.full_name || authUser.email?.split('@')[0]}</span>
+            </button>
+            {accountMenuOpen && <div role="menu" className="absolute right-0 z-40 mt-1.5 w-56 rounded-lg border border-gray-200 bg-white p-2 shadow-xl dark:border-gray-800 dark:bg-gray-900">
+              <p className="px-2 py-1 text-xs text-gray-500 dark:text-gray-400">{authUser.user_metadata?.display_name || authUser.user_metadata?.full_name || authUser.email?.split('@')[0]}</p><p className="px-2 pb-2 text-xs text-gray-500 dark:text-gray-400">{authUser.email}</p>
+              <button role="menuitem" type="button" onClick={() => { setAccountMenuOpen(false); setSwitchModalOpen(true); }} className="w-full rounded-md px-2 py-1.5 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800">My Projects</button>
+              <button role="menuitem" type="button" onClick={() => { setAccountMenuOpen(false); onLogout?.(); }} className="w-full rounded-md px-2 py-1.5 text-left text-xs hover:bg-gray-100 dark:hover:bg-gray-800">Sign out</button>
+            </div>}
+          </div> : <div className="flex items-center gap-1"><button type="button" className="app-sign-in-button" onClick={() => onRequestSignIn?.('Sign in to your account.')}>Sign in</button><button type="button" className="app-sign-in-button app-sign-up-button" onClick={() => onRequestSignIn?.('Create an account to save your work.', undefined, 'signup')}>Create account</button></div>}
           <ThemeToggle />
         </div>
       </header>
@@ -444,7 +470,7 @@ export const AppShell: FC<AppShellProps> = ({ children, onLogout }) => {
           </div>
 
           <div className="sidebar-brand">
-            <span className="brand-mark" aria-hidden="true" />
+            <img className="brand-logo brand-logo-sidebar" src="/logo-mark.svg" alt="" aria-hidden="true" />
             <span className="sidebar-brand-name">DEAM LAB</span>
           </div>
           <nav className="sidebar-scroll flex-1 overflow-y-auto p-3 space-y-4">

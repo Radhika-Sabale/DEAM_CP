@@ -5,16 +5,22 @@
  */
 
 import '@testing-library/jest-dom';
-import { fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { act, fireEvent, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { useLogStore } from '../../store/logStore';
 import { useStudyStore } from '../../store/studyStore';
 import { QuizPage } from './QuizPage';
 
 describe('QuizPage Component', () => {
+  const continueAsAuthenticated = (event: Event) => (event as CustomEvent<{ continueAction: () => void }>).detail.continueAction();
   beforeEach(() => {
+    window.addEventListener('deam:require-account', continueAsAuthenticated);
     useLogStore.getState().clearLog();
     useStudyStore.getState().deleteStudyData();
+  });
+  afterEach(() => {
+    window.removeEventListener('deam:require-account', continueAsAuthenticated);
+    vi.useRealTimers();
   });
 
   it('renders a 10-question quiz with accessible question navigator', () => {
@@ -92,5 +98,33 @@ describe('QuizPage Component', () => {
 
     // Back in quiz mode
     expect(screen.getByText(/Question 1 of 10/i)).toBeInTheDocument();
+  });
+
+  it('shows a live elapsed timer, pauses and resumes, and reports only active time', () => {
+    vi.useFakeTimers();
+    render(<QuizPage />);
+
+    const firstAnswer = screen.getAllByRole('radio')[0];
+    fireEvent.click(firstAnswer!);
+    act(() => vi.advanceTimersByTime(2000));
+    expect(screen.getByText('Time 00:02')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Pause quiz timer' }));
+    expect(screen.getByRole('status')).toHaveTextContent('Quiz paused');
+    expect(screen.getByRole('button', { name: 'Resume quiz timer' })).toHaveAttribute('aria-pressed', 'true');
+    expect(document.querySelector('.quiz-active-content')).toHaveAttribute('aria-hidden', 'true');
+    expect(firstAnswer).toBeChecked();
+
+    act(() => vi.advanceTimersByTime(5000));
+    expect(screen.getByText('Time 00:02')).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: 'Resume quiz timer' }));
+    act(() => vi.advanceTimersByTime(1000));
+    expect(screen.getByText('Time 00:03')).toBeInTheDocument();
+
+    for (let i = 0; i < 9; i++) fireEvent.click(screen.getByRole('button', { name: 'Next' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Submit Quiz' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Submit Anyway' }));
+    expect(screen.getByText('Active time 00:03')).toBeInTheDocument();
+    const completed = useLogStore.getState().events.find((event) => event.eventType === 'module-completed');
+    expect(completed?.durationMs).toBe(3000);
   });
 });

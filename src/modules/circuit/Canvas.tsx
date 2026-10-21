@@ -12,7 +12,7 @@ import {
   useState,
   type FC,
   type DragEvent,
-  type MouseEvent,
+  type PointerEvent,
   type WheelEvent,
 } from 'react';
 import type { LogicValue } from '../../types/ast';
@@ -58,6 +58,8 @@ export const Canvas: FC<CanvasProps> = ({
   const [containerSize, setContainerSize] = useState<Size>({ width: 0, height: 0 });
   const hasInitialFit = useRef(false);
   const [hoveredWireId, setHoveredWireId] = useState<string | null>(null);
+  const palettePointerDragRef = useRef<{ kind: CircuitNode['kind']; gateType?: GateType; customValue?: 0 | 1 } | null>(null);
+  const pinPointerStartRef = useRef<{ pointerId: number; x: number; y: number } | null>(null);
 
   const {
     viewport,
@@ -67,6 +69,7 @@ export const Canvas: FC<CanvasProps> = ({
     focusedNodeId,
     wiring,
     setWiring,
+    setAnnouncement,
     announcement,
     isPanningRef,
     isDraggingNodesRef,
@@ -128,8 +131,9 @@ export const Canvas: FC<CanvasProps> = ({
   };
 
   // Background pointer down (pan or drag start)
-  const handleMouseDown = (e: MouseEvent<SVGSVGElement>) => {
+  const handlePointerDown = (e: PointerEvent<SVGSVGElement>) => {
     if (e.button !== 0) return; // Only left click
+    if (e.target instanceof Element && e.target.closest('[data-circuit-pin]')) return;
 
     if (wiring.active) {
       cancelWiring();
@@ -137,11 +141,12 @@ export const Canvas: FC<CanvasProps> = ({
     }
 
     handleClearSelection();
+    e.currentTarget.setPointerCapture(e.pointerId);
     isPanningRef.current = true;
     dragStartScreenRef.current = { x: e.clientX, y: e.clientY };
   };
 
-  const handleMouseMove = (e: MouseEvent<SVGSVGElement>) => {
+  const handlePointerMove = (e: PointerEvent<SVGSVGElement>) => {
     if (!containerRef.current) return;
     const rect = containerRef.current.getBoundingClientRect();
     const mouseWorld = screenToWorldCoord(e.clientX - rect.left, e.clientY - rect.top);
@@ -192,7 +197,7 @@ export const Canvas: FC<CanvasProps> = ({
     }
   };
 
-  const handleMouseUp = () => {
+  const handlePointerUp = () => {
     if (isPanningRef.current) {
       isPanningRef.current = false;
     }
@@ -202,14 +207,42 @@ export const Canvas: FC<CanvasProps> = ({
     }
   };
 
+  const handlePinPointerDown = (nodeId: string, direction: 'in' | 'out', pin: number, e: PointerEvent<SVGGElement>) => {
+    if (direction !== 'out') return;
+    pinPointerStartRef.current = { pointerId: e.pointerId, x: e.clientX, y: e.clientY };
+    e.currentTarget.setPointerCapture(e.pointerId);
+    handlePinClick(nodeId, direction, pin);
+  };
+
+  const handleCanvasPointerUp = (e: PointerEvent<SVGSVGElement>) => {
+    const start = pinPointerStartRef.current;
+    if (!start || start.pointerId !== e.pointerId) { handlePointerUp(); return; }
+    pinPointerStartRef.current = null;
+    const moved = Math.hypot(e.clientX - start.x, e.clientY - start.y) > 6;
+    if (moved && wiring.active) {
+      const element = document.elementFromPoint(e.clientX, e.clientY)?.closest<SVGGElement>('[data-circuit-pin]');
+      const nodeId = element?.dataset.nodeId;
+      const pinIndex = Number(element?.dataset.pinIndex);
+      if (element?.dataset.pinDirection === 'in' && nodeId && Number.isInteger(pinIndex)) {
+        handlePinClick(nodeId, 'in', pinIndex);
+      } else {
+        cancelWiring();
+        setAnnouncement('Connect the wire to a gate input or output terminal.');
+      }
+    }
+    handlePointerUp();
+  };
+
   // Node Drag Initiator
-  const handleNodeDragStart = (nodeId: string, e: MouseEvent) => {
+  const handleNodeDragStart = (nodeId: string, e: PointerEvent<SVGGElement>) => {
     if (wiring.active) return;
+    if (e.target instanceof Element && e.target.closest('[data-circuit-pin]')) return;
     if (!selectedNodeIds.includes(nodeId)) {
       handleSelectNode(nodeId, e);
     }
 
     onBeginTransaction();
+    e.currentTarget.ownerSVGElement?.setPointerCapture(e.pointerId);
     isDraggingNodesRef.current = true;
     dragStartScreenRef.current = { x: e.clientX, y: e.clientY };
     dragStartPositionsRef.current.clear();
@@ -253,7 +286,7 @@ export const Canvas: FC<CanvasProps> = ({
           id,
           kind: 'gate',
           gateType: data.gateType,
-          inputCount: data.gateType === 'NOT' ? 1 : 2,
+          inputCount: data.gateType === 'NOT' || data.gateType === 'BUFFER' ? 1 : 2,
           x: snappedX,
           y: snappedY,
         });
@@ -299,6 +332,47 @@ export const Canvas: FC<CanvasProps> = ({
       // Ignore malformed drag payload
     }
   };
+
+  useEffect(() => {
+    const onPaletteDrag = (event: Event) => {
+      const detail = (event as CustomEvent<{ kind: CircuitNode['kind']; gateType?: GateType; customValue?: 0 | 1 }>).detail;
+      palettePointerDragRef.current = detail;
+    };
+    const onPaletteDragEnd = () => { palettePointerDragRef.current = null; };
+    const onPointerUp = (event: globalThis.PointerEvent) => {
+      const data = palettePointerDragRef.current;
+      const container = containerRef.current;
+      if (!data || !container) return;
+      palettePointerDragRef.current = null;
+      const rect = container.getBoundingClientRect();
+      if (event.clientX < rect.left || event.clientX > rect.right || event.clientY < rect.top || event.clientY > rect.bottom) return;
+      const world = screenToWorldCoord(event.clientX - rect.left, event.clientY - rect.top);
+      const x = snapToGrid(world.x);
+      const y = snapToGrid(world.y);
+      const id = nextNodeId(graph, data.kind);
+      let nextGraph = graph;
+      if (data.kind === 'gate' && data.gateType) {
+        nextGraph = addNode(graph, { id, kind: 'gate', gateType: data.gateType, inputCount: data.gateType === 'NOT' || data.gateType === 'BUFFER' ? 1 : 2, x, y });
+      } else if (data.kind === 'input') {
+        nextGraph = addNode(graph, { id, kind: 'input', label: 'IN', value: 0, x, y });
+      } else if (data.kind === 'output') {
+        nextGraph = addNode(graph, { id, kind: 'output', label: 'OUT', x, y });
+      } else if (data.kind === 'clock') {
+        nextGraph = addNode(graph, { id, kind: 'clock', label: 'CLK', halfPeriod: 5, startValue: 0, x, y });
+      } else if (data.kind === 'const') {
+        nextGraph = addNode(graph, { id, kind: 'const', value: data.customValue ?? 1, x, y });
+      }
+      onCommitGraph(nextGraph);
+    };
+    window.addEventListener('deam:circuit-palette-drag', onPaletteDrag);
+    window.addEventListener('deam:circuit-palette-drag-end', onPaletteDragEnd);
+    window.addEventListener('pointerup', onPointerUp);
+    return () => {
+      window.removeEventListener('deam:circuit-palette-drag', onPaletteDrag);
+      window.removeEventListener('deam:circuit-palette-drag-end', onPaletteDragEnd);
+      window.removeEventListener('pointerup', onPointerUp);
+    };
+  }, [graph, onCommitGraph, screenToWorldCoord]);
 
   return (
     <div
@@ -346,9 +420,10 @@ export const Canvas: FC<CanvasProps> = ({
         aria-label="Digital Circuit Schematic Canvas. Use Tab and Arrow keys to navigate, Space to toggle inputs, Enter to wire."
         className="min-h-0 w-full flex-1 cursor-grab active:cursor-grabbing outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
         onWheel={handleWheel}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handleCanvasPointerUp}
+        onPointerCancel={handlePointerUp}
         onKeyDown={handleCanvasKeyDown}
       >
         <defs>
@@ -422,7 +497,7 @@ export const Canvas: FC<CanvasProps> = ({
             return (
               <g
                 key={node.id}
-                onMouseDown={(e) => {
+                onPointerDown={(e) => {
                   e.stopPropagation();
                   handleNodeDragStart(node.id, e);
                 }}
@@ -438,6 +513,7 @@ export const Canvas: FC<CanvasProps> = ({
                   onSelectNode={handleSelectNode}
                   onToggleInput={onToggleInput}
                   onPinClick={handlePinClick}
+                  onPinPointerDown={handlePinPointerDown}
                   onPinKeyDown={(nId, dir, pIdx) => handlePinClick(nId, dir, pIdx)}
                 />
               </g>

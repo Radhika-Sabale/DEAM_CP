@@ -29,6 +29,7 @@ import { CircuitInspector } from './CircuitInspector';
 import { SimulationControls } from './SimulationControls';
 import { DiagnosticsPanel } from './DiagnosticsPanel';
 import { TruthTableCompare } from './TruthTableCompare';
+import { LiveCircuitTable } from './LiveCircuitTable';
 import { TimingDiagram } from './TimingDiagram';
 import { CircuitSynthesisBanner } from './CircuitSynthesisBanner';
 import { KeyboardHelpModal } from './KeyboardHelpModal';
@@ -99,7 +100,7 @@ export const CircuitPage: FC = () => {
           id: nextNodeId(nextGraph, 'gate'),
           kind: 'gate',
           gateType,
-          inputCount: gateType === 'NOT' ? 1 : 2,
+          inputCount: gateType === 'NOT' || gateType === 'BUFFER' ? 1 : 2,
           x,
           y,
         });
@@ -294,7 +295,7 @@ export const CircuitPage: FC = () => {
                     onCommitTransaction={commitTransaction}
                     onToggleInput={(id) => {
                       const currentVal = sim.values[id] ?? 0;
-                      const nextVal = currentVal === 0 ? 1 : currentVal === 1 ? 'X' : 0;
+                      const nextVal = currentVal === 0 ? 1 : 0;
                       sim.setInput(id, nextVal);
                     }}
                     onOpenHelpModal={() => setIsHelpOpen(true)}
@@ -318,7 +319,7 @@ export const CircuitPage: FC = () => {
                     onCommitGraph={handleCommitGraph}
                     onToggleInput={(id) => {
                       const currentVal = sim.values[id] ?? 0;
-                      const nextVal = currentVal === 0 ? 1 : currentVal === 1 ? 'X' : 0;
+                      const nextVal = currentVal === 0 ? 1 : 0;
                       sim.setInput(id, nextVal);
                     }}
                   />
@@ -385,6 +386,8 @@ export const CircuitPage: FC = () => {
           />
         </div>
       </div>
+
+      <LiveCircuitTable graph={graph} values={sim.values} />
 
       {/* Keyboard Shortcuts Help Modal */}
       <KeyboardHelpModal isOpen={isHelpOpen} onClose={() => setIsHelpOpen(false)} />

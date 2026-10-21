@@ -13,6 +13,7 @@ import { Button } from '../../components/ui/Button';
 import { scoreSus, SUS_ITEMS } from '../../engine/evaluation/sus';
 import type { SusInterpretation } from '../../engine/evaluation/types';
 import { useLogStore } from '../../store/logStore';
+import { requireAccount } from '../../auth/requireAccount';
 import { useStudyStore } from '../../store/studyStore';
 import type { SusResponse } from '../../types/logging';
 
@@ -40,7 +41,7 @@ export const SusPage: FC = () => {
     }
   };
 
-  const handleSubmit = () => {
+  const submitResult = () => {
     const missing: number[] = [];
     const values: number[] = [];
 
@@ -85,6 +86,8 @@ export const SusPage: FC = () => {
       });
     }
   };
+
+  const handleSubmit = () => requireAccount('Sign in to submit your survey results.', submitResult);
 
   return (
     <div className="module-page page-column sus-page">

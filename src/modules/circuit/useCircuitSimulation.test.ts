@@ -18,11 +18,6 @@ describe('useCircuitSimulation', () => {
       initialProps: { graph: ha },
     });
 
-    // Step to let initial gate propagation settle at t = 1
-    act(() => {
-      result.current.step();
-    });
-
     expect(result.current.status).toBe('ok');
     expect(result.current.time).toBe(1);
     expect(result.current.values['out_s']).toBe(0);
@@ -33,11 +28,6 @@ describe('useCircuitSimulation', () => {
       result.current.setInput('in_a', 1);
     });
 
-    // Advance 1 unit of propagation delay
-    act(() => {
-      result.current.step();
-    });
-
     expect(result.current.time).toBe(2);
     expect(result.current.values['out_s']).toBe(1);
     expect(result.current.values['out_cout']).toBe(0);
@@ -45,10 +35,6 @@ describe('useCircuitSimulation', () => {
     // Toggle input B to 1
     act(() => {
       result.current.setInput('in_b', 1);
-    });
-
-    act(() => {
-      result.current.step();
     });
 
     expect(result.current.time).toBe(3);
@@ -64,17 +50,16 @@ describe('useCircuitSimulation', () => {
 
     act(() => {
       result.current.setInput('in_a', 1);
-      result.current.step();
     });
 
-    expect(result.current.time).toBe(1);
+    expect(result.current.time).toBe(2);
 
     // Move node in_a position
     const moved = moveNodes(ha, [{ id: 'in_a', x: 150, y: 150 }]);
     rerender({ graph: moved });
 
     // Time is still 1 and values are retained because moving nodes does not change structuralSignature
-    expect(result.current.time).toBe(1);
+    expect(result.current.time).toBe(2);
     expect(result.current.values['out_s']).toBe(1);
   });
 
@@ -86,10 +71,9 @@ describe('useCircuitSimulation', () => {
 
     act(() => {
       result.current.setInput('in_a', 1);
-      result.current.step();
     });
 
-    expect(result.current.time).toBe(1);
+    expect(result.current.time).toBe(2);
 
     // Add a new OR gate
     const updated = addNode(ha, {
@@ -104,7 +88,7 @@ describe('useCircuitSimulation', () => {
     rerender({ graph: updated });
 
     // Time resets to 0 on structural rebuild, but input in_a is preserved as 1
-    expect(result.current.time).toBe(0);
+    expect(result.current.time).toBe(1);
     expect(result.current.values['in_a']).toBe(1);
   });
 

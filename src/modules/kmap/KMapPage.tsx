@@ -10,6 +10,7 @@ import { type FC, useCallback, useEffect, useMemo, useState } from 'react';
 import type { LogicValue } from '../../types/ast';
 import type { KMapGroup, KMapSolution } from '../../engine/kmap/types';
 import { solvePOS, solveSOP } from '../../engine/kmap/solver';
+import { buildTruthTable, toString } from '../../engine/boolean';
 import { useProjectStore } from '../../store/projectStore';
 import { SendToNextButton } from '../../components/layout/SendToNextButton';
 import { KMapGrid } from './KMapGrid';
@@ -21,18 +22,31 @@ import { StudentModePanel } from './StudentModePanel';
 export const KMapPage: FC = () => {
   const project = useProjectStore((s) => s.project);
   const applyPatch = useProjectStore((s) => s.applyPatch);
+  const expressionVariables = useMemo(() => {
+    const names = [...(project.variables ?? [])];
+    for (const name of ['A', 'B', 'C', 'D', 'E']) if (names.length < 2 && !names.includes(name)) names.push(name);
+    return names;
+  }, [project.variables]);
 
   // Initialize variables & cells from project or defaults
   const initialVarCount = useMemo(() => {
     const pVars = project.kmap?.variables ?? project.truthTable?.variables ?? project.variables ?? [];
-    return pVars.length >= 2 && pVars.length <= 5 ? pVars.length : 4;
-  }, [project.kmap?.variables, project.truthTable?.variables, project.variables]);
+    return pVars.length >= 2 && pVars.length <= 5 ? pVars.length : project.expression && pVars.length < 5 ? Math.max(2, pVars.length) : 4;
+  }, [project.kmap?.variables, project.truthTable?.variables, project.variables, project.expression]);
+  const expressionTable = useMemo(() => {
+    if (!project.expression) return null;
+    if (expressionVariables.length > 5) return null;
+    const result = buildTruthTable(project.expression, expressionVariables);
+    return result.ok ? result.table : null;
+  }, [project.expression, expressionVariables]);
 
   const [varCount, setVarCount] = useState<number>(initialVarCount);
   const [varNames, setVarNames] = useState<string[]>(
     project.kmap?.variables && project.kmap.variables.length === initialVarCount
       ? [...project.kmap.variables]
-      : ['A', 'B', 'C', 'D', 'E'].slice(0, initialVarCount)
+      : project.expression && expressionVariables.length === initialVarCount
+        ? expressionVariables
+        : ['A', 'B', 'C', 'D', 'E'].slice(0, initialVarCount)
   );
 
   const [cells, setCells] = useState<LogicValue[]>(() => {
@@ -40,9 +54,12 @@ export const KMapPage: FC = () => {
     if (project.kmap?.cells && project.kmap.cells.length === total) {
       return [...project.kmap.cells];
     }
-    if (project.truthTable?.rows && project.truthTable.rows.length === total) {
+    if (project.kmap?.cells && project.kmap.cells.length === total) {
+      setCells([...project.kmap.cells]);
+    } else if (project.truthTable?.rows && project.truthTable.rows.length === total) {
       return project.truthTable.rows.map((r) => r.output);
     }
+    if (expressionTable?.rows && expressionTable.rows.length === total) return expressionTable.rows.map((row) => row.output);
     return Array.from({ length: total }, () => 0 as LogicValue);
   });
 
@@ -60,6 +77,7 @@ export const KMapPage: FC = () => {
   const [highlightedCells, setHighlightedCells] = useState<number[]>([]);
   const [highlightLabel, setHighlightLabel] = useState<string | undefined>(undefined);
   const [revealedSolution, setRevealedSolution] = useState<boolean>(false);
+  const [copiedExpression, setCopiedExpression] = useState(false);
 
   // Derive minterms and don't-cares
   const minterms = useMemo(() => {
@@ -120,9 +138,9 @@ export const KMapPage: FC = () => {
   // Sync local KMap state when active project changes (e.g. from ExamplesMenu or ProjectIO)
   useEffect(() => {
     const pVars = project.kmap?.variables ?? project.truthTable?.variables ?? project.variables ?? [];
-    const count = pVars.length >= 2 && pVars.length <= 5 ? pVars.length : 4;
+    const count = pVars.length >= 2 && pVars.length <= 5 ? pVars.length : project.expression && pVars.length < 5 ? Math.max(2, pVars.length) : 4;
     setVarCount(count);
-    setVarNames(pVars.length === count ? [...pVars] : ['A', 'B', 'C', 'D', 'E'].slice(0, count));
+    setVarNames(pVars.length === count ? [...pVars] : project.expression && expressionVariables.length === count ? expressionVariables : ['A', 'B', 'C', 'D', 'E'].slice(0, count));
     const total = 1 << count;
     if (project.kmap?.cells && project.kmap.cells.length === total) {
       setCells([...project.kmap.cells]);
@@ -132,6 +150,8 @@ export const KMapPage: FC = () => {
         if (r.index < total) newCells[r.index] = r.output;
       });
       setCells(newCells);
+    } else if (expressionTable?.rows && expressionTable.rows.length === total) {
+      setCells(expressionTable.rows.map((row) => row.output));
     } else {
       setCells(Array.from({ length: total }, () => 0 as LogicValue));
     }
@@ -216,9 +236,11 @@ export const KMapPage: FC = () => {
           </h2>
         </div>
       </div>
+      {project.expression && (project.variables?.length ?? 0) > 5 && <p role="alert" className="rounded-xl border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900 dark:border-amber-800 dark:bg-amber-950/40 dark:text-amber-200">Karnaugh maps support up to 5 variables. Simplify the expression or remove variables before sending it to this solver.</p>}
 
       {/* Setup and Map cards */}
-      <div className="kmap-setup-map">
+  <div className="kmap-workbench-grid">
+    <div className="kmap-setup-map">
             <KMapGrid
               variableCount={varCount}
               variableNames={varNames}
@@ -260,9 +282,21 @@ export const KMapPage: FC = () => {
       </div>
 
         {/* Solver and details follow the map in workflow order */}
-        <div className="workflow-stack">
+        <div className="workflow-stack kmap-solution-column">
           {activeTab === 'explore' ? (
             <>
+              <section className="workflow-card">
+                <header className="workflow-card-header"><div className="workflow-step-heading"><h3>Simplified expression</h3></div><button type="button" className="rounded-full border border-gray-300 px-3 py-1 text-xs font-semibold dark:border-gray-700" onClick={() => {
+                  const text = activeSolution?.expressionString ?? '';
+                  if (text) void navigator.clipboard?.writeText(text).then(() => { setCopiedExpression(true); window.setTimeout(() => setCopiedExpression(false), 1200); });
+                }} disabled={!activeSolution}>{copiedExpression ? 'Copied' : 'Copy'}</button></header>
+                <div className="workflow-card-body space-y-3 text-sm">
+                  <p><strong>Original:</strong> <span className="font-mono">{project.expression ? toString(project.expression) : 'Set the map cells to define a function.'}</span></p>
+                  <p><strong>Minimal {targetForm}:</strong> <span className="font-mono">{activeSolution?.expressionString ?? 'Solve the map to get a result.'}</span></p>
+                  <p><strong>Minterms:</strong> <span className="font-mono">{minterms.length ? `Σm(${minterms.join(', ')})` : '= 0'}</span></p>
+                  <p><strong>Groups:</strong> {activeSolution?.groups.map((group) => group.termString).join(' + ') || (activeSolution?.expressionString === '1' ? '= 1' : 'No groups required.')}</p>
+                </div>
+              </section>
               <SolutionPanel
                 sopSolution={sopSolution}
                 posSolution={posSolution}
@@ -322,6 +356,7 @@ export const KMapPage: FC = () => {
             </div>
           </div>
         </div>
+      </div>
     </div>
   );
 };

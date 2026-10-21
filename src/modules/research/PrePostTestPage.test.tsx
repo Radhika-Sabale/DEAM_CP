@@ -6,16 +6,19 @@
 
 import '@testing-library/jest-dom';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { useLogStore } from '../../store/logStore';
 import { useStudyStore } from '../../store/studyStore';
 import { PrePostTestPage } from './PrePostTestPage';
 
 describe('PrePostTestPage Component', () => {
+  const continueAsAuthenticated = (event: Event) => (event as CustomEvent<{ continueAction: () => void }>).detail.continueAction();
   beforeEach(() => {
+    window.addEventListener('deam:require-account', continueAsAuthenticated);
     useLogStore.getState().clearLog();
     useStudyStore.getState().deleteStudyData();
   });
+  afterEach(() => window.removeEventListener('deam:require-account', continueAsAuthenticated));
 
   it('renders research assessment advisory note stating hints and solutions are disabled', () => {
     render(<PrePostTestPage />);

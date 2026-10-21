@@ -11,6 +11,7 @@ import { type FC } from 'react';
 import { Button } from '../../components/ui/Button';
 import { getMisconception } from '../../engine/feedback/misconceptions';
 import type { Quiz, QuizResult } from '../../engine/practice/types';
+import { formatActiveDuration } from '../../hooks/useActiveQuizTimer';
 import { useUiStore } from '../../store/uiStore';
 import type { ModuleId } from '../../types/designProject';
 
@@ -18,6 +19,7 @@ export interface QuizReviewProps {
   readonly quiz: Quiz;
   readonly result: QuizResult;
   readonly answers: Readonly<Record<string, string | number>>;
+  readonly durationMs?: number;
   readonly onRetake: () => void;
 }
 
@@ -25,6 +27,7 @@ export const QuizReview: FC<QuizReviewProps> = ({
   quiz,
   result,
   answers,
+  durationMs = 0,
   onRetake,
 }) => {
   const setModule = useUiStore((s) => s.setModule);
@@ -44,6 +47,9 @@ export const QuizReview: FC<QuizReviewProps> = ({
           </div>
           <span className="mt-1 text-sm font-semibold text-gray-500 dark:text-gray-400">
             {percentage}% Correct
+          </span>
+          <span className="quiz-result-duration" aria-label="Active quiz time">
+            Active time {formatActiveDuration(durationMs)}
           </span>
         </div>
 
@@ -159,3 +165,4 @@ export const QuizReview: FC<QuizReviewProps> = ({
     </div>
   );
 };
+

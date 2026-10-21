@@ -6,16 +6,19 @@
 
 import '@testing-library/jest-dom';
 import { fireEvent, render, screen } from '@testing-library/react';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { useLogStore } from '../../store/logStore';
 import { useStudyStore } from '../../store/studyStore';
 import { SusPage } from './SusPage';
 
 describe('SusPage Component', () => {
+  const continueAsAuthenticated = (event: Event) => (event as CustomEvent<{ continueAction: () => void }>).detail.continueAction();
   beforeEach(() => {
+    window.addEventListener('deam:require-account', continueAsAuthenticated);
     useLogStore.getState().clearLog();
     useStudyStore.getState().deleteStudyData();
   });
+  afterEach(() => window.removeEventListener('deam:require-account', continueAsAuthenticated));
 
   it('validates incomplete submission and names missing items in alert', () => {
     render(<SusPage />);

@@ -2,6 +2,7 @@ export interface AuthUser {
   readonly id: string;
   readonly email?: string;
   readonly app_metadata?: { readonly role?: string };
+  readonly user_metadata?: { readonly display_name?: string; readonly full_name?: string };
 }
 
 export interface AuthSession {
@@ -13,10 +14,34 @@ export interface AuthSession {
 }
 
 const STORAGE_KEY = 'deam:supabase-session:v1';
-const env = import.meta.env;
-export const isAuthConfigured = Boolean(env.VITE_SUPABASE_URL && env.VITE_SUPABASE_ANON_KEY);
-const supabaseUrl = String(env.VITE_SUPABASE_URL ?? '').replace(/\/$/, '');
-const anonKey = String(env.VITE_SUPABASE_ANON_KEY ?? '');
+export function isAuthConfigured(): boolean {
+  return Boolean(import.meta.env.VITE_SUPABASE_URL && import.meta.env.VITE_SUPABASE_ANON_KEY);
+}
+
+function getSupabaseUrl(): string {
+  return String(import.meta.env.VITE_SUPABASE_URL ?? '').replace(/\/$/, '');
+}
+
+function getAnonKey(): string {
+  return String(import.meta.env.VITE_SUPABASE_ANON_KEY ?? '');
+}
+
+export function subscribeAuthState(listener: (session: AuthSession | null) => void): () => void {
+  const onChange = (event: Event) => listener((event as CustomEvent<AuthSession | null>).detail);
+  const onStorage = (event: StorageEvent) => {
+    if (event.key === STORAGE_KEY) listener(readSession());
+  };
+  window.addEventListener('deam:auth-state', onChange);
+  window.addEventListener('storage', onStorage);
+  return () => {
+    window.removeEventListener('deam:auth-state', onChange);
+    window.removeEventListener('storage', onStorage);
+  };
+}
+
+function emitAuthState(session: AuthSession | null): void {
+  window.dispatchEvent(new CustomEvent('deam:auth-state', { detail: session }));
+}
 
 function storage(remember: boolean): Storage | null {
   try { return remember ? window.localStorage : window.sessionStorage; } catch { return null; }
@@ -39,9 +64,9 @@ function readSession(): AuthSession | null {
 }
 
 async function authRequest(path: string, init: RequestInit = {}): Promise<Record<string, unknown>> {
-  const response = await fetch(`${supabaseUrl}/auth/v1/${path}`, {
+  const response = await fetch(`${getSupabaseUrl()}/auth/v1/${path}`, {
     ...init,
-    headers: { apikey: anonKey, 'content-type': 'application/json', ...init.headers },
+    headers: { apikey: getAnonKey(), 'content-type': 'application/json', ...init.headers },
     signal: AbortSignal.timeout(10_000),
   });
   const payload = await response.json().catch(() => ({})) as Record<string, unknown>;
@@ -59,26 +84,27 @@ function toSession(data: Record<string, unknown>, remember: boolean): AuthSessio
   const expiresAt = typeof data.expires_at === 'number' ? data.expires_at : Math.floor(Date.now() / 1000) + expiresIn;
   const session: AuthSession = { access_token: data.access_token, refresh_token: data.refresh_token, expires_at: expiresAt, user, remember };
   saveSession(session);
+  emitAuthState(session);
   return session;
 }
 
 export async function signIn(email: string, password: string, remember: boolean): Promise<AuthSession> {
-  if (!isAuthConfigured) throw new Error('Login is not configured. Add the Supabase URL and anon key to the local .env file.');
+  if (!isAuthConfigured()) throw new Error('Login is not configured. Add the Supabase URL and anon key to the local .env file.');
   const data = await authRequest('token?grant_type=password', { method: 'POST', body: JSON.stringify({ email, password }) });
   const session = toSession(data, remember);
   if (!session) throw new Error('Sign-in needs another step. Check your email or try again.');
   return session;
 }
 
-export async function signUp(email: string, password: string, remember: boolean): Promise<AuthSession | null> {
-  if (!isAuthConfigured) throw new Error('Login is not configured. Add the Supabase URL and anon key to the local .env file.');
+export async function signUp(email: string, password: string, remember: boolean, displayName: string): Promise<AuthSession | null> {
+  if (!isAuthConfigured()) throw new Error('Login is not configured. Add the Supabase URL and anon key to the local .env file.');
   // No role or privilege is accepted from public sign-up. Teacher access is assigned in app_metadata by an administrator.
-  const data = await authRequest('signup', { method: 'POST', body: JSON.stringify({ email, password }) });
+  const data = await authRequest('signup', { method: 'POST', body: JSON.stringify({ email, password, data: { display_name: displayName.trim() } }) });
   return toSession(data, remember);
 }
 
 export async function restoreSession(): Promise<AuthSession | null> {
-  if (!isAuthConfigured) return null;
+  if (!isAuthConfigured()) return null;
   const stored = readSession();
   if (!stored) return null;
   if (stored.expires_at > Math.floor(Date.now() / 1000) + 30) return stored;
@@ -99,6 +125,7 @@ export async function signOut(session: AuthSession | null): Promise<void> {
 
 export async function clearSession(): Promise<void> {
   try { window.localStorage.removeItem(STORAGE_KEY); window.sessionStorage.removeItem(STORAGE_KEY); } catch { /* Storage is optional. */ }
+  emitAuthState(null);
 }
 
 export async function verifyTeacherAccess(session: AuthSession): Promise<boolean> {

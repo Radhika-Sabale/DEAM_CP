@@ -13,9 +13,9 @@ import type { LogicValue } from './ast';
 
 /**
  * Standard logic gate types.
- * NOT has exactly 1 input; other gates support 2..8 inputs.
+ * NOT and BUFFER have exactly 1 input; other gates support 2..8 inputs.
  */
-export type GateType = 'AND' | 'OR' | 'NOT' | 'NAND' | 'NOR' | 'XOR' | 'XNOR';
+export type GateType = 'AND' | 'OR' | 'NOT' | 'NAND' | 'NOR' | 'XOR' | 'XNOR' | 'BUFFER';
 
 /**
  * User-controllable input node providing logic levels.
@@ -76,7 +76,7 @@ export interface GateNode {
   readonly x: number;
   readonly y: number;
   readonly gateType: GateType;
-  /** Number of inputs (1 for NOT, 2..8 for others) */
+  /** Number of inputs (1 for NOT/BUFFER, 2..8 for other gates) */
   readonly inputCount: number;
   /** Optional propagation delay in simulation time units (integer >= 0) */
   readonly delay?: number;

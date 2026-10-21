@@ -102,7 +102,7 @@ export function pinPosition(
   }
 
   if (node.kind === 'gate') {
-    if (node.gateType === 'NOT') {
+    if (node.gateType === 'NOT' || node.gateType === 'BUFFER') {
       return {
         x: node.x,
         y: node.y + size.height / 2,
