@@ -23,7 +23,7 @@ import {
   rowHeaderLabels,
 } from '../../engine/kmap/layout';
 import { KMapLayer5Var } from './KMapLayer5Var';
-import { getCellGroupIndices, getCellGroupShadows, GroupBadges, type VisualGroup } from './GroupOverlay';
+import { CellGroupOutline, getCellGroupIndices, GroupBadges, type VisualGroup } from './GroupOverlay';
 
 export interface KMapGridProps {
   readonly variableCount: number;
@@ -75,8 +75,19 @@ export const KMapGrid: FC<KMapGridProps> = ({
     variableNames.join(', ')
   );
   const gridContainerRef = useRef<HTMLDivElement>(null);
+  const suppressClickRef = useRef(false);
+  const suppressClickTimerRef = useRef<number | undefined>(undefined);
 
   const handleCellClick = (minterm: number) => {
+    // Mouse painting applies its value at pointer-down. The browser dispatches
+    // a click after pointer-up as well; consume that paired click so one
+    // physical activation cannot advance the cell twice.
+    if (suppressClickRef.current) {
+      suppressClickRef.current = false;
+      window.clearTimeout(suppressClickTimerRef.current);
+      suppressClickTimerRef.current = undefined;
+      return;
+    }
     if (onToggleCellSelect) {
       onToggleCellSelect(minterm);
       return;
@@ -90,6 +101,12 @@ export const KMapGrid: FC<KMapGridProps> = ({
   const handleMouseDown = (minterm: number) => {
     if (readOnly || onToggleCellSelect || !onChangeValue) return;
     setIsPainting(true);
+    suppressClickRef.current = true;
+    window.clearTimeout(suppressClickTimerRef.current);
+    suppressClickTimerRef.current = window.setTimeout(() => {
+      suppressClickRef.current = false;
+      suppressClickTimerRef.current = undefined;
+    }, 700);
     const current = values[minterm] ?? 0;
     const next = cycleLogicValue(current);
     setPaintValue(next);
@@ -141,6 +158,8 @@ export const KMapGrid: FC<KMapGridProps> = ({
       window.removeEventListener('mouseup', onGlobalMouseUp);
     };
   }, [isPainting]);
+
+  useEffect(() => () => window.clearTimeout(suppressClickTimerRef.current), []);
 
   return (
     <div className="workflow-stack">
@@ -311,7 +330,7 @@ export const KMapGrid: FC<KMapGridProps> = ({
                       tabIndex={0}
                       aria-selected={isSelected}
                       data-groups={getCellGroupIndices(overlayGroups, m).map((index) => index + 1).join(',') || undefined}
-                      style={{ width: 'var(--kmap-cell-size)', height: 'var(--kmap-cell-size)', ...(overlayGroups.some((group) => group.cellIndices.includes(m)) ? { '--group-shadows': getCellGroupShadows(overlayGroups, m) } : {}) } as CSSProperties}
+                      style={{ width: 'var(--kmap-cell-size)', height: 'var(--kmap-cell-size)' } as CSSProperties}
                       data-dimmed={isDimmed || undefined}
                       data-value={String(val)}
                       aria-label={getCellAriaLabel(m)}
@@ -328,7 +347,7 @@ export const KMapGrid: FC<KMapGridProps> = ({
                           onChangeValue?.(m, directVal);
                         }
                       }}
-                      className={`kmap-cell relative flex h-14 sm:h-16 w-14 sm:w-16 shrink-0 cursor-pointer flex-col items-center justify-center border-b border-r border-gray-200 transition-colors focus:z-10 focus:outline-hidden focus:ring-2 focus:ring-blue-500 dark:border-gray-800 ${overlayGroups.some((group) => group.cellIndices.includes(m)) ? 'grouped' : ''} ${
+                      className={`kmap-cell relative flex h-14 sm:h-16 w-14 sm:w-16 shrink-0 cursor-pointer flex-col items-center justify-center border-b border-r border-gray-200 transition-colors focus:z-10 focus:outline-hidden focus:ring-2 focus:ring-blue-500 dark:border-gray-800 ${
                         isSelected
                           ? 'bg-blue-100 ring-2 ring-inset ring-blue-600 dark:bg-blue-950/70 dark:ring-blue-400'
                           : isHighlighted
@@ -340,11 +359,12 @@ export const KMapGrid: FC<KMapGridProps> = ({
                       <span className="absolute top-1 left-1.5 z-[3] text-[9px] font-mono text-gray-400 dark:text-gray-500">
                         {m}
                       </span>
-                      <GroupBadges groups={overlayGroups} cellIndex={m} />
+                      <CellGroupOutline key={`outline-${overlayGroups.map((group) => `${group.id}:${group.cellIndices.join(',')}`).join('|')}`} groups={overlayGroups} cellIndex={m} />
+                      <GroupBadges key={`badges-${overlayGroups.map((group) => `${group.id}:${group.cellIndices.join(',')}`).join('|')}`} groups={overlayGroups} cellIndex={m} />
 
                       {/* Explicit Text Symbol */}
                       <span
-                        className={`relative z-[3] text-lg font-bold font-mono ${
+                        className={`kmap-cell-value relative z-[3] text-lg font-bold font-mono ${
                           val === 1
                             ? 'text-blue-700 dark:text-blue-300'
                             : val === 'X'

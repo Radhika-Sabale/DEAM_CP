@@ -1,6 +1,6 @@
 /**
  * @file samplePrograms.test.ts
- * Verifies all 8 curated sample programs assemble without errors,
+ * Verifies all curated sample programs assemble without errors,
  * execute to HLT, and reach their expected architectural states.
  */
 
@@ -13,7 +13,7 @@ import { readByte, readWord } from '../../engine/cpu8086/memory';
 
 describe('samplePrograms', () => {
   it('contains exactly 8 curated sample programs', () => {
-    expect(SAMPLE_PROGRAMS).toHaveLength(8);
+    expect(SAMPLE_PROGRAMS).toHaveLength(10);
   });
 
   it('verifies sum-loop computes sum(1..10) = 55 in AX', () => {
@@ -131,5 +131,25 @@ describe('samplePrograms', () => {
     expect(runRes.stopReason).toBe('halted');
     // BL holds population count of 0xB5 (5)
     expect(runRes.state.registers.BX & 0xff).toBe(5);
+  });
+
+  it('verifies factorial sample computes 120 with MUL and LOOP', () => {
+    const sample = SAMPLE_PROGRAMS.find((p) => p.id === 'factorial')!;
+    const res = assemble(sample.source);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    const runRes = runToHalt(createCpuState(res.program), res.program);
+    expect(runRes.stopReason).toBe('halted');
+    expect(runRes.state.registers).toMatchObject({ AX: 120, CX: 0 });
+  });
+
+  it('verifies multiply-divide sample produces quotient 14 and remainder 2', () => {
+    const sample = SAMPLE_PROGRAMS.find((p) => p.id === 'multiply-divide')!;
+    const res = assemble(sample.source);
+    expect(res.ok).toBe(true);
+    if (!res.ok) return;
+    const runRes = runToHalt(createCpuState(res.program), res.program);
+    expect(runRes.stopReason).toBe('halted');
+    expect(runRes.state.registers).toMatchObject({ AX: 0x020e, BX: 7 });
   });
 });

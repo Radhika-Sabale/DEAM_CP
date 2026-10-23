@@ -305,15 +305,26 @@
 [role="tablist"]::-webkit-scrollbar { display: none; }
 [role="tab"] { border-radius: 999px !important; white-space: nowrap; }
 [role="tab"][aria-selected="true"] { background: var(--ink) !important; color: var(--bg) !important; }
-.kmap-cell { width: 56px !important; height: 56px !important; margin: 2px; border: 1px solid var(--line) !important; border-radius: 12px; background: var(--card) !important; transition: transform .16s, box-shadow .25s, opacity .25s; }
+.kmap-cell { width: 56px !important; height: 56px !important; margin: 2px; border: 1px solid var(--line) !important; border-radius: 12px; background: var(--card) !important; transition: transform 140ms ease-out, opacity 140ms ease-out; }
 .kmap-cell[data-value="0"] { color: var(--red) !important; background: color-mix(in srgb, var(--red) 7%, var(--card)) !important; border-color: color-mix(in srgb, var(--red) 28%, var(--line)) !important; }
 .kmap-cell[data-value="1"] { color: var(--green) !important; background: color-mix(in srgb, var(--green) 9%, var(--card)) !important; border-color: color-mix(in srgb, var(--green) 28%, var(--line)) !important; }
 .kmap-cell[data-value="X"] { color: var(--amber) !important; background: color-mix(in srgb, var(--amber) 9%, var(--card)) !important; border-color: color-mix(in srgb, var(--amber) 28%, var(--line)) !important; }
 .kmap-cell[aria-selected="true"] { box-shadow: inset 0 0 0 2px var(--group-1) !important; }
-.kmap-cell.grouped { box-shadow: var(--group-shadows) !important; }
+.kmap-cell-group-outline { position: absolute; z-index: 2; inset: 0; pointer-events: none; border-radius: inherit; box-shadow: var(--group-shadows); animation: kmap-group-in 140ms ease-out both; }
+.kmap-cell-value { display: inline-grid; width: 1.5em; height: 1.5em; place-items: center; font-variant-numeric: tabular-nums; }
+.kmap-cell[data-value="0"] .kmap-cell-value { animation: kmap-value-zero 140ms ease-out both; }
+.kmap-cell[data-value="1"] .kmap-cell-value { animation: kmap-value-one 140ms ease-out both; }
+.kmap-cell[data-value="X"] .kmap-cell-value { animation: kmap-value-x 140ms ease-out both; }
+@keyframes kmap-group-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes kmap-value-zero { from { opacity: .35; transform: scale(.88); } to { opacity: 1; transform: scale(1); } }
+@keyframes kmap-value-one { from { opacity: .35; transform: scale(.88); } to { opacity: 1; transform: scale(1); } }
+@keyframes kmap-value-x { from { opacity: .35; transform: scale(.88); } to { opacity: 1; transform: scale(1); } }
 .kmap-group-badges { position: absolute; z-index: 4; top: 3px; right: 3px; display: flex; gap: 2px; }
-.kmap-group-badge { display: grid; width: 15px; height: 15px; place-items: center; border-radius: 50%; background: var(--kgroup); color: #fff; font: 600 8px/1 var(--mono); }
+.kmap-group-badge { display: grid; width: 15px; height: 15px; place-items: center; border-radius: 50%; background: var(--kgroup); color: #fff; font: 600 8px/1 var(--mono); animation: kmap-group-in 140ms ease-out both; }
 .kmap-cell:hover { transform: translateY(-2px); }
+@media (prefers-reduced-motion: reduce) {
+  .kmap-cell, .kmap-cell-value, .kmap-cell-group-outline, .kmap-group-badge { animation: none !important; transition: none !important; }
+}
 button[class*="bg-blue-600"], button[class*="bg-blue-700"], a[class*="bg-blue-700"] { background: var(--ink) !important; color: var(--bg) !important; }
 button[class*="bg-gray-100"] { background: var(--surface) !important; border-color: var(--line) !important; }
 button[aria-pressed="true"] { background: var(--ink) !important; color: var(--bg) !important; }

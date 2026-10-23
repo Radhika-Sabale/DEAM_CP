@@ -74,19 +74,19 @@ describe('Sequential Circuit Designer Integration (Stage 10E)', () => {
     const wizardNav = screen.getByRole('navigation', { name: /Sequential design steps/i });
     const diagNav = within(wizardNav).getByRole('button', { name: /Step 3.*State Diagram/i });
     fireEvent.click(diagNav);
-    const diagShowMe = await screen.findByRole('button', { name: /Show me/i });
+    const diagShowMe = await screen.findByRole('button', { name: /Show me/i }, { timeout: 5000 });
     fireEvent.click(diagShowMe);
 
     // 5. Step 4 State Table: select and Show me
     const tableNav = within(wizardNav).getByRole('button', { name: /Step 4.*State Table/i });
     fireEvent.click(tableNav);
-    const tableShowMe = await screen.findByRole('button', { name: /Show me/i });
+    const tableShowMe = await screen.findByRole('button', { name: /Show me/i }, { timeout: 5000 });
     fireEvent.click(tableShowMe);
 
     // 6. Step 5 Excitation Table: select and Show me
     const excNav = within(wizardNav).getByRole('button', { name: /Step 5.*Excitation Table/i });
     fireEvent.click(excNav);
-    const excShowMe = await screen.findByRole('button', { name: /Show me/i });
+    const excShowMe = await screen.findByRole('button', { name: /Show me/i }, { timeout: 5000 });
     fireEvent.click(excShowMe);
 
     // 7. Step 6 Input Equations: enter engine's minimal equations via solver

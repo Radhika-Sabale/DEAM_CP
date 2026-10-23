@@ -31,14 +31,17 @@ export const REGISTER_SIZES: Readonly<Record<RegisterName, 8 | 16>> = {
 export const MNEMONIC_ALIASES: Readonly<Record<string, CanonicalMnemonic>> = {
   // Direct canonicals
   MOV: 'MOV', PUSH: 'PUSH', POP: 'POP',
+  XCHG: 'XCHG', LEA: 'LEA', CBW: 'CBW', CWD: 'CWD',
   ADD: 'ADD', SUB: 'SUB', INC: 'INC', DEC: 'DEC', CMP: 'CMP',
-  AND: 'AND', OR: 'OR', XOR: 'XOR',
+  NEG: 'NEG', MUL: 'MUL', IMUL: 'IMUL', DIV: 'DIV', IDIV: 'IDIV',
+  AND: 'AND', OR: 'OR', XOR: 'XOR', NOT: 'NOT',
   SHL: 'SHL', SHR: 'SHR',
   JMP: 'JMP', CALL: 'CALL', RET: 'RET',
   JE: 'JE', JNE: 'JNE', JC: 'JC', JNC: 'JNC',
   JA: 'JA', JBE: 'JBE', JG: 'JG', JGE: 'JGE',
   JL: 'JL', JLE: 'JLE', JS: 'JS', JNS: 'JNS',
   JO: 'JO', JNO: 'JNO',
+  LOOP: 'LOOP', LOOPE: 'LOOPE', LOOPZ: 'LOOPE', LOOPNE: 'LOOPNE', LOOPNZ: 'LOOPNE', JCXZ: 'JCXZ',
   HLT: 'HLT', NOP: 'NOP',
   INT: 'INT', IRET: 'IRET', CLI: 'CLI', STI: 'STI', PUSHF: 'PUSHF', POPF: 'POPF',
 
@@ -59,6 +62,10 @@ export const MNEMONIC_ALIASES: Readonly<Record<string, CanonicalMnemonic>> = {
 
 export const INSTRUCTION_TABLE: Readonly<Record<CanonicalMnemonic, InstructionRule>> = {
   MOV: { mnemonic: 'MOV', minOperands: 2, maxOperands: 2, flagsAffected: [], allowedSizes: [8, 16], description: 'Move byte or word' },
+  XCHG: { mnemonic: 'XCHG', minOperands: 2, maxOperands: 2, flagsAffected: [], allowedSizes: [8, 16], description: 'Exchange operands' },
+  LEA: { mnemonic: 'LEA', minOperands: 2, maxOperands: 2, flagsAffected: [], allowedSizes: [16], description: 'Load effective address' },
+  CBW: { mnemonic: 'CBW', minOperands: 0, maxOperands: 0, flagsAffected: [], allowedSizes: [], description: 'Sign extend AL into AX' },
+  CWD: { mnemonic: 'CWD', minOperands: 0, maxOperands: 0, flagsAffected: [], allowedSizes: [], description: 'Sign extend AX into DX:AX' },
   PUSH: { mnemonic: 'PUSH', minOperands: 1, maxOperands: 1, flagsAffected: [], allowedSizes: [16], description: 'Push 16-bit word onto stack' },
   POP: { mnemonic: 'POP', minOperands: 1, maxOperands: 1, flagsAffected: [], allowedSizes: [16], description: 'Pop 16-bit word from stack' },
 
@@ -66,11 +73,17 @@ export const INSTRUCTION_TABLE: Readonly<Record<CanonicalMnemonic, InstructionRu
   SUB: { mnemonic: 'SUB', minOperands: 2, maxOperands: 2, flagsAffected: ['ZF', 'CF', 'SF', 'OF'], allowedSizes: [8, 16], description: 'Subtract' },
   INC: { mnemonic: 'INC', minOperands: 1, maxOperands: 1, flagsAffected: ['ZF', 'SF', 'OF'], allowedSizes: [8, 16], description: 'Increment by 1 (preserves CF)' },
   DEC: { mnemonic: 'DEC', minOperands: 1, maxOperands: 1, flagsAffected: ['ZF', 'SF', 'OF'], allowedSizes: [8, 16], description: 'Decrement by 1 (preserves CF)' },
+  NEG: { mnemonic: 'NEG', minOperands: 1, maxOperands: 1, flagsAffected: ['ZF', 'CF', 'SF', 'OF'], allowedSizes: [8, 16], description: 'Two’s-complement negate' },
+  MUL: { mnemonic: 'MUL', minOperands: 1, maxOperands: 1, flagsAffected: ['CF', 'OF'], allowedSizes: [8, 16], description: 'Unsigned multiply into AX or DX:AX' },
+  IMUL: { mnemonic: 'IMUL', minOperands: 1, maxOperands: 1, flagsAffected: ['CF', 'OF'], allowedSizes: [8, 16], description: 'Signed multiply into AX or DX:AX' },
+  DIV: { mnemonic: 'DIV', minOperands: 1, maxOperands: 1, flagsAffected: [], allowedSizes: [8, 16], description: 'Unsigned divide' },
+  IDIV: { mnemonic: 'IDIV', minOperands: 1, maxOperands: 1, flagsAffected: [], allowedSizes: [8, 16], description: 'Signed divide' },
   CMP: { mnemonic: 'CMP', minOperands: 2, maxOperands: 2, flagsAffected: ['ZF', 'CF', 'SF', 'OF'], allowedSizes: [8, 16], description: 'Compare (A - B, updates flags only)' },
 
   AND: { mnemonic: 'AND', minOperands: 2, maxOperands: 2, flagsAffected: ['ZF', 'CF', 'SF', 'OF'], allowedSizes: [8, 16], description: 'Bitwise AND' },
   OR: { mnemonic: 'OR', minOperands: 2, maxOperands: 2, flagsAffected: ['ZF', 'CF', 'SF', 'OF'], allowedSizes: [8, 16], description: 'Bitwise OR' },
   XOR: { mnemonic: 'XOR', minOperands: 2, maxOperands: 2, flagsAffected: ['ZF', 'CF', 'SF', 'OF'], allowedSizes: [8, 16], description: 'Bitwise XOR' },
+  NOT: { mnemonic: 'NOT', minOperands: 1, maxOperands: 1, flagsAffected: [], allowedSizes: [8, 16], description: 'Bitwise complement' },
 
   SHL: { mnemonic: 'SHL', minOperands: 2, maxOperands: 2, flagsAffected: ['ZF', 'CF', 'SF', 'OF'], allowedSizes: [8, 16], description: 'Shift Logical Left by 1 or CL' },
   SHR: { mnemonic: 'SHR', minOperands: 2, maxOperands: 2, flagsAffected: ['ZF', 'CF', 'SF', 'OF'], allowedSizes: [8, 16], description: 'Shift Logical Right by 1 or CL' },
@@ -93,6 +106,10 @@ export const INSTRUCTION_TABLE: Readonly<Record<CanonicalMnemonic, InstructionRu
   JNS: { mnemonic: 'JNS', minOperands: 1, maxOperands: 1, flagsAffected: [], allowedSizes: [16], description: 'Jump if sign non-negative (SF=0)' },
   JO: { mnemonic: 'JO', minOperands: 1, maxOperands: 1, flagsAffected: [], allowedSizes: [16], description: 'Jump if overflow (OF=1)' },
   JNO: { mnemonic: 'JNO', minOperands: 1, maxOperands: 1, flagsAffected: [], allowedSizes: [16], description: 'Jump if no overflow (OF=0)' },
+  LOOP: { mnemonic: 'LOOP', minOperands: 1, maxOperands: 1, flagsAffected: [], allowedSizes: [16], description: 'Decrement CX and jump if nonzero' },
+  LOOPE: { mnemonic: 'LOOPE', minOperands: 1, maxOperands: 1, flagsAffected: [], allowedSizes: [16], description: 'LOOP while CX nonzero and ZF=1' },
+  LOOPNE: { mnemonic: 'LOOPNE', minOperands: 1, maxOperands: 1, flagsAffected: [], allowedSizes: [16], description: 'LOOP while CX nonzero and ZF=0' },
+  JCXZ: { mnemonic: 'JCXZ', minOperands: 1, maxOperands: 1, flagsAffected: [], allowedSizes: [16], description: 'Jump if CX is zero' },
 
   HLT: { mnemonic: 'HLT', minOperands: 0, maxOperands: 0, flagsAffected: [], allowedSizes: [], description: 'Halt CPU execution' },
   NOP: { mnemonic: 'NOP', minOperands: 0, maxOperands: 0, flagsAffected: [], allowedSizes: [], description: 'No operation' },
@@ -147,5 +164,5 @@ export function isTerminatingInstruction(mnemonic: CanonicalMnemonic): boolean {
  * Returns true if the instruction is any conditional or unconditional jump.
  */
 export function isJumpInstruction(mnemonic: CanonicalMnemonic): boolean {
-  return mnemonic.startsWith('J');
+  return mnemonic.startsWith('J') || mnemonic === 'LOOP' || mnemonic === 'LOOPE' || mnemonic === 'LOOPNE';
 }

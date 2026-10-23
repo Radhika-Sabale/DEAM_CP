@@ -11,9 +11,35 @@ import { describe, expect, it, vi } from 'vitest';
 import '@testing-library/jest-dom/vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import type { LogicValue } from '../../types/ast';
-import { KMapGrid } from './KMapGrid';
+import { cycleLogicValue, KMapGrid } from './KMapGrid';
 
 describe('KMapGrid', () => {
+  it('cycles a cell through 0 -> 1 -> X -> 0 with one update per click', () => {
+    let values: LogicValue[] = Array.from({ length: 16 }, () => 0 as LogicValue);
+    const onChangeValue = vi.fn((minterm: number, value: LogicValue) => {
+      values = values.map((current, index) => index === minterm ? value : current);
+    });
+    const view = render(
+      <KMapGrid variableCount={4} variableNames={['A', 'B', 'C', 'D']} values={values} onChangeValue={onChangeValue} />
+    );
+    const cell = () => screen.getByRole('gridcell', { name: /minterm 0, value/i });
+
+    for (const expected of [1, 'X', 0] as const) {
+      onChangeValue.mockClear();
+      fireEvent.mouseDown(cell());
+      fireEvent.click(cell());
+      expect(onChangeValue).toHaveBeenCalledTimes(1);
+      expect(onChangeValue).toHaveBeenLastCalledWith(0, expected);
+      view.rerender(
+        <KMapGrid variableCount={4} variableNames={['A', 'B', 'C', 'D']} values={values} onChangeValue={onChangeValue} />
+      );
+      fireEvent.mouseUp(window);
+    }
+    expect(cycleLogicValue(0)).toBe(1);
+    expect(cycleLogicValue(1)).toBe('X');
+    expect(cycleLogicValue('X')).toBe(0);
+  });
+
   it('renders a 4-variable grid with correct ARIA roles, labels, and text symbols', () => {
     const values: LogicValue[] = Array.from({ length: 16 }, () => 0 as LogicValue);
     values[3] = 1;
@@ -81,6 +107,49 @@ describe('KMapGrid', () => {
     // Direct key '0'
     fireEvent.keyDown(cell0, { key: '0' });
     expect(onChangeValue).toHaveBeenCalledWith(0, 0);
+  });
+
+  it('cycles once for keyboard and touch-style click activation', () => {
+    let values: LogicValue[] = Array.from({ length: 16 }, () => 0 as LogicValue);
+    const onChangeValue = vi.fn((minterm: number, value: LogicValue) => {
+      values = values.map((current, index) => index === minterm ? value : current);
+    });
+    const view = render(
+      <KMapGrid variableCount={4} variableNames={['A', 'B', 'C', 'D']} values={values} onChangeValue={onChangeValue} />
+    );
+    const cell = () => screen.getByRole('gridcell', { name: /minterm 0, value/i });
+
+    fireEvent.keyDown(cell(), { key: ' ' });
+    expect(onChangeValue).toHaveBeenCalledTimes(1);
+    expect(onChangeValue).toHaveBeenLastCalledWith(0, 1);
+    view.rerender(<KMapGrid variableCount={4} variableNames={['A', 'B', 'C', 'D']} values={values} onChangeValue={onChangeValue} />);
+
+    onChangeValue.mockClear();
+    fireEvent.click(cell());
+    expect(onChangeValue).toHaveBeenCalledTimes(1);
+    expect(onChangeValue).toHaveBeenLastCalledWith(0, 'X');
+    view.rerender(<KMapGrid variableCount={4} variableNames={['A', 'B', 'C', 'D']} values={values} onChangeValue={onChangeValue} />);
+
+    onChangeValue.mockClear();
+    fireEvent.keyDown(cell(), { key: 'Enter' });
+    expect(onChangeValue).toHaveBeenCalledTimes(1);
+    expect(onChangeValue).toHaveBeenLastCalledWith(0, 0);
+  });
+
+  it('handles twelve rapid clicks without skipping or duplicating a cycle step', () => {
+    let values: LogicValue[] = Array.from({ length: 16 }, () => 0 as LogicValue);
+    const onChangeValue = vi.fn((minterm: number, value: LogicValue) => {
+      values = values.map((current, index) => index === minterm ? value : current);
+    });
+    const view = render(
+      <KMapGrid variableCount={4} variableNames={['A', 'B', 'C', 'D']} values={values} onChangeValue={onChangeValue} />
+    );
+    for (let click = 0; click < 12; click += 1) {
+      fireEvent.click(screen.getByRole('gridcell', { name: /minterm 0, value/i }));
+      view.rerender(<KMapGrid variableCount={4} variableNames={['A', 'B', 'C', 'D']} values={values} onChangeValue={onChangeValue} />);
+    }
+    expect(onChangeValue).toHaveBeenCalledTimes(12);
+    expect(values[0]).toBe(0);
   });
 
   it('renders 5-variable maps as two side-by-side layers with inter-layer caption', () => {

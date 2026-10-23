@@ -195,6 +195,20 @@ describe('2. Visual Rectangle Decomposition', () => {
 });
 
 describe('3. Quine-McCluskey & Prime Implicants: Textbook Functions', () => {
+  it('uses a dont-care to enlarge a real group, but never creates a group from dont-cares alone', () => {
+    const joined = solveSOP(2, [1], [0]);
+    expect(joined.ok).toBe(true);
+    if (joined.ok) {
+      expect(joined.solution.primarySolution.primeImplicants.some((pi) => pi.minterms.includes(0) && pi.minterms.includes(1))).toBe(true);
+    }
+
+    const onlyDontCare = solveSOP(2, [], [0, 1, 2, 3]);
+    expect(onlyDontCare.ok).toBe(true);
+    if (onlyDontCare.ok) {
+      expect(onlyDontCare.solution.primarySolution.primeImplicants).toHaveLength(0);
+    }
+  });
+
   it('Textbook 1: f(A,B,C,D) = Σm(0, 2, 5, 7, 8, 10, 13, 15) -> B*D + B\'*D\'', () => {
     const minterms = [0, 2, 5, 7, 8, 10, 13, 15];
     const qm = runQuineMcCluskey(4, minterms);

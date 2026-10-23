@@ -177,4 +177,27 @@ DEC CX
 JNZ count_loop
 HLT`,
   },
+  {
+    id: 'factorial',
+    title: 'Factorial with MUL and LOOP',
+    description: 'Computes 5! = 120 using unsigned multiplication and the CX loop instruction.',
+    source: `MOV AX, 1
+MOV CX, 5
+factorial_loop:
+MUL CX
+LOOP factorial_loop
+HLT`,
+  },
+  {
+    id: 'multiply-divide',
+    title: 'Multiply & Divide',
+    description: 'Multiplies a byte, then divides 100 by 7 to show quotient and remainder.',
+    source: `MOV AL, 10
+MOV BL, 5
+MUL BL
+MOV AX, 100
+MOV BL, 7
+DIV BL
+HLT`,
+  },
 ];

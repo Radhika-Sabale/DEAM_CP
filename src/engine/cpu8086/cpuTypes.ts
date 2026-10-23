@@ -41,6 +41,7 @@ export type CpuFaultType =
   | 'stack-overflow'
   | 'invalid-register-operand'
   | 'invalid-shift-count'
+  | 'divide-error'
   | InterruptFaultType;
 
 /**

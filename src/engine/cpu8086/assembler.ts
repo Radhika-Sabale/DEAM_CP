@@ -40,6 +40,14 @@ const MAX_ERRORS = 50;
  */
 export function assemble(source: string): AssemblerResult {
   const lines = source.split(/\r?\n/);
+  let endEntryLabel: string | undefined;
+  const endLineIndex = lines.findIndex((line) => {
+    const clean = line.replace(/;.*$/, '');
+    const match = /^\s*END(?:\s+([A-Za-z_][\w]*))?\s*$/i.exec(clean);
+    if (match) endEntryLabel = match[1];
+    return Boolean(match);
+  });
+  if (endLineIndex >= 0) lines.splice(endLineIndex + 1);
   const errors: AssemblerError[] = [];
   const warnings: AssemblerWarning[] = [];
   const symbols: Record<string, SymbolEntry> = {};
@@ -101,7 +109,7 @@ export function assemble(source: string): AssemblerResult {
 
       if (isRegister(labelName)) {
         errors.push({ line: lineNum, column: labelTok.column, length: labelTok.length, code: 'duplicate-label', message: `Label cannot be a register name: '${labelName}'` });
-      } else if (resolveMnemonic(labelName)) {
+      } else if (resolveMnemonic(labelName) && labelName.toUpperCase() !== 'LOOP') {
         errors.push({ line: lineNum, column: labelTok.column, length: labelTok.length, code: 'duplicate-label', message: `Label cannot be an instruction mnemonic: '${labelName}'` });
       } else if (symbols[labelName]) {
         const existing = symbols[labelName];
@@ -130,6 +138,8 @@ export function assemble(source: string): AssemblerResult {
     }
 
     const opUpper = opTok.text.toUpperCase();
+
+    if (opUpper === 'END') continue;
 
     if (section === '.data') {
       if (opUpper === 'ORG') {
@@ -267,7 +277,14 @@ export function assemble(source: string): AssemblerResult {
   }
 
   const dataSegments: DataSegment[] = dataBytes.length > 0 ? [{ address: orgAddr, bytes: dataBytes }] : [];
-  const entryPoint = findEntryPoint(symbols, instructions.length);
+  let entryPoint = findEntryPoint(symbols, instructions.length);
+  if (endEntryLabel) {
+    const entrySymbol = symbols[endEntryLabel];
+    if (!entrySymbol || entrySymbol.kind !== 'code') {
+      return { ok: false, errors: [{ line: endLineIndex + 1, column: 1, length: 3, code: 'undefined-label', message: `END entry label '${endEntryLabel}' is not a defined code label` }], warnings };
+    }
+    entryPoint = entrySymbol.address;
+  }
 
   const program: Program = {
     instructions,

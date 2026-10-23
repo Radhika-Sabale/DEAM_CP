@@ -22,6 +22,7 @@ import { Button } from '../../components/ui/Button';
 import { useProjectStore } from '../../store/projectStore';
 import { useUiStore } from '../../store/uiStore';
 import { programFromAluOperation } from '../../engine/cpu8086/aluProgram';
+import { INSTRUCTION_TABLE, MNEMONIC_ALIASES } from '../../engine/cpu8086/isa';
 
 export const Cpu8086Page: FC = () => {
   const session = useCpuSession();
@@ -273,7 +274,7 @@ export const Cpu8086Page: FC = () => {
       {activeMainTab === 'simulate' ? (
         <div className="cpu-simulation-flow workflow-stack">
           <section className="cpu-program-card">
-            <div className="workflow-step-heading"><span>01</span><h2>Program</h2></div>
+            <div className="workflow-step-heading"><span>01</span><h2>Run your own code</h2></div>
             <CodeEditor
               source={session.source}
               onSourceChange={session.setSource}
@@ -282,6 +283,21 @@ export const Cpu8086Page: FC = () => {
               onToggleBreakpoint={session.toggleBreakpoint}
               errors={session.assemblerResult?.ok === false ? session.assemblerResult.errors : []}
             />
+            <details className="rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm dark:border-gray-800 dark:bg-gray-950">
+              <summary className="cursor-pointer font-semibold">Supported instructions and directives</summary>
+              <p className="mt-2 text-xs text-gray-600 dark:text-gray-300">
+                Instructions: {Object.keys(INSTRUCTION_TABLE).join(', ')}.
+              </p>
+              <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+                Aliases: {Object.entries(MNEMONIC_ALIASES).filter(([alias, canonical]) => alias !== canonical).map(([alias]) => alias).join(', ')}.
+              </p>
+              <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+                Directives: .DATA, .CODE, DB, DW, ORG, VECTOR, END. Unsupported mnemonics and directives are reported against their source line.
+              </p>
+              <p className="mt-1 text-xs text-gray-600 dark:text-gray-300">
+                MUL/IMUL define CF and OF; other status flags are undefined. DIV/IDIV leave status flags undefined. Segment registers and parity/auxiliary-carry/direction flags are not modeled.
+              </p>
+            </details>
           </section>
 
           <div className="run-control-bar">

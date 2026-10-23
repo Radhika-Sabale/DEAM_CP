@@ -29,6 +29,11 @@ describe('Cpu8086Page', () => {
     ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^Simulate$/i })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /^Practice$/i })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { level: 2, name: /Run your own code/i })).toBeInTheDocument();
+    expect(screen.getByLabelText(/8086 Assembly source code editor/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByText(/Supported instructions and directives/i));
+    expect(screen.getByText(/Instructions: MOV, XCHG, LEA, CBW, CWD, PUSH, POP/i)).toBeInTheDocument();
+    expect(screen.getByText(/Directives: .DATA, .CODE, DB, DW, ORG, VECTOR/i)).toBeInTheDocument();
 
     // Default inspector tabs
     expect(screen.getByRole('tab', { name: /Registers/i })).toBeInTheDocument();

@@ -73,6 +73,19 @@ export function getCellGroupShadows(groups: readonly VisualGroup[], cellIndex: n
     .join(', ');
 }
 
+/** Group ring is a separate layer so only its opacity animates when membership changes. */
+export function CellGroupOutline({ groups, cellIndex }: { groups: readonly VisualGroup[]; cellIndex: number }) {
+  const memberships = getCellGroupIndices(groups, cellIndex);
+  if (memberships.length === 0) return null;
+  return (
+    <span
+      aria-hidden="true"
+      className="kmap-cell-group-outline"
+      style={{ '--group-shadows': getCellGroupShadows(groups, cellIndex) } as CSSProperties}
+    />
+  );
+}
+
 export function GroupBadges({ groups, cellIndex }: { groups: readonly VisualGroup[]; cellIndex: number }) {
   const memberships = getCellGroupIndices(groups, cellIndex);
   if (memberships.length === 0) return null;

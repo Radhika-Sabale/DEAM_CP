@@ -61,6 +61,8 @@ export function validateAndResolveInstruction(
     mnemonic === 'STI' ||
     mnemonic === 'PUSHF' ||
     mnemonic === 'POPF'
+    || mnemonic === 'CBW'
+    || mnemonic === 'CWD'
   ) {
     const size = mnemonic === 'PUSHF' || mnemonic === 'POPF' ? 16 : undefined;
     return { ok: true, instruction: { address, mnemonic, operands: [], size, sourceLine, sourceText }, warnings, referencedLabels };
@@ -98,6 +100,37 @@ export function validateAndResolveInstruction(
       return err(sourceLine, col, targetOp.name.length, 'jump-target-is-data-label', `Jump target '${targetOp.name}' is a data label, expected code label`);
     }
     return { ok: true, instruction: { address, mnemonic, operands: [targetOp], size: 16, sourceLine, sourceText }, warnings, referencedLabels };
+  }
+
+  if (mnemonic === 'XCHG') {
+    const [left, right] = rawOperands;
+    if (!left || !right || (left.kind !== 'reg' && left.kind !== 'mem') || (right.kind !== 'reg' && right.kind !== 'mem')) {
+      return err(sourceLine, col, mnemonic.length, 'invalid-operand-form', 'XCHG requires register or memory operands');
+    }
+    if (left.kind === 'mem' && right.kind === 'mem') return err(sourceLine, col, mnemonic.length, 'invalid-operand-form', 'XCHG cannot use two memory operands');
+    const size = left.kind === 'reg' ? left.size : right.kind === 'reg' ? right.size : left.size;
+    if (size === undefined || (left.kind === 'mem' && left.size !== undefined && left.size !== size) || (right.kind === 'mem' && right.size !== undefined && right.size !== size)) {
+      return err(sourceLine, col, mnemonic.length, 'size-mismatch', 'XCHG operands must have the same explicit size');
+    }
+    const resolved = rawOperands.map((op) => op.kind === 'mem' ? { ...resolveMemoryOperand(op, symbols, referencedLabels), size } : op);
+    return { ok: true, instruction: { address, mnemonic, operands: resolved, size, sourceLine, sourceText }, warnings, referencedLabels };
+  }
+
+  if (mnemonic === 'LEA') {
+    const [dest, source] = rawOperands;
+    if (!dest || dest.kind !== 'reg' || dest.size !== 16 || !source || source.kind !== 'mem') {
+      return err(sourceLine, col, mnemonic.length, 'invalid-operand-form', 'LEA requires a 16-bit register and a memory address');
+    }
+    return { ok: true, instruction: { address, mnemonic, operands: [dest, resolveMemoryOperand(source, symbols, referencedLabels)], size: 16, sourceLine, sourceText }, warnings, referencedLabels };
+  }
+
+  if (mnemonic === 'NOT' || mnemonic === 'NEG' || mnemonic === 'MUL' || mnemonic === 'IMUL' || mnemonic === 'DIV' || mnemonic === 'IDIV') {
+    const op = rawOperands[0];
+    if (!op || (op.kind !== 'reg' && op.kind !== 'mem')) return err(sourceLine, col, mnemonic.length, 'invalid-operand-form', `${mnemonic} requires a register or memory operand`);
+    if (op.kind === 'mem' && op.size === undefined) return err(sourceLine, col, mnemonic.length, 'ambiguous-operand-size', `Ambiguous operand size for ${mnemonic}; specify BYTE PTR or WORD PTR`);
+    const size = op.kind === 'reg' ? op.size : op.size!;
+    const resolved = op.kind === 'mem' ? resolveMemoryOperand(op, symbols, referencedLabels) : op;
+    return { ok: true, instruction: { address, mnemonic, operands: [resolved], size, sourceLine, sourceText }, warnings, referencedLabels };
   }
 
   // 4. RET (0 operands or 1 immediate pop-bytes)
